@@ -1,7 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
@@ -11,7 +10,7 @@ import { Camera, ArrowLeft, Settings, Sparkles } from 'lucide-react';
 import FileDrop from '@/components/FileDrop';
 import Preview from '@/components/Preview';
 import ProductForm from '@/components/ProductForm';
-
+import ExportPanel from '@/components/ExportPanel';
 import ImageSettings from '@/components/ImageSettings';
 
 export default function StudioPage() {
@@ -81,25 +80,16 @@ export default function StudioPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6"
+          className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8"
         >
-          {/* Left Panel - File Drop */}
+          {/* Left Panel - File Drop and Preview */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            className="lg:col-span-3 order-1"
+            className="space-y-6"
           >
             <FileDrop />
-          </motion.div>
-
-          {/* Center Panel - Preview */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="lg:col-span-6 order-2"
-          >
             <Preview />
           </motion.div>
 
@@ -107,8 +97,8 @@ export default function StudioPage() {
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="lg:col-span-3 order-3 space-y-4 lg:space-y-6"
+            transition={{ delay: 0.4 }}
+            className="space-y-6"
           >
             <ImageSettings />
             <ProductForm />
@@ -119,25 +109,10 @@ export default function StudioPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-6 sticky bottom-4 z-10"
+          transition={{ delay: 0.5 }}
+          className="mt-8 sticky bottom-4 z-10"
         >
-          <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-600" />
-                Экспорт
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                size="lg" 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                Скачать ZIP
-              </Button>
-            </CardContent>
-          </Card>
+          <ExportPanel />
         </motion.div>
       </main>
     </div>

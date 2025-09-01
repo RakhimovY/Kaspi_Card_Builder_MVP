@@ -110,6 +110,9 @@ export function useLandingTranslations() {
   const { t, loading, error } = useTranslations();
   
   return {
+    nav: {
+      pricing: t('landing.nav.pricing'),
+    },
     hero: {
       title: t('landing.hero.title'),
       subtitle: t('landing.hero.subtitle'),
@@ -135,6 +138,39 @@ export function useLandingTranslations() {
       a2: t('landing.faq.a2'),
       q3: t('landing.faq.q3'),
       a3: t('landing.faq.a3'),
+    },
+    pricing: {
+      title: t('landing.pricing.title'),
+      subtitle: t('landing.pricing.subtitle'),
+      mostPopular: t('landing.pricing.mostPopular'),
+      free: {
+        title: t('landing.pricing.free.title'),
+        price: t('landing.pricing.free.price'),
+        description: t('landing.pricing.free.description'),
+        limit: t('landing.pricing.free.limit'),
+        cta: t('landing.pricing.free.cta'),
+        features: {
+          '1': t('landing.pricing.free.features.1'),
+          '2': t('landing.pricing.free.features.2'),
+          '3': t('landing.pricing.free.features.3'),
+          '4': t('landing.pricing.free.features.4'),
+        }
+      },
+      pro: {
+        title: t('landing.pricing.pro.title'),
+        price: t('landing.pricing.pro.price'),
+        description: t('landing.pricing.pro.description'),
+        limit: t('landing.pricing.pro.limit'),
+        cta: t('landing.pricing.pro.cta'),
+        features: {
+          '1': t('landing.pricing.pro.features.1'),
+          '2': t('landing.pricing.pro.features.2'),
+          '3': t('landing.pricing.pro.features.3'),
+          '4': t('landing.pricing.pro.features.4'),
+          '5': t('landing.pricing.pro.features.5'),
+          '6': t('landing.pricing.pro.features.6'),
+        }
+      }
     },
     isLoading: loading,
     hasError: !!error,

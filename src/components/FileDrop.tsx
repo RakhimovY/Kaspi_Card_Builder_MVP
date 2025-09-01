@@ -4,10 +4,15 @@ import { useCallback, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 import { useAppStore } from '@/lib/store';
 import { FileItem } from '@/lib/store';
 import { useImageProcessing } from '@/lib/useImageProcessing';
-import { X, Upload, FileImage, AlertCircle, Play, Pause, Square, Download } from 'lucide-react';
+import { trackFileDrop } from '@/lib/analytics';
+import { X, Upload, FileImage, AlertCircle, Play, Pause, Square, Download, ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 const MAX_FILES = 50;
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
@@ -43,14 +48,18 @@ export default function FileDrop() {
     const newFiles: File[] = Array.from(fileList);
     
     if (files.length + newFiles.length > MAX_FILES) {
-      alert(`Максимум ${MAX_FILES} файлов`);
+      toast.error(`Максимум ${MAX_FILES} файлов`);
       return;
     }
+
+    let addedCount = 0;
+    let errorCount = 0;
 
     newFiles.forEach((file) => {
       const error = validateFile(file);
       if (error) {
-        alert(`${file.name}: ${error}`);
+        toast.error(`${file.name}: ${error}`);
+        errorCount++;
         return;
       }
 
@@ -68,7 +77,17 @@ export default function FileDrop() {
       fileItem.originalUrl = url;
 
       addFile(fileItem);
+      addedCount++;
     });
+
+    if (addedCount > 0) {
+      toast.success(`Добавлено ${addedCount} файлов`);
+      // Отправляем аналитику
+      trackFileDrop(addedCount);
+    }
+    if (errorCount > 0) {
+      toast.error(`Ошибок: ${errorCount}`);
+    }
   }, [files.length, addFile]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -193,12 +212,12 @@ export default function FileDrop() {
 
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Ошибка при экспорте файлов. Попробуйте еще раз.');
+      toast.error('Ошибка при экспорте файлов. Попробуйте еще раз.');
     }
   }, [getCompletedFiles]);
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg">
+    <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg compact-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -261,7 +280,7 @@ export default function FileDrop() {
         </div>
 
         {/* File List */}
-        {files.length > 0 && (
+        {files.length > 0 ? (
           <div className="space-y-2 max-h-48 lg:max-h-64 overflow-y-auto component-scrollbar">
             {files.map((file) => (
               <div
@@ -288,6 +307,12 @@ export default function FileDrop() {
               </div>
             ))}
           </div>
+        ) : (
+          <EmptyState
+            icon={ImageIcon}
+            title="Нет загруженных файлов"
+            description="Перетащите изображения в область выше или нажмите кнопку выбора файлов"
+          />
         )}
 
         {/* Control Buttons */}

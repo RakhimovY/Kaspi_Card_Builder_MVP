@@ -2,8 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useAppStore } from '@/lib/store';
-import { Image, ZoomIn, Download } from 'lucide-react';
+
+import { Image, ZoomIn, Download, FileImage, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Preview() {
@@ -11,6 +14,8 @@ export default function Preview() {
   const selectedFile = selectedFileId 
     ? files.find(f => f.id === selectedFileId) 
     : files.find(f => f.status === 'completed') || files[0];
+
+
 
   const handleDownload = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -22,7 +27,7 @@ export default function Preview() {
   };
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg">
+    <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg compact-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Image className="w-5 h-5 text-blue-600" />
@@ -64,16 +69,22 @@ export default function Preview() {
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="border-2 border-dashed border-blue-200 rounded-lg p-8 text-center h-full flex items-center justify-center bg-blue-50/30">
-                  <div className="text-center">
-                    <Image className="w-16 h-16 mx-auto mb-4 text-blue-300" />
-                    <p className="text-gray-600 font-medium mb-2">Оригинальное изображение</p>
-                    <p className="text-sm text-gray-500">
-                      Загрузите файлы для предпросмотра
-                    </p>
+              ) : selectedFile?.status === 'processing' ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <Skeleton className="w-32 h-32 mx-auto rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="w-48 h-4 mx-auto" />
+                      <Skeleton className="w-32 h-3 mx-auto" />
+                    </div>
                   </div>
                 </div>
+              ) : (
+                <EmptyState
+                  icon={FileImage}
+                  title="Оригинальное изображение"
+                  description="Загрузите файлы для предпросмотра"
+                />
               )}
             </TabsContent>
             
@@ -104,19 +115,30 @@ export default function Preview() {
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="border-2 border-dashed border-blue-200 rounded-lg p-8 text-center h-full flex items-center justify-center bg-blue-50/30">
-                  <div className="text-center">
-                    <Image className="w-16 h-16 mx-auto mb-4 text-blue-300" />
-                    <p className="text-gray-600 font-medium mb-2">Обработанное изображение</p>
-                    <p className="text-sm text-gray-500">
-                      {files.length > 0 
-                        ? 'Обработайте файлы для предпросмотра'
-                        : 'Загрузите файлы для обработки'
-                      }
-                    </p>
+              ) : selectedFile?.status === 'processing' ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <div className="relative">
+                      <Skeleton className="w-32 h-32 mx-auto rounded-lg" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-blue-500 animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="w-48 h-4 mx-auto" />
+                      <Skeleton className="w-32 h-3 mx-auto" />
+                    </div>
                   </div>
                 </div>
+              ) : (
+                <EmptyState
+                  icon={Sparkles}
+                  title="Обработанное изображение"
+                  description={files.length > 0 
+                    ? 'Обработайте файлы для предпросмотра'
+                    : 'Загрузите файлы для обработки'
+                  }
+                />
               )}
             </TabsContent>
           </div>
@@ -126,16 +148,22 @@ export default function Preview() {
             <div className="mt-4 pt-4 border-t">
               <p className="text-sm font-medium mb-2">Выберите файл:</p>
               <div className="flex gap-2 overflow-x-auto">
-                {files.map((file) => (
+                {files.map((file, index) => (
                   <button
                     key={file.id}
-                    className={`flex-shrink-0 p-2 rounded border text-xs ${
+                    className={`flex-shrink-0 p-2 rounded border text-xs relative ${
                       selectedFile?.id === file.id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => setSelectedFile(file.id)}
+                    title={file.name}
                   >
+                    {index < 9 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                        {index + 1}
+                      </span>
+                    )}
                     {file.name.length > 15 
                       ? `${file.name.substring(0, 15)}...`
                       : file.name
@@ -143,6 +171,7 @@ export default function Preview() {
                   </button>
                 ))}
               </div>
+
             </div>
           )}
         </Tabs>

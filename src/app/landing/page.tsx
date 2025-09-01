@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
@@ -19,18 +20,38 @@ import {
   Mail,
   MessageCircle,
   Clock,
-  ChevronDown
+  ChevronDown,
+  Check,
+  Star
 } from 'lucide-react';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const { hero, features, how_it_works, faq, isLoading, hasError } = useLandingTranslations();
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const { nav, hero, features, how_it_works, faq, pricing, isLoading, hasError } = useLandingTranslations();
 
   useEffect(() => {
     setMounted(true);
     trackPageView('/landing');
   }, []);
+
+  const handleProUpgrade = async () => {
+    setIsLoadingPayment(true);
+    try {
+      // Lemon Squeezy overlay integration
+      if (typeof window !== 'undefined' && (window as unknown as { createLemonSqueezy?: () => void }).createLemonSqueezy) {
+        (window as unknown as { createLemonSqueezy: () => void }).createLemonSqueezy()
+      } else {
+        // Fallback - redirect to Lemon Squeezy checkout
+        window.open('https://app.lemonsqueezy.com/checkout/buy/PRODUCT_ID', '_blank')
+      }
+    } catch (error) {
+      console.error('Error opening checkout:', error)
+    } finally {
+      setIsLoadingPayment(false);
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -92,7 +113,13 @@ export default function LandingPage() {
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-4"
           >
+            <a href="#pricing">
+              <Button variant="outline" className="hidden sm:flex">
+                {nav.pricing}
+              </Button>
+            </a>
             <LanguageSwitcher />
           </motion.div>
         </div>
@@ -287,6 +314,114 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="relative container mx-auto px-4 py-20 z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            {pricing.title}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            {pricing.subtitle}
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Free Plan */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            viewport={{ once: true }}
+          >
+            <Card className="group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm relative">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold">{pricing.free.title}</CardTitle>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold text-gray-900">{pricing.free.price}</span>
+                </div>
+                <CardDescription className="text-gray-600 mt-2">
+                  {pricing.free.description}
+                </CardDescription>
+                <div className="mt-4">
+                  <Badge variant="secondary" className="text-sm">
+                    {pricing.free.limit}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 mb-8">
+                  {Object.values(pricing.free.features).map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/studio">
+                  <Button 
+                    className="w-full bg-gray-900 hover:bg-gray-800"
+                  >
+                    {pricing.free.cta}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Pro Plan */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            <Card className="group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-2 border-blue-500 shadow-lg scale-105 bg-white/80 backdrop-blur-sm relative">
+              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white">
+                {pricing.mostPopular}
+              </Badge>
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold">{pricing.pro.title}</CardTitle>
+                <div className="mt-4">
+                  <span className="text-4xl font-bold text-gray-900">{pricing.pro.price}</span>
+                  <span className="text-gray-500 ml-2">/месяц</span>
+                </div>
+                <CardDescription className="text-gray-600 mt-2">
+                  {pricing.pro.description}
+                </CardDescription>
+                <div className="mt-4">
+                  <Badge variant="secondary" className="text-sm">
+                    {pricing.pro.limit}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3 mb-8">
+                  {Object.values(pricing.pro.features).map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  onClick={handleProUpgrade}
+                  disabled={isLoadingPayment}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {isLoadingPayment ? 'Загрузка...' : pricing.pro.cta}
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="relative container mx-auto px-4 py-20 z-10">
         <motion.div
@@ -350,16 +485,28 @@ export default function LandingPage() {
               <p className="text-xl mb-8 opacity-90">
                 Присоединяйтесь к тысячам успешных продавцов на Kaspi
               </p>
-              <Link href="/studio">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link href="/studio">
+                  <Button 
+                    size="lg" 
+                    variant="secondary"
+                    className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    Начать бесплатно
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
                 <Button 
                   size="lg" 
-                  variant="secondary"
-                  className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  variant="outline"
+                  onClick={handleProUpgrade}
+                  disabled={isLoadingPayment}
+                  className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  Начать бесплатно
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <Star className="w-5 h-5 mr-2" />
+                  {isLoadingPayment ? 'Загрузка...' : 'Оформить Pro'}
                 </Button>
-              </Link>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -384,7 +531,7 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-4 text-lg">Продукт</h4>
               <ul className="space-y-3 text-gray-400">
                 <li><Link href="/studio" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Студия</Link></li>
-                <li><a href="/pricing" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Тарифы</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Тарифы</a></li>
                 <li><a href="/docs" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Документация</a></li>
               </ul>
             </div>
@@ -410,6 +557,12 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Lemon Squeezy Script */}
+      <script
+        src="https://app.lemonsqueezy.com/js/lemon.js"
+        defer
+      />
 
       {/* Video Modal */}
       {isVideoPlaying && (

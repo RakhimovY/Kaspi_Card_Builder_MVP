@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAppStore } from '@/lib/store';
 import { useTranslations } from '@/lib/useTranslations';
 import { generateTitle, generateDescription, copyToClipboard } from '@/lib/titleDescriptionGenerator';
 import { X, Copy, Check, Wand2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function TitleDescriptionGenerator() {
   const { formData, updateFormData } = useAppStore();
@@ -18,6 +20,7 @@ export default function TitleDescriptionGenerator() {
     title: false,
     description: false
   });
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleAddKeyword = () => {
     if (newKeyword.trim() && !formData?.extraKeywords?.includes(newKeyword.trim())) {
@@ -33,25 +36,55 @@ export default function TitleDescriptionGenerator() {
     updateFormData({ extraKeywords: newKeywords });
   };
 
-  const handleGenerateTitle = () => {
-    const title = generateTitle(formData);
-    updateFormData({ generatedTitle: title });
+  const handleGenerateTitle = async () => {
+    setIsGenerating(true);
+    try {
+      // Имитируем небольшую задержку для UX
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const title = generateTitle(formData);
+      updateFormData({ generatedTitle: title });
+      toast.success('Заголовок сгенерирован!');
+    } catch (error) {
+      toast.error('Ошибка при генерации заголовка');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleGenerateDescription = () => {
-    const description = generateDescription(formData);
-    updateFormData({ generatedDescription: description });
+  const handleGenerateDescription = async () => {
+    setIsGenerating(true);
+    try {
+      // Имитируем небольшую задержку для UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const description = generateDescription(formData);
+      updateFormData({ generatedDescription: description });
+      toast.success('Описание сгенерировано!');
+    } catch (error) {
+      toast.error('Ошибка при генерации описания');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopyTitle = async () => {
     const success = await copyToClipboard(formData.generatedTitle);
     setCopyStates(prev => ({ ...prev, title: success }));
+    if (success) {
+      toast.success('Заголовок скопирован в буфер обмена');
+    } else {
+      toast.error('Не удалось скопировать заголовок');
+    }
     setTimeout(() => setCopyStates(prev => ({ ...prev, title: false })), 2000);
   };
 
   const handleCopyDescription = async () => {
     const success = await copyToClipboard(formData.generatedDescription);
     setCopyStates(prev => ({ ...prev, description: success }));
+    if (success) {
+      toast.success('Описание скопировано в буфер обмена');
+    } else {
+      toast.error('Не удалось скопировать описание');
+    }
     setTimeout(() => setCopyStates(prev => ({ ...prev, description: false })), 2000);
   };
 
@@ -114,19 +147,27 @@ export default function TitleDescriptionGenerator() {
         <div className="flex gap-2">
           <Button
             onClick={handleGenerateTitle}
-            disabled={!canGenerate}
+            disabled={!canGenerate || isGenerating}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
           >
-            <Wand2 className="w-4 h-4 mr-2" />
-            {t('studio.title_generator.generate_title')}
+            {isGenerating ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            ) : (
+              <Wand2 className="w-4 h-4 mr-2" />
+            )}
+            {isGenerating ? 'Генерация...' : t('studio.title_generator.generate_title')}
           </Button>
           <Button
             onClick={handleGenerateDescription}
-            disabled={!canGenerate}
+            disabled={!canGenerate || isGenerating}
             className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
           >
-            <Wand2 className="w-4 h-4 mr-2" />
-            {t('studio.title_generator.generate_description')}
+            {isGenerating ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            ) : (
+              <Wand2 className="w-4 h-4 mr-2" />
+            )}
+            {isGenerating ? 'Генерация...' : t('studio.title_generator.generate_description')}
           </Button>
         </div>
 
