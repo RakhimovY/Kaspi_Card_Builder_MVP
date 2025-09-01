@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kaspi Card Builder MVP
 
-## Getting Started
+Профессиональные карточки товаров для Kaspi Marketplace
 
-First, run the development server:
+## 🚀 Быстрый старт
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. **Клонируйте репозиторий**
+   ```bash
+   git clone <repository-url>
+   cd Kaspi_Card_Builder_MVP
+   ```
+
+2. **Установите зависимости**
+   ```bash
+   npm install
+   ```
+
+3. **Настройте переменные окружения**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Отредактируйте `.env.local`:
+   ```env
+   # Plausible Analytics
+   NEXT_PUBLIC_PLAUSIBLE_DOMAIN=your-domain.com
+   
+   # App Configuration
+   NEXT_PUBLIC_APP_NAME=Kaspi Card Builder
+   ```
+
+4. **Запустите проект**
+   ```bash
+   npm run dev
+   ```
+
+5. **Откройте в браузере**
+   ```
+   http://localhost:3000
+   ```
+
+## 📊 Настройка Plausible Analytics
+
+1. Зарегистрируйтесь на [plausible.io](https://plausible.io)
+2. Добавьте ваш домен в Plausible
+3. Скопируйте домен в переменную `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`
+
+## 🌐 Локализация
+
+Проект поддерживает две локали:
+- **RU** (по умолчанию) - Русский
+- **KZ** - Казахский
+
+Переключение языка доступно на странице лендинга через компонент LanguageSwitcher с динамическим переводом без перезагрузки страницы.
+
+## 📁 Структура проекта
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── landing/           # Лендинг страница с динамическим переводом
+│   ├── studio/            # Студия для обработки файлов
+│   └── page.tsx           # Главная страница (редирект на /landing)
+├── components/            # React компоненты
+│   ├── ui/               # shadcn/ui компоненты
+│   └── LanguageSwitcher.tsx # Переключатель языка
+└── lib/                  # Утилиты и библиотеки
+    ├── analytics.ts      # Plausible аналитика
+    └── store.ts          # Zustand store
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Технологии
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 15** - React фреймворк
+- **TypeScript** - Типизация
+- **Tailwind CSS** - Стилизация
+- **shadcn/ui** - UI компоненты
+- **Zustand** - Управление состоянием
+- **Plausible** - Аналитика
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📈 Отслеживаемые события
 
-## Learn More
+- `pageview` - Просмотры страниц
+- `drop_files` - Загрузка файлов
+- `process_start` - Начало обработки
+- `process_done` - Завершение обработки
+- `export_zip` - Экспорт ZIP
 
-To learn more about Next.js, take a look at the following resources:
+## 🚧 Статус разработки
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- ✅ **Этап 0** - Инициализация проекта
+- ✅ **Этап 1** - Лендинг с Plausible аналитикой и динамическим переводом
+- 🔄 **Этап 2** - Каркас Studio (в разработке)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📝 Лицензия
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License
