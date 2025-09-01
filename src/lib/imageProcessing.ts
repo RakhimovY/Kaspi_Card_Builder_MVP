@@ -5,6 +5,7 @@ export interface ImageProcessingOptions {
   format: 'jpeg' | 'webp';
   quality: number;
   removeBg: boolean;
+  optimizeBgRemoval?: boolean; // Включить оптимизацию удаления фона
 }
 
 export interface ImageValidationResult {
@@ -155,6 +156,192 @@ export function removeExif(blob: Blob): Promise<Blob> {
 }
 
 /**
+ * Resizes image for background removal optimization
+ */
+function resizeImageForBgRemoval(canvas: HTMLCanvasElement, maxSize: number): HTMLCanvasElement {
+  const { width, height } = canvas;
+  
+  // Calculate new dimensions
+  let newWidth = width;
+  let newHeight = height;
+  
+  if (width > maxSize || height > maxSize) {
+    if (width > height) {
+      newWidth = maxSize;
+      newHeight = (height * maxSize) / width;
+    } else {
+      newHeight = maxSize;
+      newWidth = (width * maxSize) / height;
+    }
+  }
+  
+  // Create new canvas with target size
+  const resizedCanvas = document.createElement('canvas');
+  resizedCanvas.width = newWidth;
+  resizedCanvas.height = newHeight;
+  const resizedCtx = resizedCanvas.getContext('2d')!;
+  
+  // Draw resized image
+  resizedCtx.drawImage(canvas, 0, 0, newWidth, newHeight);
+  
+  return resizedCanvas;
+}
+
+/**
+ * Applies background removal mask to original image
+ */
+function applyMaskToOriginal(
+  originalCanvas: HTMLCanvasElement,
+  maskCanvas: HTMLCanvasElement
+): HTMLCanvasElement {
+  const { width, height } = originalCanvas;
+  const resultCanvas = document.createElement('canvas');
+  resultCanvas.width = width;
+  resultCanvas.height = height;
+  const resultCtx = resultCanvas.getContext('2d')!;
+  
+  // Draw original image
+  resultCtx.drawImage(originalCanvas, 0, 0);
+  
+  // Create mask from background removal result
+  const maskCtx = maskCanvas.getContext('2d')!;
+  const maskImageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+  
+  // Scale mask to original size
+  const scaledMaskCanvas = document.createElement('canvas');
+  scaledMaskCanvas.width = width;
+  scaledMaskCanvas.height = height;
+  const scaledMaskCtx = scaledMaskCanvas.getContext('2d')!;
+  scaledMaskCtx.drawImage(maskCanvas, 0, 0, width, height);
+  
+  // Apply mask
+  resultCtx.globalCompositeOperation = 'destination-in';
+  resultCtx.drawImage(scaledMaskCanvas, 0, 0);
+  
+  return resultCanvas;
+}
+
+/**
+ * Optimized background removal with pre-scaling
+ */
+export async function removeBackgroundOptimized(
+  blob: Blob,
+  onProgress?: (progress: number) => void,
+  abortController?: AbortController
+): Promise<Blob> {
+  try {
+    // Step 1: Load original image
+    const originalImg = await loadImage(blob);
+    const originalCanvas = document.createElement('canvas');
+    const originalCtx = originalCanvas.getContext('2d')!;
+    
+    originalCanvas.width = originalImg.width;
+    originalCanvas.height = originalImg.height;
+    originalCtx.drawImage(originalImg, 0, 0);
+    
+    onProgress?.(10);
+    
+    // Check for cancellation
+    if (abortController?.signal.aborted) {
+      throw new Error('Background removal cancelled');
+    }
+    
+    // Step 2: Determine if we need to scale down
+    const maxBgRemovalSize = 1024;
+    const needsScaling = originalImg.width > maxBgRemovalSize || originalImg.height > maxBgRemovalSize;
+    
+    let workingCanvas = originalCanvas;
+    let scaleFactor = 1;
+    
+    if (needsScaling) {
+      onProgress?.(20);
+      
+      // Scale down for background removal
+      workingCanvas = resizeImageForBgRemoval(originalCanvas, maxBgRemovalSize);
+      scaleFactor = originalImg.width / workingCanvas.width;
+      
+      onProgress?.(30);
+    }
+    
+    // Check for cancellation
+    if (abortController?.signal.aborted) {
+      throw new Error('Background removal cancelled');
+    }
+    
+    // Step 3: Convert to blob for background removal
+    const workingBlob = await new Promise<Blob>((resolve) => {
+      workingCanvas.toBlob((blob) => {
+        resolve(blob!);
+      }, 'image/png', 0.9);
+    });
+    
+    onProgress?.(40);
+    
+    // Step 4: Remove background on scaled image
+    const result = await removeBackground(workingBlob, {
+      progress: onProgress ? (message: string, progress: number) => {
+        // Map progress from 40-80%
+        const mappedProgress = 40 + (progress * 0.4);
+        onProgress(mappedProgress);
+        
+        // Check for cancellation
+        if (abortController?.signal.aborted) {
+          throw new Error('Background removal cancelled');
+        }
+      } : undefined,
+      output: {
+        format: 'image/png',
+        quality: 0.7, // Lower quality for speed
+      },
+      model: 'isnet', // Faster model
+    });
+    
+    onProgress?.(80);
+    
+    // Check for cancellation
+    if (abortController?.signal.aborted) {
+      throw new Error('Background removal cancelled');
+    }
+    
+    // Step 5: Apply result to original image
+    if (needsScaling) {
+      onProgress?.(85);
+      
+      // Load the background removal result
+      const resultImg = await loadImage(result);
+      const resultCanvas = document.createElement('canvas');
+      const resultCtx = resultCanvas.getContext('2d')!;
+      
+      resultCanvas.width = resultImg.width;
+      resultCanvas.height = resultImg.height;
+      resultCtx.drawImage(resultImg, 0, 0);
+      
+      // Apply mask to original
+      const finalCanvas = applyMaskToOriginal(originalCanvas, resultCanvas);
+      
+      onProgress?.(95);
+      
+      // Convert to blob
+      const finalBlob = await new Promise<Blob>((resolve) => {
+        finalCanvas.toBlob((blob) => {
+          resolve(blob!);
+        }, 'image/png', 0.9);
+      });
+      
+      onProgress?.(100);
+      return finalBlob;
+    } else {
+      onProgress?.(100);
+      return result;
+    }
+    
+  } catch (error) {
+    console.error('Optimized background removal failed:', error);
+    throw new Error('Не удалось удалить фон. Попробуйте другое изображение.');
+  }
+}
+
+/**
  * Removes background from image
  */
 export async function removeBackgroundFromImage(
@@ -243,11 +430,20 @@ export async function processImage(
     // Step 3: Remove background (if requested)
     let processedBlob: Blob = file;
     if (options.removeBg) {
-      processedBlob = await removeBackgroundFromImage(
-        file,
-        (progress) => onProgress?.(20 + progress * 0.4), // 20-60%
-        abortController
-      );
+      // Выбираем оптимизированную или обычную версию
+      if (options.optimizeBgRemoval !== false) { // По умолчанию включено
+        processedBlob = await removeBackgroundOptimized(
+          file,
+          (progress) => onProgress?.(20 + progress * 0.4), // 20-60%
+          abortController
+        );
+      } else {
+        processedBlob = await removeBackgroundFromImage(
+          file,
+          (progress) => onProgress?.(20 + progress * 0.4), // 20-60%
+          abortController
+        );
+      }
     }
 
     onProgress?.(60);

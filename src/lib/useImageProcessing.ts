@@ -134,6 +134,7 @@ export function useImageProcessing() {
             format: settings.format,
             quality: settings.quality,
             removeBg: settings.removeBg,
+            optimizeBgRemoval: false,
           };
 
           const result = await processImage(
@@ -205,6 +206,7 @@ export function useImageProcessing() {
         format: settings.format,
         quality: settings.quality,
         removeBg: settings.removeBg,
+        optimizeBgRemoval: true, // Включаем оптимизацию по умолчанию
       };
 
       const result = await processImage(actualFile, options, undefined, abortControllerRef.current || undefined);
