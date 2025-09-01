@@ -32,12 +32,16 @@ export interface FormData {
   quantity: number;
   description: string;
   additionalSpecs: string;
+  extraKeywords: string[];
+  generatedTitle: string;
+  generatedDescription: string;
 }
 
-export interface ChecklistItem {
-  id: string;
-  text: string;
-  completed: boolean;
+
+
+export interface CategoryChecklistState {
+  categoryId: string;
+  checkedItems: string[];
 }
 
 // Store slices
@@ -64,10 +68,11 @@ interface FormSlice {
 }
 
 interface ChecklistSlice {
-  checklist: ChecklistItem[];
-  setChecklist: (items: ChecklistItem[]) => void;
-  toggleItem: (id: string) => void;
-  resetChecklist: () => void;
+  // Category checklist system
+  categoryChecklist: CategoryChecklistState;
+  setCategoryChecklist: (categoryId: string, checkedItems: string[]) => void;
+  toggleCategoryItem: (itemId: string) => void;
+  resetCategoryChecklist: () => void;
 }
 
 // Combined store
@@ -91,6 +96,14 @@ const initialFormData: FormData = {
   quantity: 1,
   description: '',
   additionalSpecs: '',
+  extraKeywords: [],
+  generatedTitle: '',
+  generatedDescription: '',
+};
+
+const initialCategoryChecklist: CategoryChecklistState = {
+  categoryId: '',
+  checkedItems: [],
 };
 
 export const useAppStore = create<AppStore>()(
@@ -146,22 +159,33 @@ export const useAppStore = create<AppStore>()(
       })),
       resetForm: () => set({ formData: initialFormData }),
 
-      // Checklist slice
-      checklist: [],
-      setChecklist: (items) => set({ checklist: items }),
-      toggleItem: (id) => set((state) => ({
-        checklist: state.checklist.map(item => 
-          item.id === id ? { ...item, completed: !item.completed } : item
-        )
-      })),
-      resetChecklist: () => set({ checklist: [] }),
+      // Category checklist slice
+      categoryChecklist: initialCategoryChecklist,
+      setCategoryChecklist: (categoryId, checkedItems) => set({
+        categoryChecklist: { categoryId, checkedItems }
+      }),
+      toggleCategoryItem: (itemId) => set((state) => {
+        const { checkedItems } = state.categoryChecklist;
+        const isChecked = checkedItems.includes(itemId);
+        const newCheckedItems = isChecked
+          ? checkedItems.filter(id => id !== itemId)
+          : [...checkedItems, itemId];
+        
+        return {
+          categoryChecklist: {
+            ...state.categoryChecklist,
+            checkedItems: newCheckedItems
+          }
+        };
+      }),
+      resetCategoryChecklist: () => set({ categoryChecklist: initialCategoryChecklist }),
     }),
     {
       name: 'kaspi-card-builder-storage',
       partialize: (state) => ({
         settings: state.settings,
         formData: state.formData,
-        checklist: state.checklist,
+        categoryChecklist: state.categoryChecklist,
       }),
     }
   )

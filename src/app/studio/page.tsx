@@ -11,7 +11,7 @@ import { Camera, ArrowLeft, Settings, Sparkles } from 'lucide-react';
 import FileDrop from '@/components/FileDrop';
 import Preview from '@/components/Preview';
 import ProductForm from '@/components/ProductForm';
-import Checklist from '@/components/Checklist';
+
 import ImageSettings from '@/components/ImageSettings';
 
 export default function StudioPage() {
@@ -103,7 +103,7 @@ export default function StudioPage() {
             <Preview />
           </motion.div>
 
-          {/* Right Panel - Settings, Form and Checklist */}
+          {/* Right Panel - Settings and Form */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -112,7 +112,6 @@ export default function StudioPage() {
           >
             <ImageSettings />
             <ProductForm />
-            <Checklist />
           </motion.div>
         </motion.div>
 

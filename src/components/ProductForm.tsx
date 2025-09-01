@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
 import { useImageProcessing } from '@/lib/useImageProcessing';
 import { useEffect } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, CheckSquare } from 'lucide-react';
+import TitleDescriptionGenerator from './TitleDescriptionGenerator';
+import { CategoryChecklist } from './CategoryChecklist';
+import { getChecklistByCategoryId } from '@/lib/categoryChecklists';
 
 const CATEGORIES = [
   { value: 'electronics', label: 'Электроника' },
@@ -21,7 +24,15 @@ const CATEGORIES = [
 ];
 
 export default function ProductForm() {
-  const { formData, updateFormData, resetForm } = useAppStore();
+  const { 
+    formData, 
+    updateFormData, 
+    resetForm,
+    categoryChecklist,
+    setCategoryChecklist,
+    toggleCategoryItem,
+    resetCategoryChecklist
+  } = useAppStore();
   const { processingState } = useImageProcessing();
   
   // Форма остается доступной во время обработки
@@ -29,6 +40,11 @@ export default function ProductForm() {
 
   const handleInputChange = (field: keyof typeof formData, value: string | number) => {
     updateFormData({ [field]: value });
+    
+    // Reset category checklist when category changes
+    if (field === 'category' && value !== categoryChecklist.categoryId) {
+      resetCategoryChecklist();
+    }
   };
 
   const generateSKU = () => {
@@ -39,13 +55,7 @@ export default function ProductForm() {
     }
   };
 
-  const autoGenerateTitle = () => {
-    const { type, brand, model, keySpec } = formData;
-    if (type && brand && model) {
-      const title = [type, brand, model, keySpec].filter(Boolean).join(' ');
-      // TODO: Add title to store
-    }
-  };
+
 
   useEffect(() => {
     // Auto-generate SKU when brand or model changes
@@ -53,6 +63,18 @@ export default function ProductForm() {
       generateSKU();
     }
   }, [formData.brand, formData.model]);
+
+  // Get current category checklist
+  const currentChecklist = getChecklistByCategoryId(formData.category);
+  const hasChecklist = currentChecklist && ['clothing', 'electronics', 'cosmetics'].includes(formData.category);
+
+  const handleChecklistItemToggle = (itemId: string, checked: boolean) => {
+    if (checked) {
+      toggleCategoryItem(itemId);
+    } else {
+      toggleCategoryItem(itemId);
+    }
+  };
 
   return (
     <Card 
@@ -76,6 +98,7 @@ export default function ProductForm() {
             onClick={() => {
               if (confirm('Сбросить форму?')) {
                 resetForm();
+                resetCategoryChecklist();
               }
             }}
             className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
@@ -242,17 +265,28 @@ export default function ProductForm() {
           </div>
         </div>
 
-        {/* Auto-generation */}
+        {/* Title & Description Generator */}
         <div className="pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={autoGenerateTitle}
-            disabled={!formData.type || !formData.brand || !formData.model}
-            className="w-full"
-          >
-            Автогенерация заголовка
-          </Button>
+          <TitleDescriptionGenerator />
         </div>
+
+        {/* Category Checklist */}
+        {hasChecklist && currentChecklist && (
+          <div className="pt-4 border-t">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckSquare className="w-5 h-5 text-green-600" />
+              <h3 className="text-lg font-semibold text-gray-800">
+                Чек-лист готовности
+              </h3>
+            </div>
+            <CategoryChecklist
+              categoryId={formData.category}
+              checklist={currentChecklist}
+              checkedItems={categoryChecklist.checkedItems}
+              onItemToggle={handleChecklistItemToggle}
+            />
+          </div>
+        )}
 
         {/* Form Status */}
         <div className="pt-4 border-t">

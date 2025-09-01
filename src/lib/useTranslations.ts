@@ -49,7 +49,7 @@ export function useTranslations() {
     };
   }, []);
 
-  const t = (key: string): string => {
+  const t = (key: string, p0?: { completed: number; total: number; }): string => {
     if (!translations) {
       return key;
     }
