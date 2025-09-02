@@ -6,23 +6,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
 import { useImageProcessing } from '@/lib/useImageProcessing';
+import { useTranslations } from '@/lib/useTranslations';
 import { useEffect } from 'react';
 import { FileText, CheckSquare, Package, Settings, FileEdit } from 'lucide-react';
 import TitleDescriptionGenerator from './TitleDescriptionGenerator';
 import { CategoryChecklist } from './CategoryChecklist';
 import { getChecklistByCategoryId } from '@/lib/categoryChecklists';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-const CATEGORIES = [
-  { value: 'electronics', label: 'Электроника' },
-  { value: 'clothing', label: 'Одежда' },
-  { value: 'cosmetics', label: 'Косметика' },
-  { value: 'home', label: 'Дом и сад' },
-  { value: 'sports', label: 'Спорт и отдых' },
-  { value: 'books', label: 'Книги' },
-  { value: 'toys', label: 'Игрушки' },
-  { value: 'other', label: 'Другое' },
-];
 
 export default function ProductForm() {
   const { 
@@ -34,6 +24,7 @@ export default function ProductForm() {
     toggleCategoryItem,
     resetCategoryChecklist
   } = useAppStore();
+  const { t } = useTranslations();
   const { processingState } = useImageProcessing();
   
   // Форма остается доступной во время обработки
@@ -55,8 +46,6 @@ export default function ProductForm() {
       updateFormData({ sku });
     }
   };
-
-
 
   useEffect(() => {
     // Auto-generate SKU when brand or model changes
@@ -86,10 +75,10 @@ export default function ProductForm() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-600" />
-            <span>Информация о товаре</span>
+            <span>{t('studio.form.title')}</span>
             {isProcessing && (
               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                Обработка...
+                {t('studio.form.processing')}
               </span>
             )}
           </div>
@@ -97,14 +86,14 @@ export default function ProductForm() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (confirm('Сбросить форму?')) {
+              if (confirm(t('studio.form.reset_confirm'))) {
                 resetForm();
                 resetCategoryChecklist();
               }
             }}
             className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
           >
-            Сбросить
+            {t('studio.form.reset_form')}
           </Button>
         </CardTitle>
       </CardHeader>
@@ -113,19 +102,19 @@ export default function ProductForm() {
           <TabsList className="grid w-full grid-cols-4 bg-gray-50 h-10">
             <TabsTrigger value="basic" className="flex items-center gap-1 text-xs">
               <Package className="w-3 h-3" />
-              Основное
+              {t('studio.form.tabs.basic')}
             </TabsTrigger>
             <TabsTrigger value="details" className="flex items-center gap-1 text-xs">
               <Settings className="w-3 h-3" />
-              Детали
+              {t('studio.form.tabs.details')}
             </TabsTrigger>
             <TabsTrigger value="description" className="flex items-center gap-1 text-xs">
               <FileEdit className="w-3 h-3" />
-              Описание
+              {t('studio.form.tabs.description')}
             </TabsTrigger>
             <TabsTrigger value="checklist" className="flex items-center gap-1 text-xs">
               <CheckSquare className="w-3 h-3" />
-              Чек-лист
+              {t('studio.form.tabs.checklist')}
             </TabsTrigger>
           </TabsList>
 
@@ -134,23 +123,23 @@ export default function ProductForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Бренд *
+                  {t('studio.form.fields.brand')}
                 </label>
                 <Input
                   value={formData.brand}
                   onChange={(e) => handleInputChange('brand', e.target.value)}
-                  placeholder="Введите бренд"
+                  placeholder={t('studio.form.fields.brand_placeholder')}
                   className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Тип товара *
+                  {t('studio.form.fields.type')}
                 </label>
                 <Input
                   value={formData.type}
                   onChange={(e) => handleInputChange('type', e.target.value)}
-                  placeholder="Смартфон, Футболка..."
+                  placeholder={t('studio.form.fields.type_placeholder')}
                   className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
@@ -159,43 +148,85 @@ export default function ProductForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Модель *
+                  {t('studio.form.fields.model')}
                 </label>
                 <Input
                   value={formData.model}
                   onChange={(e) => handleInputChange('model', e.target.value)}
-                  placeholder="Модель товара"
+                  placeholder={t('studio.form.fields.model_placeholder')}
                   className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Категория *
+                  {t('studio.form.fields.category')}
                 </label>
                 <select
                   value={formData.category}
                   onChange={(e) => handleInputChange('category', e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Выберите категорию</option>
-                  {CATEGORIES.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
+                  <option value="">{t('studio.form.fields.category_placeholder')}</option>
+                  <option value="electronics">{t('studio.form.categories.electronics')}</option>
+                  <option value="clothing">{t('studio.form.categories.clothing')}</option>
+                  <option value="cosmetics">{t('studio.form.categories.cosmetics')}</option>
+                  <option value="home">{t('studio.form.categories.home')}</option>
+                  <option value="sports">{t('studio.form.categories.sports')}</option>
+                  <option value="books">{t('studio.form.categories.books')}</option>
+                  <option value="toys">{t('studio.form.categories.toys')}</option>
+                  <option value="other">{t('studio.form.categories.other')}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ключевые характеристики
+                {t('studio.form.fields.key_spec')}
               </label>
               <Textarea
                 value={formData.keySpec}
                 onChange={(e) => handleInputChange('keySpec', e.target.value)}
-                placeholder="Основные характеристики товара"
+                placeholder={t('studio.form.fields.key_spec_placeholder')}
                 rows={2}
+                className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('studio.form.fields.sku_base')}
+                </label>
+                <Input
+                  value={formData.sku}
+                  onChange={(e) => handleInputChange('sku', e.target.value)}
+                  placeholder={t('studio.form.fields.sku_base_placeholder')}
+                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('studio.form.fields.price')}
+                </label>
+                <Input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                  placeholder={t('studio.form.fields.price_placeholder')}
+                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('studio.form.fields.quantity')}
+              </label>
+              <Input
+                type="number"
+                value={formData.quantity}
+                onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 1)}
+                placeholder={t('studio.form.fields.quantity_placeholder')}
                 className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -203,135 +234,42 @@ export default function ProductForm() {
 
           {/* Details Tab */}
           <TabsContent value="details" className="p-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Цена (₸) *
-                </label>
-                <Input
-                  type="number"
-                  value={formData.price || ''}
-                  onChange={(e) => handleInputChange('price', Number(e.target.value) || 0)}
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Количество *
-                </label>
-                <Input
-                  type="number"
-                  value={formData.quantity || ''}
-                  onChange={(e) => handleInputChange('quantity', Number(e.target.value) || 1)}
-                  placeholder="1"
-                  min="1"
-                  className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                SKU
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.sku}
-                  onChange={(e) => handleInputChange('sku', e.target.value)}
-                  placeholder="Автогенерация или введите вручную"
-                  className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={generateSKU}
-                  disabled={!formData.brand || !formData.model}
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 whitespace-nowrap"
-                >
-                  Авто
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Дополнительные характеристики
-              </label>
-              <Textarea
-                value={formData.additionalSpecs}
-                onChange={(e) => handleInputChange('additionalSpecs', e.target.value)}
-                placeholder="Размеры, вес, материал, цвет..."
-                rows={3}
-                className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-          </TabsContent>
-
-          {/* Description Tab */}
-          <TabsContent value="description" className="p-4 space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Описание товара
+                {t('studio.form.fields.description')}
               </label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Подробное описание товара, его преимущества и особенности..."
+                placeholder={t('studio.form.fields.description_placeholder')}
                 rows={4}
                 className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
+          </TabsContent>
 
-            <div className="pt-3 border-t">
-              <TitleDescriptionGenerator />
-            </div>
+          {/* Description Generator Tab */}
+          <TabsContent value="description" className="p-4">
+            <TitleDescriptionGenerator />
           </TabsContent>
 
           {/* Checklist Tab */}
           <TabsContent value="checklist" className="p-4">
-            {hasChecklist && currentChecklist ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckSquare className="w-5 h-5 text-green-600" />
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Чек-лист готовности
-                  </h3>
-                </div>
-                <CategoryChecklist
-                  categoryId={formData.category}
-                  checklist={currentChecklist}
-                  checkedItems={categoryChecklist.checkedItems}
-                  onItemToggle={handleChecklistItemToggle}
-                />
-              </div>
+            {hasChecklist ? (
+              <CategoryChecklist 
+                categoryId={formData.category}
+                checklist={currentChecklist}
+                onItemToggle={handleChecklistItemToggle}
+                checkedItems={categoryChecklist.checkedItems}
+              />
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <CheckSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>Выберите категорию для отображения чек-листа</p>
+                <CheckSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>{t('studio.form.fields.category_placeholder')}</p>
               </div>
             )}
           </TabsContent>
         </Tabs>
-
-        {/* Form Status - Compact */}
-        <div className="px-4 pb-3 border-t bg-gray-50">
-          <div className="pt-2">
-            <div className="text-xs text-gray-600 mb-2">Заполнено полей:</div>
-            <div className="grid grid-cols-4 gap-1 text-xs">
-              {Object.entries(formData).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center">
-                  <span className="capitalize truncate text-xs">{key}:</span>
-                  <span className={value ? 'text-green-600' : 'text-red-500'}>
-                    {value ? '✓' : '✗'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

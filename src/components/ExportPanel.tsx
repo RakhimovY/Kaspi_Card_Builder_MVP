@@ -22,7 +22,7 @@ export default function ExportPanel() {
   const [exportSuccess, setExportSuccess] = useState(false);
   
   const { files, formData } = useAppStore();
-  const t = useTranslations();
+  const { t } = useTranslations();
 
   const completedFiles = files.filter(file => file.status === 'completed' && file.processedUrl);
   const hasFiles = completedFiles.length > 0;
@@ -30,7 +30,7 @@ export default function ExportPanel() {
 
   const handleExport = async () => {
     if (!hasFiles || !hasFormData) {
-      const errorMsg = 'Недостаточно данных для экспорта. Проверьте загруженные файлы и заполните форму.';
+      const errorMsg = t('studio.export.insufficient_data');
       setExportError(errorMsg);
       toast.error(errorMsg);
       return;
@@ -42,11 +42,11 @@ export default function ExportPanel() {
     setExportSuccess(false);
 
     try {
-      toast.loading('Подготовка экспорта...', { id: 'export' });
+      toast.loading(t('studio.export.preparing'), { id: 'export' });
       
       const zipBlob = await exportToZip(files, formData, (progress) => {
         setExportProgress(progress * 100);
-        toast.loading(`Экспорт: ${Math.round(progress * 100)}%`, { id: 'export' });
+        toast.loading(t('studio.export.progress', { progress: Math.round(progress * 100) }), { id: 'export' });
       });
 
       const sku = generateSKU(formData);
@@ -55,7 +55,7 @@ export default function ExportPanel() {
       downloadFile(zipBlob, filename);
       setExportSuccess(true);
       
-      toast.success(`Экспорт завершен! Скачан файл: ${filename}`, { id: 'export' });
+      toast.success(t('studio.export.completed', { filename }), { id: 'export' });
       
       // Отправляем аналитику
       trackExportZip(completedFiles.length);
@@ -65,7 +65,7 @@ export default function ExportPanel() {
       
     } catch (error) {
       console.error('Export error:', error);
-      const errorMsg = error instanceof Error ? error.message : 'Произошла ошибка при экспорте';
+      const errorMsg = error instanceof Error ? error.message : t('studio.export.error');
       setExportError(errorMsg);
       toast.error(errorMsg, { id: 'export' });
     } finally {
@@ -74,12 +74,10 @@ export default function ExportPanel() {
     }
   };
 
-
-
   const getButtonText = () => {
-    if (isExporting) return 'Экспорт...';
-    if (exportSuccess) return 'Скачано!';
-    return 'Скачать ZIP';
+    if (isExporting) return t('studio.export.exporting');
+    if (exportSuccess) return t('studio.export.downloaded');
+    return t('studio.export.download_zip');
   };
 
   const getButtonIcon = () => {
@@ -95,105 +93,86 @@ export default function ExportPanel() {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Settings className="w-5 h-5 text-blue-600" />
-          Экспорт
+          {t('studio.export.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Статус готовности */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm">
-            {hasFiles ? (
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-            )}
-            <span className={hasFiles ? 'text-green-700' : 'text-amber-700'}>
-              Изображения: {completedFiles.length} готово
+        {/* Status Display */}
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <Package className="w-4 h-4 text-blue-600" />
+            <span className="text-gray-600">
+              {t('studio.export.files_count', { count: completedFiles.length })}
             </span>
           </div>
-          
-          <div className="flex items-center gap-2 text-sm">
-            {hasFormData ? (
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-            )}
-            <span className={hasFormData ? 'text-green-700' : 'text-amber-700'}>
-              Данные товара: {hasFormData ? 'заполнены' : 'не заполнены'}
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-green-600" />
+            <span className="text-gray-600">
+              {hasFormData ? t('studio.export.form_complete') : t('studio.export.form_incomplete')}
             </span>
           </div>
         </div>
 
-        {/* Прогресс экспорта */}
+        {/* Progress Bar */}
         {isExporting && (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Создание архива...</span>
-              <span>{Math.round(exportProgress)}%</span>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>{t('studio.export.processing')}</span>
+              <span>{exportProgress.toFixed(0)}%</span>
             </div>
-            <Progress value={exportProgress} className="h-2" />
+            <Progress value={exportProgress} />
           </div>
         )}
 
-        {/* Ошибка */}
+        {/* Error Display */}
         {exportError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center gap-2 text-red-700">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm">{exportError}</span>
-            </div>
-          </div>
+          <ErrorState
+            title={t('studio.export.error_title')}
+            description={exportError}
+            onRetry={() => {
+              setExportError(null);
+              handleExport();
+            }}
+          />
         )}
 
-        {/* Успех */}
+        {/* Success Display */}
         {exportSuccess && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center gap-2 text-green-700">
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-sm">Архив успешно скачан!</span>
-            </div>
+          <div className="text-center py-4 bg-green-50 rounded-lg border border-green-200">
+            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-600" />
+            <p className="text-green-800 font-medium">{t('studio.export.success')}</p>
           </div>
         )}
 
-        {/* Кнопка экспорта */}
-        <Button 
-          size="lg" 
+        {/* Export Button */}
+        <Button
           onClick={handleExport}
           disabled={isButtonDisabled}
-          className={`w-full transition-all duration-300 ${
-            exportSuccess 
-              ? 'bg-green-600 hover:bg-green-700 text-white' 
-              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl'
-          } ${isButtonDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+          className={`w-full ${
+            isExporting
+              ? 'bg-blue-600 cursor-not-allowed'
+              : exportSuccess
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
+          } text-white shadow-lg hover:shadow-xl transition-all duration-300`}
         >
           {getButtonIcon()}
-          {getButtonText()}
+          <span className="ml-2">{getButtonText()}</span>
         </Button>
 
-        {/* Информация о содержимом архива или пустое состояние */}
-        {hasFiles && hasFormData ? (
-          <div className="text-xs text-gray-600 space-y-1">
-            <p>Архив будет содержать:</p>
-            <ul className="list-disc list-inside space-y-0.5 ml-2">
-              <li>Папку images/ с {completedFiles.length} изображениями</li>
-              <li>Файл export.csv для импорта в Kaspi</li>
-              <li>README.md с инструкциями</li>
-            </ul>
-
+        {/* Requirements Info */}
+        {!hasFiles && (
+          <div className="text-center py-4 text-gray-500">
+            <Package className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">{t('studio.export.no_files')}</p>
           </div>
-        ) : (
-          <EmptyState
-            icon={Package}
-            title="Готово к экспорту"
-            description={
-              !hasFiles && !hasFormData 
-                ? "Загрузите изображения и заполните форму товара для экспорта"
-                : !hasFiles 
-                ? "Обработайте изображения для экспорта"
-                : "Заполните форму товара для экспорта"
-            }
-            className="py-4"
-          />
+        )}
+
+        {!hasFormData && (
+          <div className="text-center py-4 text-gray-500">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">{t('studio.export.incomplete_form')}</p>
+          </div>
         )}
       </CardContent>
     </Card>

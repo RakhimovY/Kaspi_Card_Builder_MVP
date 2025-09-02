@@ -12,9 +12,11 @@ import Preview from '@/components/Preview';
 import ProductForm from '@/components/ProductForm';
 import ExportPanel from '@/components/ExportPanel';
 import ImageSettings from '@/components/ImageSettings';
+import { useTranslations } from '@/lib/useTranslations';
 
 export default function StudioPage() {
   const [mounted, setMounted] = useState(false);
+  const { t } = useTranslations();
 
   useEffect(() => {
     setMounted(true);
@@ -48,16 +50,16 @@ export default function StudioPage() {
           >
             <Link href="/landing" className="flex items-center space-x-2 group">
               <ArrowLeft className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
-              <span className="text-gray-600 group-hover:text-blue-600 transition-colors">Назад</span>
+              <span className="text-gray-600 group-hover:text-blue-600 transition-colors">{t('studio.back_to_landing')}</span>
             </Link>
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <Camera className="w-5 h-5 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Kaspi Card Builder
+                {t('studio.page_title')}
               </h1>
-              <p className="text-sm text-gray-500">Студия обработки</p>
+              <p className="text-sm text-gray-500">{t('studio.subtitle')}</p>
             </div>
           </motion.div>
           <motion.div 
@@ -67,7 +69,7 @@ export default function StudioPage() {
           >
             <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-full px-3 py-1">
               <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">Бета</span>
+              <span className="text-sm font-medium text-gray-700">{t('common.beta')}</span>
             </div>
             <LanguageSwitcher />
           </motion.div>

@@ -4,85 +4,9 @@ import { useCallback } from 'react';
 export type Locale = 'ru' | 'kz';
 
 export interface Translations {
-  common: {
-    loading: string;
-    error: string;
-    success: string;
-    cancel: string;
-    save: string;
-    delete: string;
-    edit: string;
-    close: string;
-    next: string;
-    back: string;
-    submit: string;
-    download: string;
-    upload: string;
-    select: string;
-    search: string;
-    filter: string;
-    sort: string;
-    language: string;
-  };
-  landing: {
-    hero: {
-      title: string;
-      subtitle: string;
-      cta: string;
-    };
-    features: {
-      kaspi_check: string;
-      generator: string;
-      export: string;
-    };
-    how_it_works: {
-      title: string;
-      step1: string;
-      step2: string;
-      step3: string;
-      step4: string;
-    };
-    faq: {
-      title: string;
-      q1: string;
-      a1: string;
-      q2: string;
-      a2: string;
-      q3: string;
-      a3: string;
-    };
-  };
-  studio: {
-    title: string;
-    file_drop: {
-      title: string;
-      subtitle: string;
-      supported_formats: string;
-      max_size: string;
-    };
-    preview: {
-      before: string;
-      after: string;
-      processing: string;
-      error: string;
-    };
-    form: {
-      brand: string;
-      type: string;
-      model: string;
-      key_spec: string;
-      sku_base: string;
-      category: string;
-      price: string;
-      quantity: string;
-    };
-    export: {
-      title: string;
-      download_zip: string;
-      processing: string;
-      success: string;
-    };
-  };
+  common: Record<string, string>;
+  landing: Record<string, unknown>;
+  studio: Record<string, unknown>;
 }
 
 // Кэш для переводов

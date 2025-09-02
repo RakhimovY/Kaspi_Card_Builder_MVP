@@ -11,6 +11,7 @@ import { useAppStore } from '@/lib/store';
 import { FileItem } from '@/lib/store';
 import { useImageProcessing } from '@/lib/useImageProcessing';
 import { trackFileDrop } from '@/lib/analytics';
+import { useTranslations } from '@/lib/useTranslations';
 import { X, Upload, FileImage, AlertCircle, Play, Pause, Square, Download, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -20,6 +21,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 export default function FileDrop() {
   const { files, addFile, removeFile, clearFiles } = useAppStore();
+  const { t } = useTranslations();
   const { 
     processingState, 
     isProcessing, 
@@ -36,10 +38,10 @@ export default function FileDrop() {
 
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return 'Неподдерживаемый формат файла';
+      return t('studio.file_drop.file_validation.unsupported_format');
     }
     if (file.size > MAX_FILE_SIZE) {
-      return 'Файл слишком большой (максимум 25MB)';
+      return t('studio.file_drop.file_validation.file_too_large');
     }
     return null;
   };
@@ -48,7 +50,7 @@ export default function FileDrop() {
     const newFiles: File[] = Array.from(fileList);
     
     if (files.length + newFiles.length > MAX_FILES) {
-      toast.error(`Максимум ${MAX_FILES} файлов`);
+      toast.error(t('studio.file_drop.file_validation.max_files_exceeded', { max: MAX_FILES }));
       return;
     }
 
@@ -81,14 +83,14 @@ export default function FileDrop() {
     });
 
     if (addedCount > 0) {
-      toast.success(`Добавлено ${addedCount} файлов`);
+      toast.success(t('studio.file_drop.toast.files_added', { count: addedCount }));
       // Отправляем аналитику
       trackFileDrop(addedCount);
     }
     if (errorCount > 0) {
-      toast.error(`Ошибок: ${errorCount}`);
+      toast.error(t('studio.file_drop.toast.errors_count', { count: errorCount }));
     }
-  }, [files.length, addFile]);
+  }, [files.length, addFile, t]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -212,9 +214,9 @@ export default function FileDrop() {
 
     } catch (error) {
       console.error('Export failed:', error);
-      toast.error('Ошибка при экспорте файлов. Попробуйте еще раз.');
+      toast.error(t('studio.file_drop.toast.export_error'));
     }
-  }, [getCompletedFiles]);
+  }, [getCompletedFiles, t]);
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg compact-card">
@@ -222,20 +224,20 @@ export default function FileDrop() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Upload className="w-5 h-5 text-blue-600" />
-            <span>Файлы ({files.length}/{MAX_FILES})</span>
+            <span>{t('studio.file_drop.title', { count: files.length, max: MAX_FILES })}</span>
           </div>
           {files.length > 0 && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
-                if (confirm('Очистить все файлы?')) {
+                if (confirm(t('studio.file_drop.clear_confirm'))) {
                   clearFiles();
                 }
               }}
               className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
             >
-              Очистить
+              {t('common.clear')}
             </Button>
           )}
         </CardTitle>
@@ -255,16 +257,16 @@ export default function FileDrop() {
         >
           <Upload className="w-12 h-12 mx-auto mb-4 text-blue-400" />
           <p className="text-gray-700 font-medium mb-2">
-            {isDragOver ? 'Отпустите файлы здесь' : 'Перетащите фотографии сюда'}
+            {isDragOver ? t('studio.file_drop.drop_here') : t('studio.file_drop.drag_photos')}
           </p>
-          <p className="text-sm text-gray-500 mb-4">или нажмите для выбора файлов</p>
+          <p className="text-sm text-gray-500 mb-4">{t('studio.file_drop.or_click_select')}</p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => document.getElementById('file-input')?.click()}
             className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
           >
-            Выбрать файлы
+            {t('studio.file_drop.select_files')}
           </Button>
           <input
             id="file-input"
@@ -275,7 +277,7 @@ export default function FileDrop() {
             className="hidden"
           />
           <p className="text-xs text-gray-400 mt-2">
-            JPEG, PNG, WebP • Максимум 25MB • До {MAX_FILES} файлов
+            {t('studio.file_drop.file_formats_info', { max: MAX_FILES })}
           </p>
         </div>
 
@@ -310,8 +312,8 @@ export default function FileDrop() {
         ) : (
           <EmptyState
             icon={ImageIcon}
-            title="Нет загруженных файлов"
-            description="Перетащите изображения в область выше или нажмите кнопку выбора файлов"
+            title={t('studio.file_drop.no_files')}
+            description={t('studio.file_drop.no_files_description')}
           />
         )}
 
@@ -326,7 +328,7 @@ export default function FileDrop() {
                 disabled={files.every(f => f.status === 'completed')}
               >
                 <Play className="w-4 h-4 mr-2" />
-                Обработать все файлы
+                {t('studio.file_drop.process_all')}
               </Button>
             )}
 
@@ -341,7 +343,7 @@ export default function FileDrop() {
                       className="flex-1 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 active:scale-95 transition-transform"
                     >
                       <Play className="w-4 h-4 mr-2" />
-                      Продолжить
+                      {t('studio.file_drop.continue_processing')}
                     </Button>
                   ) : (
                     <Button
@@ -350,7 +352,7 @@ export default function FileDrop() {
                       className="flex-1 border-yellow-200 text-yellow-600 hover:bg-yellow-50 hover:border-yellow-300 active:scale-95 transition-transform"
                     >
                       <Pause className="w-4 h-4 mr-2" />
-                      Пауза
+                      {t('studio.file_drop.pause_processing')}
                     </Button>
                   )}
                   <Button
@@ -359,40 +361,40 @@ export default function FileDrop() {
                     className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 active:scale-95 transition-transform"
                   >
                     <Square className="w-4 h-4 mr-2" />
-                    Отмена
+                    {t('studio.file_drop.cancel_processing')}
                   </Button>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Обработка файлов...</span>
+                    <span>{t('studio.file_drop.processing_files')}</span>
                     <span>{getProgress().toFixed(0)}%</span>
                   </div>
                   <Progress value={getProgress()} />
                   {getCurrentFileName() && (
                     <p className="text-xs text-gray-500 truncate">
-                      Обрабатывается: {getCurrentFileName()}
+                      {t('studio.file_drop.processing_file', { filename: getCurrentFileName()! })}
                     </p>
                   )}
                   
                   {/* Processing Stats */}
                   <div className="text-xs text-gray-600 space-y-1">
                     <div className="flex justify-between">
-                      <span>В очереди:</span>
+                      <span>{t('studio.file_drop.in_queue')}</span>
                       <span>{processingState.queueLen}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Обрабатывается:</span>
+                      <span>{t('studio.file_drop.in_progress')}</span>
                       <span>{processingState.inFlight}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Готово:</span>
+                      <span>{t('studio.file_drop.ready')}</span>
                       <span>{processingState.doneCount}</span>
                     </div>
                     <div className="flex justify-center mt-2">
                       <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                        ✨ Кнопки управления активны
+                        {t('studio.file_drop.control_buttons_active')}
                       </span>
                     </div>
                   </div>
@@ -408,7 +410,7 @@ export default function FileDrop() {
                 className="w-full border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Экспорт готовых ({getCompletedFiles().length})
+                {t('studio.file_drop.export_ready', { count: getCompletedFiles().length })}
               </Button>
             )}
           </div>

@@ -17,7 +17,18 @@
     "search": "Поиск",
     "filter": "Фильтр",
     "sort": "Сортировка",
-    "language": "Язык"
+    "language": "Язык",
+    "clear": "Очистить",
+    "continue": "Продолжить",
+    "pause": "Пауза",
+    "cancel_processing": "Отмена",
+    "processing": "Обработка...",
+    "files": "Файлы",
+    "export": "Экспорт",
+    "ready": "Готово",
+    "in_queue": "В очереди",
+    "in_progress": "Обрабатывается",
+    "beta": "Бета"
   },
   "landing": {
     "nav": {
@@ -94,33 +105,119 @@
   },
   "studio": {
     "title": "Студия обработки",
+    "page_title": "Kaspi Card Builder",
+    "subtitle": "Студия обработки",
+    "back_to_landing": "Назад",
     "file_drop": {
-      "title": "Перетащите файлы сюда",
-      "subtitle": "или нажмите для выбора",
+      "title": "Файлы ({count}/{max})",
+      "subtitle": "Перетащите файлы сюда",
+      "or_click": "или нажмите для выбора",
       "supported_formats": "Поддерживаемые форматы: JPEG, PNG, WebP",
-      "max_size": "Максимальный размер: 25 МБ"
+      "max_size": "Максимальный размер: 25 МБ",
+      "max_files": "До {max} файлов",
+      "drop_here": "Отпустите файлы здесь",
+      "drag_photos": "Перетащите фотографии сюда",
+      "or_click_select": "или нажмите для выбора файлов",
+      "select_files": "Выбрать файлы",
+      "file_formats_info": "JPEG, PNG, WebP • Максимум 25MB • До {max} файлов",
+      "no_files": "Нет загруженных файлов",
+      "no_files_description": "Перетащите изображения в область выше или нажмите кнопку выбора файлов",
+      "clear_all": "Очистить",
+      "clear_confirm": "Очистить все файлы?",
+      "clear_all_files": "Очистить все файлы",
+      "process_all": "Обработать все файлы",
+      "continue_processing": "Продолжить",
+      "pause_processing": "Пауза",
+      "cancel_processing": "Отмена",
+      "processing_files": "Обработка файлов...",
+      "processing_file": "Обрабатывается: {filename}",
+      "in_queue": "В очереди:",
+      "in_progress": "Обрабатывается:",
+      "ready": "Готово:",
+      "control_buttons_active": "✨ Кнопки управления активны",
+      "export_ready": "Экспорт готовых ({count})",
+      "file_validation": {
+        "unsupported_format": "Неподдерживаемый формат файла",
+        "file_too_large": "Файл слишком большой (максимум 25MB)",
+        "max_files_exceeded": "Максимум {max} файлов"
+      },
+      "toast": {
+        "files_added": "Добавлено {count} файлов",
+        "export_error": "Ошибка при экспорте файлов. Попробуйте еще раз.",
+        "errors_count": "Ошибок: {count}"
+      }
     },
     "preview": {
-      "before": "До",
-      "after": "После",
+      "title": "Предпросмотр",
+      "before": "До обработки",
+      "after": "После обработки",
       "processing": "Обработка...",
-      "error": "Ошибка обработки"
+      "error": "Ошибка обработки",
+      "original_image": "Оригинальное изображение",
+      "original_image_description": "Загрузите файлы для предпросмотра",
+      "processed_image": "Обработанное изображение",
+      "processed_image_description": "Обработанное изображение будет доступно после завершения обработки"
     },
     "form": {
-      "brand": "Бренд",
-      "type": "Тип товара",
-      "model": "Модель",
-      "key_spec": "Ключевые характеристики",
-      "sku_base": "Базовый SKU",
-      "category": "Категория",
-      "price": "Цена",
-      "quantity": "Количество"
+      "title": "Информация о товаре",
+      "processing": "Обработка...",
+      "reset_form": "Сбросить",
+      "reset_confirm": "Сбросить форму?",
+      "tabs": {
+        "basic": "Основное",
+        "details": "Детали",
+        "description": "Описание",
+        "checklist": "Чек-лист"
+      },
+      "fields": {
+        "brand": "Бренд *",
+        "brand_placeholder": "Введите бренд",
+        "type": "Тип товара *",
+        "type_placeholder": "Смартфон, Футболка...",
+        "model": "Модель *",
+        "model_placeholder": "Модель товара",
+        "category": "Категория *",
+        "category_placeholder": "Выберите категорию",
+        "key_spec": "Ключевые характеристики",
+        "key_spec_placeholder": "Основные характеристики товара",
+        "sku_base": "Базовый SKU",
+        "sku_base_placeholder": "Автоматически генерируется",
+        "price": "Цена",
+        "price_placeholder": "0",
+        "quantity": "Количество",
+        "quantity_placeholder": "1",
+        "description": "Описание товара",
+        "description_placeholder": "Подробное описание товара..."
+      },
+      "categories": {
+        "electronics": "Электроника",
+        "clothing": "Одежда",
+        "cosmetics": "Косметика",
+        "home": "Дом и сад",
+        "sports": "Спорт и отдых",
+        "books": "Книги",
+        "toys": "Игрушки",
+        "other": "Другое"
+      }
     },
     "export": {
       "title": "Экспорт",
       "download_zip": "Скачать ZIP",
       "processing": "Подготовка файлов...",
-      "success": "Файлы готовы к скачиванию"
+      "success": "Файлы готовы к скачиванию",
+      "insufficient_data": "Недостаточно данных для экспорта. Проверьте загруженные файлы и заполните форму.",
+      "preparing": "Подготовка экспорта...",
+      "progress": "Экспорт: {progress}%",
+      "completed": "Экспорт завершен! Скачан файл: {filename}",
+      "error": "Произошла ошибка при экспорте",
+      "exporting": "Экспорт...",
+      "downloaded": "Скачано!",
+      "files_count": "Файлов: {count}",
+      "form_complete": "Форма заполнена",
+      "form_incomplete": "Форма не заполнена",
+      "error_title": "Ошибка экспорта",
+      "no_files": "Нет обработанных файлов",
+      "incomplete_form": "Форма товара не заполнена"
     },
     "title_generator": {
       "title": "Генератор заголовка и описания",
@@ -134,7 +231,19 @@
       "copy_to_clipboard": "Копировать в буфер",
       "copied": "Скопировано!",
       "copy_failed": "Не удалось скопировать",
-      "preview": "Предварительный просмотр"
+      "preview": "Предварительный просмотр",
+      "keyword_placeholder": "Введите ключевое слово",
+      "remove_keyword_aria": "Удалить ключевое слово",
+      "generating": "Генерация...",
+      "title_generated": "Заголовок сгенерирован!",
+      "title_generation_error": "Ошибка при генерации заголовка",
+      "description_generated": "Описание сгенерировано!",
+      "description_generation_error": "Ошибка при генерации описания",
+      "title_copied": "Заголовок скопирован в буфер обмена",
+      "title_copy_failed": "Не удалось скопировать заголовок",
+      "description_copied": "Описание скопировано в буфер обмена",
+      "description_copy_failed": "Не удалось скопировать описание",
+      "fill_required_fields": "Заполните основные поля (тип, бренд, модель) для генерации тайтла и описания"
     },
     "checklist": {
       "title": "Чек-лист готовности",
@@ -227,6 +336,24 @@
           "description": "Указано, что продукт не тестируется на животных"
         }
       }
+    },
+    "image_settings": {
+      "title": "Настройки обработки",
+      "processing_status": "Обработка...",
+      "max_edge_size": "Максимальный размер (px)",
+      "max_edge_size_aria": "Максимальный размер изображения",
+      "max_edge_size_input_aria": "Максимальный размер изображения в пикселях",
+      "quality": "Качество сжатия",
+      "quality_aria": "Качество сжатия изображения",
+      "format": "Формат файла",
+      "format_jpeg": "JPEG",
+      "format_webp": "WebP",
+      "remove_background": "Удалить фон",
+      "remove_background_desc": "Автоматическое удаление фона",
+      "min_size": "Мин: 500px",
+      "max_size": "Макс: 5000px",
+      "file_size": "Файл: ≤25MB",
+      "formats": "Форматы: JPEG/PNG/WebP"
     }
   }
 } 

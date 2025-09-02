@@ -43,9 +43,9 @@ export default function TitleDescriptionGenerator() {
       await new Promise(resolve => setTimeout(resolve, 300));
       const title = generateTitle(formData);
       updateFormData({ generatedTitle: title });
-      toast.success('Заголовок сгенерирован!');
+      toast.success(t('studio.title_generator.title_generated'));
     } catch (error) {
-      toast.error('Ошибка при генерации заголовка');
+      toast.error(t('studio.title_generator.title_generation_error'));
     } finally {
       setIsGenerating(false);
     }
@@ -58,9 +58,9 @@ export default function TitleDescriptionGenerator() {
       await new Promise(resolve => setTimeout(resolve, 500));
       const description = generateDescription(formData);
       updateFormData({ generatedDescription: description });
-      toast.success('Описание сгенерировано!');
+      toast.success(t('studio.title_generator.description_generated'));
     } catch (error) {
-      toast.error('Ошибка при генерации описания');
+      toast.error(t('studio.title_generator.description_generation_error'));
     } finally {
       setIsGenerating(false);
     }
@@ -70,9 +70,9 @@ export default function TitleDescriptionGenerator() {
     const success = await copyToClipboard(formData.generatedTitle);
     setCopyStates(prev => ({ ...prev, title: success }));
     if (success) {
-      toast.success('Заголовок скопирован в буфер обмена');
+      toast.success(t('studio.title_generator.title_copied'));
     } else {
-      toast.error('Не удалось скопировать заголовок');
+      toast.error(t('studio.title_generator.title_copy_failed'));
     }
     setTimeout(() => setCopyStates(prev => ({ ...prev, title: false })), 2000);
   };
@@ -81,9 +81,9 @@ export default function TitleDescriptionGenerator() {
     const success = await copyToClipboard(formData.generatedDescription);
     setCopyStates(prev => ({ ...prev, description: success }));
     if (success) {
-      toast.success('Описание скопировано в буфер обмена');
+      toast.success(t('studio.title_generator.description_copied'));
     } else {
-      toast.error('Не удалось скопировать описание');
+      toast.error(t('studio.title_generator.description_copy_failed'));
     }
     setTimeout(() => setCopyStates(prev => ({ ...prev, description: false })), 2000);
   };
@@ -109,7 +109,7 @@ export default function TitleDescriptionGenerator() {
             <Input
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
-              placeholder="Введите ключевое слово"
+              placeholder={t('studio.title_generator.keyword_placeholder')}
               className="flex-1 border-gray-300 focus:border-green-500 focus:ring-green-500"
               onKeyPress={(e) => e.key === 'Enter' && handleAddKeyword()}
             />
@@ -133,7 +133,7 @@ export default function TitleDescriptionGenerator() {
                   <button
                     onClick={() => handleRemoveKeyword(index)}
                     className="hover:bg-green-200 rounded-full p-0.5"
-                    aria-label="Удалить ключевое слово"
+                    aria-label={t('studio.title_generator.remove_keyword_aria')}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -155,7 +155,7 @@ export default function TitleDescriptionGenerator() {
             ) : (
               <Wand2 className="w-4 h-4 mr-2" />
             )}
-            {isGenerating ? 'Генерация...' : t('studio.title_generator.generate_title')}
+            {isGenerating ? t('studio.title_generator.generating') : t('studio.title_generator.generate_title')}
           </Button>
           <Button
             onClick={handleGenerateDescription}
@@ -167,7 +167,7 @@ export default function TitleDescriptionGenerator() {
             ) : (
               <Wand2 className="w-4 h-4 mr-2" />
             )}
-            {isGenerating ? 'Генерация...' : t('studio.title_generator.generate_description')}
+            {isGenerating ? t('studio.title_generator.generating') : t('studio.title_generator.generate_description')}
           </Button>
         </div>
 
@@ -265,7 +265,7 @@ export default function TitleDescriptionGenerator() {
         {/* Status */}
         {!canGenerate && (
           <div className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
-            Заполните основные поля (тип, бренд, модель) для генерации тайтла и описания
+            {t('studio.title_generator.fill_required_fields')}
           </div>
         )}
       </CardContent>

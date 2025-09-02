@@ -17,7 +17,18 @@
     "search": "Іздеу",
     "filter": "Сүзгі",
     "sort": "Сұрыптау",
-    "language": "Тіл"
+    "language": "Тіл",
+    "clear": "Тазалау",
+    "continue": "Жалғастыру",
+    "pause": "Тоқтату",
+    "cancel_processing": "Бас тарту",
+    "processing": "Өңделуде...",
+    "files": "Файлдар",
+    "export": "Экспорт",
+    "ready": "Дайын",
+    "in_queue": "Кезекте",
+    "in_progress": "Өңделуде",
+    "beta": "Бета"
   },
   "landing": {
     "nav": {
@@ -94,33 +105,119 @@
   },
   "studio": {
     "title": "Өңдеу студиясы",
+    "page_title": "Kaspi Card Builder",
+    "subtitle": "Өңдеу студиясы",
+    "back_to_landing": "Артқа",
     "file_drop": {
-      "title": "Файлдарды осында тастаңыз",
-      "subtitle": "немесе таңдау үшін басыңыз",
+      "title": "Файлдар ({count}/{max})",
+      "subtitle": "Файлдарды осында тастаңыз",
+      "or_click": "немесе таңдау үшін басыңыз",
       "supported_formats": "Қолданылатын форматтар: JPEG, PNG, WebP",
-      "max_size": "Максималды өлшем: 25 МБ"
+      "max_size": "Максималды өлшем: 25 МБ",
+      "max_files": "До {max} файл",
+      "drop_here": "Файлдарды осында тастаңыз",
+      "drag_photos": "Фотосуреттерді осында тастаңыз",
+      "or_click_select": "немесе файлдарды таңдау үшін басыңыз",
+      "select_files": "Файлдарды таңдау",
+      "file_formats_info": "JPEG, PNG, WebP • Максимум 25MB • До {max} файл",
+      "no_files": "Жүктелген файлдар жоқ",
+      "no_files_description": "Жоғарыдағы аймаққа суреттерді тастаңыз немесе файлдарды таңдау түймесін басыңыз",
+      "clear_all": "Тазалау",
+      "clear_confirm": "Барлық файлдарды тазалау керек пе?",
+      "clear_all_files": "Барлық файлдарды тазалау",
+      "process_all": "Барлық файлдарды өңдеу",
+      "continue_processing": "Жалғастыру",
+      "pause_processing": "Тоқтату",
+      "cancel_processing": "Бас тарту",
+      "processing_files": "Файлдар өңделуде...",
+      "processing_file": "Өңделуде: {filename}",
+      "in_queue": "Кезекте:",
+      "in_progress": "Өңделуде:",
+      "ready": "Дайын:",
+      "control_buttons_active": "✨ Басқару түймелері белсенді",
+      "export_ready": "Дайын файлдарды экспорттау ({count})",
+      "file_validation": {
+        "unsupported_format": "Қолданылмайтын файл форматы",
+        "file_too_large": "Файл тым үлкен (максимум 25MB)",
+        "max_files_exceeded": "Максимум {max} файл"
+      },
+      "toast": {
+        "files_added": "{count} файл қосылды",
+        "export_error": "Файлдарды экспорттау кезінде қате. Қайталап көріңіз.",
+        "errors_count": "Қателер: {count}"
+      }
     },
     "preview": {
-      "before": "Бұрын",
-      "after": "Кейін",
+      "title": "Алдын ала қарау",
+      "before": "Өңдеуге дейін",
+      "after": "Өңдеуден кейін",
       "processing": "Өңделуде...",
-      "error": "Өңдеу қатесі"
+      "error": "Өңдеу қатесі",
+      "original_image": "Түпнұсқа сурет",
+      "original_image_description": "Алдын ала қарау үшін файлдарды жүктеңіз",
+      "processed_image": "Өңделген сурет",
+      "processed_image_description": "Өңделген сурет өңдеу аяқталғаннан кейін қолжетімді болады"
     },
     "form": {
-      "brand": "Бренд",
-      "type": "Тауар түрі",
-      "model": "Модель",
-      "key_spec": "Негізгі сипаттамалар",
-      "sku_base": "Негізгі SKU",
-      "category": "Санат",
-      "price": "Баға",
-      "quantity": "Саны"
+      "title": "Тауар туралы ақпарат",
+      "processing": "Өңделуде...",
+      "reset_form": "Қалпына келтіру",
+      "reset_confirm": "Форманы қалпына келтіру керек пе?",
+      "tabs": {
+        "basic": "Негізгі",
+        "details": "Толық",
+        "description": "Сипаттама",
+        "checklist": "Чек-лист"
+      },
+      "fields": {
+        "brand": "Бренд *",
+        "brand_placeholder": "Брендті енгізіңіз",
+        "type": "Тауар түрі *",
+        "type_placeholder": "Смартфон, Футболка...",
+        "model": "Модель *",
+        "model_placeholder": "Тауар моделі",
+        "category": "Санат *",
+        "category_placeholder": "Санатты таңдаңыз",
+        "key_spec": "Негізгі сипаттамалар",
+        "key_spec_placeholder": "Тауардың негізгі сипаттамалары",
+        "sku_base": "Негізгі SKU",
+        "sku_base_placeholder": "Автоматты жасалады",
+        "price": "Баға",
+        "price_placeholder": "0",
+        "quantity": "Саны",
+        "quantity_placeholder": "1",
+        "description": "Тауар сипаттамасы",
+        "description_placeholder": "Тауардың толық сипаттамасы..."
+      },
+      "categories": {
+        "electronics": "Электроника",
+        "clothing": "Киім",
+        "cosmetics": "Косметика",
+        "home": "Үй және бақ",
+        "sports": "Спорт және демалыс",
+        "books": "Кітаптар",
+        "toys": "Ойыншықтар",
+        "other": "Басқа"
+      }
     },
     "export": {
       "title": "Экспорт",
       "download_zip": "ZIP жүктеу",
       "processing": "Файлдар дайындалуда...",
-      "success": "Файлдар жүктеуге дайын"
+      "success": "Файлдар жүктеуге дайын",
+      "insufficient_data": "Экспорттау үшін жеткіліксіз деректер. Жүктелген файлдарды тексеріңіз және форманы толтырыңыз.",
+      "preparing": "Экспорт дайындалуда...",
+      "progress": "Экспорт: {progress}%",
+      "completed": "Экспорт аяқталды! Файл жүктелді: {filename}",
+      "error": "Экспорттау кезінде қате орын алды",
+      "exporting": "Экспорттау...",
+      "downloaded": "Жүктелді!",
+      "files_count": "Файлдар: {count}",
+      "form_complete": "Форма толтырылған",
+      "form_incomplete": "Форма толтырылмаған",
+      "error_title": "Экспорт қатесі",
+      "no_files": "Өңделген файлдар жоқ",
+      "incomplete_form": "Тауар формасы толтырылмаған"
     },
     "title_generator": {
       "title": "Тақырып және сипаттама генераторы",
@@ -134,7 +231,19 @@
       "copy_to_clipboard": "Буферге көшіру",
       "copied": "Көшірілді!",
       "copy_failed": "Көшіру сәтсіз",
-      "preview": "Алдын ала қарау"
+      "preview": "Алдын ала қарау",
+      "keyword_placeholder": "Кілт сөзді енгізіңіз",
+      "remove_keyword_aria": "Кілт сөзді жою",
+      "generating": "Генерациялау...",
+      "title_generated": "Тақырып генерацияланды!",
+      "title_generation_error": "Тақырыпты генерациялау кезінде қате",
+      "description_generated": "Сипаттама генерацияланды!",
+      "description_generation_error": "Сипаттаманы генерациялау кезінде қате",
+      "title_copied": "Тақырып буферге көшірілді",
+      "title_copy_failed": "Тақырыпты көшіру сәтсіз",
+      "description_copied": "Сипаттама буферге көшірілді",
+      "description_copy_failed": "Сипаттаманы көшіру сәтсіз",
+      "fill_required_fields": "Тақырып пен сипаттаманы генерациялау үшін негізгі өрістерді толтырыңыз (түр, бренд, модель)"
     },
     "checklist": {
       "title": "Дайындық чек-листі",
@@ -227,6 +336,24 @@
           "description": "Өнім жануарларда сыналмайтыны көрсетілген"
         }
       }
+    },
+    "image_settings": {
+      "title": "Өңдеу параметрлері",
+      "processing_status": "Өңдеу...",
+      "max_edge_size": "Максималды өлшем (px)",
+      "max_edge_size_aria": "Көріністің максималды өлшемі",
+      "max_edge_size_input_aria": "Көріністің максималды өлшемі пиксельде",
+      "quality": "Сығу сапасы",
+      "quality_aria": "Көріністің сығу сапасы",
+      "format": "Файл форматты",
+      "format_jpeg": "JPEG",
+      "format_webp": "WebP",
+      "remove_background": "Фонды алып тастау",
+      "remove_background_desc": "Фонды автоматты түрде алып тастау",
+      "min_size": "Мин: 500px",
+      "max_size": "Макс: 5000px",
+      "file_size": "Файл: ≤25MB",
+      "formats": "Форматы: JPEG/PNG/WebP"
     }
   }
 } 

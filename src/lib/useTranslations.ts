@@ -49,7 +49,7 @@ export function useTranslations() {
     };
   }, []);
 
-  const t = (key: string, p0?: { completed: number; total: number; }): string => {
+  const t = (key: string, params?: Record<string, string | number>): string => {
     if (!translations) {
       return key;
     }
@@ -66,7 +66,16 @@ export function useTranslations() {
       }
     }
 
-    return typeof value === 'string' ? value : key;
+    let result = typeof value === 'string' ? value : key;
+    
+    // Интерполяция параметров
+    if (params) {
+      Object.entries(params).forEach(([param, value]) => {
+        result = result.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
+      });
+    }
+
+    return result;
   };
 
   return {
