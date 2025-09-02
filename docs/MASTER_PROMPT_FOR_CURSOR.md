@@ -1,97 +1,89 @@
-You are Cursor AI coding assistant for a production-grade MVP.
+You are Cursor AI coding assistant for a production-grade MVP with **backend**.
 
 ## Product Summary
-Build **Kaspi Card Builder**: a web app that prepares product card assets for Kaspi Marketplace:
-- **Photo Fixer**: client-side background removal, resize/crop, compression, validation.
-- **Title & Description Helper**: template-based title from brand/type/model/specs; short bullets; RU/KZ.
-- **Category Checklist**: preset per category with a list of must-have fields to pass moderation.
-- **Export**: ZIP (images/…) + CSV + README; file naming per SKU.
+Build **Kaspi Card Builder** with accounts, subscriptions and Magic Fill:
+- **Photo Fixer** (client): background removal (WASM), resize/crop, compression, EXIF strip, Kaspi-limits.
+- **Title & Description Helper**: template from brand/type/model/key spec; bullets; RU/KZ.
+- **Category Checklist** presets.
+- **Export**: ZIP (images/…), CSV, README.
+- **Accounts & Billing**: Google Sign-In, Lemon Squeezy/Paddle/Polar, webhooks, quotas per plan.
+- **Magic Fill**: GTIN + OCR + LLM → `ProductDraft` + prefilled form; GTIN cache.
 
-Goal: **landing → working studio** in days, easy deploy, low cost.
+## Architecture & Stack
+- Framework: **Next.js (App Router) + TypeScript**.
+- UI: Tailwind + shadcn/ui; Forms: RHF + Zod; State: Zustand.
+- i18n: RU (default), KZ.
+- **Backend in Next API Routes**: auth, billing/webhooks, magic-fill, export (opt), health.
+- ORM: **Prisma** (Postgres). Logging: pino. Analytics: Plausible.
+- Barcode: ZXing in browser. OCR: tesseract (fallback) or server provider (mock in dev).
+- LLM: OpenAI (4o-mini) or equivalent — via server key.
 
-## Architecture & Stack (Variant A = MVP)
-- Framework: **Next.js 14+ (App Router)** + **TypeScript**.
-- UI: TailwindCSS + shadcn/ui. Forms: React-Hook-Form + Zod.
-- State: Zustand (local), URL params for shareable presets.
-- i18n: (RU default, KZ optional).
-- Client-side image pipeline:
-  - Background removal: `@imgly/background-removal` (WASM/ONNX fallback).
-  - Resize/crop/compress: `browser-image-compression` + canvas/Pica.
-  - EXIF strip, format: JPEG/WebP.
-  - Validation rules: min/max dimension 500–5000 px; ≤25MB; formats JPEG/PNG/WebP.
-- Export: `jszip` + `file-saver`.
-- Analytics: Plausible.
-- Billing: Lemon Squeezy overlay (later; stubbed for MVP).
-- Optional Telegram Bot (later): grammY + Next API route.
+## Repository Layout (suggested)
+app/
+(marketing)/
+(studio)/studio
+api/
+auth/[...nextauth]/route.ts
+webhooks/billing/route.ts
+magic-fill/route.ts
+product-drafts/route.ts
+export/route.ts
+health/route.ts
+lib/
+image/* # client image utils
+csv/*
+i18n/*
+server/
+prisma.ts
+env.ts
+billing.ts
+quota.ts
+logger.ts
+components/
+ui/, studio/
+db/
+schema.prisma
+migrations/*
+docs/
 
-**Do NOT introduce a backend for heavy processing in MVP.** Keep it client-only first. Add API routes only for health, analytics events, and later billing webhooks.
+## Non-Negotiables (follow **CODE_RULES.md**)
+- TS strict, ESLint/Prettier/import-sort. Zod for request/response schemas. No `any`.
+- Accessible UI, no layout shift, with skeletons and empty states.
+- Client never contains private keys. All secret operations go via API routes.
+- E2E criteria: 20 photos (5–15 MB) → < 60 s on a modern laptop; ZIP/CSV correctness.
 
-## Repository Layout
-/app
-/(marketing)
-page.tsx // Landing
-/(studio)
-studio/page.tsx // Main tool
-/api
-/health/route.ts
-/ls-webhook/route.ts // later
-/components
-ui/... // shadcn
-studio/...
-/lib
-image/ // client image utils
-csv/
-i18n/
-public/
-styles/
-
-## Core Features (MVP)
-1) **Landing**
-   - Clean hero, 3 bullets (Kaspi-check, Photo Fixer, ZIP/CSV).
-   - CTA: Try Free → /studio.
-2) **Studio**
-   - Left: Dropzone (drag&drop, file list, per-file status).
-   - Center: Preview Before/After with adjustable crop box; batch settings (max size edge px, output format).
-   - Right: Form for Title helper (Brand, Type, Model, Key Spec) → live title preview; Short bullets template; Category preset checklist with checkboxes.
-   - Bottom: Export → generate ZIP (images + README + CSV).
-3) **Validation**
-   - On import: detect format/size/dimensions; soft warn & suggest fix; block only on hard fails.
-   - Strip EXIF.
-4) **Export**
-   - Naming: `<SKU>_1.jpg`… Provide SKU input or auto-SKU generator.
-   - README includes Kaspi tips and which fields to fill in the Kaspi UI.
-
-## UI/UX Guidelines
-- Keep 3-pane studio layout; keyboard shortcuts: 1..9 to jump images, `Cmd/Ctrl+S` export.
-- Progress bars for batch operations; non-blocking UI.
-- Local persistence (Zustand persist) of last session/presets.
-
-## Tech Choices Rationale
-- **Next.js** for 1-project deploy (Vercel). All features client-side → zero server cost.
-- **WASM background removal** keeps privacy and speed; quality is “good enough” for MVP.
-- **CSV/ZIP client** avoids storage/backend complexity.
+## Tasks (high-level)
+1) **Prisma + DB**: schema, client singleton, migrations.
+2) **Auth**: NextAuth (Google) + PrismaAdapter; session JWT.
+3) **Billing**: hosted checkout + webhooks; Subscription model.
+4) **Quotas**: `assertQuota` + `UsageStat` increments.
+5) **Magic Fill API**: Zod I/O, GTIN lookup (cache), OCR, LLM parse, RU/KZ templates, save draft.
+6) **Barcode UI**: ZXing modal; on success → call Magic Fill.
+7) **Drafts CRUD**: list/edit/update; optimistic UI.
+8) **Export (server opt.)**: parity with client ZIP/CSV; only Pro.
+9) **Env & Logging**: env validator, pino logger, health route.
 
 ## Acceptance Criteria
-- Upload 20 mixed photos (5–15 MB each) → process < 60s on modern laptop.
-- ZIP/CSV downloads correctly; sample imports succeed for test users.
-- RU UI fully localized; KZ copy provided (even via stub).
+- Login/logout works; `/api/*` sees `userId`.
+- Successful payment → `Subscription.status='active'`, `plan` applied, quotas increased.
+- Magic Fill: with GTIN fills ≥ 80% of base fields (brand/type/model/keySpec/title/desc). Warm GTIN → from cache.
+- Validations prevent garbage; API returns clear error codes (400/401/402/429/5xx).
+- Tests green; CI strict.
 
-## Later (Variant B)
-- Add Redis (Upstash) + BullMQ worker for heavy batches (server).
-- Add S3-compatible storage for paid users.
-- Add Lemon Squeezy webhooks and gating by plan.
+## ENV
+- `DATABASE_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `BILLING_PROVIDER`, `LEMON_SQUEEZY_*`/`PADDLE_*`/`POLAR_*`
+- `OPENAI_API_KEY`
+- `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`
 
-## ENV & Config (for later)
-- NEXT_PUBLIC_APP_NAME, NEXT_PUBLIC_PLAUSIBLE_DOMAIN
-- LEMONSQUEEZY_API_KEY, LEMONSQUEEZY_STORE_ID (later)
-- TELEGRAM_BOT_TOKEN (later)
+## Prompts (LLM)
+- **Title RU/KZ**: “Собери краткий, не спамный заголовок: `<type> <brand> <model> <keySpec>`; 60–80 символов; без лишних знаков; язык: RU.”
+- **Bullets RU/KZ**: “3–5 буллетов преимуществ для маркетплейса; по 7–11 слов; без обещаний/суперлативов; без ссылок.”
+- **Specs parse**: “Извлеки из OCR/текста: brand, type, model, keySpec, attrs{}; верни JSON строго по схеме.”
 
-## Coding Rules (enforced in repo)
-- TypeScript strict, ESLint + Prettier + import sorting.
-- No any/implicit any; use Zod for user input.
-- UI components are accessible (aria-labels, keyboard nav).
-- All long-running ops wrapped with toasts and progress.
-- Functions small & pure; shared utils in /lib; no “God” components.
+## Guardrails
+- Do not fetch unlicensed product photos from the internet for primary images.
+- Lifestyle background is allowed as additional images only (no misleading edits).
+- Respect Kaspi photo limits. Never invent non-existent product details.
 
-**Task**: Start with Landing, then Studio with Photo pipeline, then Title helper + Checklist, then Export.
-Deliver production-ready code with tests for core utils.
+**Task:** Start with DB/Auth/Billing, then quotas and Magic Fill; later — server-export. Work iteratively and mark each finished step in `DEV_STEPS_FOR_CURSOR.md`.

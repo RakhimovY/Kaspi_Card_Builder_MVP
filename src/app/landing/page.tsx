@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { AuthButtons } from '@/components/AuthButtons';
 import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
@@ -120,6 +121,7 @@ export default function LandingPage() {
                 {nav.pricing}
               </Button>
             </a>
+            <AuthButtons />
             <LanguageSwitcher />
           </motion.div>
         </div>

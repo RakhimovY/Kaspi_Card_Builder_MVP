@@ -5,6 +5,7 @@ export type Locale = 'ru' | 'kz';
 
 export interface Translations {
   common: Record<string, string>;
+  auth: Record<string, unknown>;
   landing: Record<string, unknown>;
   studio: Record<string, unknown>;
 }

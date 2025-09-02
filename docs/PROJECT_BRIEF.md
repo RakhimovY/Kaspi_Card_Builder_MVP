@@ -1,99 +1,60 @@
-# Kaspi Card Builder — Project Brief
+# Kaspi Card Builder — Project Brief (v2)
 
 ## Цель проекта
-Сделать простой self-serve инструмент для продавцов на Kaspi Marketplace, который за 2–3 минуты готовит пакет для загрузки карточек:
-- очищенные и проверенные фотографии (под лимиты Kaspi),
-- подсказанный заголовок и краткое описание,
-- чек-лист обязательных полей/атрибутов по категории,
-- экспорт ZIP (images/…) и CSV/README, пригодный для ручной загрузки через Excel-шаблон Kaspi.
+Сделать self-serve инструмент, который готовит **пакет для карточек Kaspi** за 2–3 минуты и теперь поддерживает **аккаунты, подписки, квоты и Magic Fill** (скан штрихкода + авто-заполнение полей + черновики в БД).
+
+## Ключевые возможности
+1) **Photo Fixer (клиент):** удаление фона (WASM), ресайз/сжатие, проверка правил (500–5000 px; ≤25 MB; JPEG/PNG/WebP), EXIF-strip.
+2) **Title & Description Helper:** шаблон из Brand/Type/Model/Key spec; краткие буллеты; RU/KZ.
+3) **Category Checklist:** пресеты для модерации по категории.
+4) **Export:** ZIP (`/images/<SKU>_1.jpg…`) + CSV + README. Импорт в Kaspi через Excel/CSV.
+5) **Accounts & Billing:** вход Google, тарифы Free/Pro, MoR-платежи (Lemon Squeezy/Paddle/Polar), квоты/лимиты.
+6) **Magic Fill:** штрихкод (GTIN) + OCR/LLM → автозаполнение формы и создание **Product Draft** в БД. Кэш по GTIN.
 
 ## Почему это нужно
-Создание карточек на Kaspi — ручной, рутинный и ошибкоопасный процесс. Продавцам приходится:
-- удалять фон/ровнять фото, следить за размерами/весом (больно и долго);
-- придумывать заголовок/описание, чтобы пройти модерацию и находиться в поиске;
-- разбираться с обязательными полями и причинами отклонений.
-
-Готовых «one-click» решений под специфику Kaspi мало; есть разрозненные тулзы (удаление фона, ИИ-описания) и фриланс.
+Карточки на Kaspi требуют качества фото/контента, а ручной процесс медленный и ошибкоопасный. Мы сокращаем клики и ошибки, повышаем конверсию модерации.
 
 ## Профиль пользователя
-- Малые и средние продавцы, 50–1000 SKU.
-- Контент-менеджер/владелец магазина.
-- Работает за ноутбуком/ПК, часто в Telegram.
+- Малый/средний продавец (50–1000 SKU), контент-менеджер. Работает с ноутбука/ПК.
 
-## KPI MVP
-- TTFU (time-to-first-upload): < 15 минут от первого захода до первого скачанного ZIP.
-- Ускорение подготовки контента: 10–20 карточек за час.
-- Пилоты: ≥ 3 активных магазина за 7–10 дней.
-- Конверсия в оплату free→paid: ≥ 5% (план).
+## KPI v2
+- Time-to-first-upload: < 15 минут.
+- 10–20 карточек/час у нового пользователя.
+- Free→Pro конверсия ≥ 5%.
+- **Precision Magic Fill**: ≥ 80% автозаполнения базовых полей при наличии GTIN.
 
-## Объём MVP
-1) **Photo Fixer (клиент-сайд):** удаление фона, ресайз/кадрирование, сжатие, проверка правил (min/max 500–5000 px по стороне, ≤25 MB/файл; JPEG/WebP предпочтительно).
-2) **Title & Description Helper:** шаблон для заголовка из Brand/Type/Model/Key specs; краткие буллеты преимуществ; мульти-языки RU/KZ (минимум — автоперевод).
-3) **Category Checklist:** мини-чек-лист «что обычно требует модерация» (по выбранной категории; храним пресеты).
-4) **Экспорт:** ZIP со структурой `/images/<SKU>_1.jpg …`, README.md с инструкцией, CSV с полями (name, brand, sku, price, qty, description, image1..imageN, category, attributes_notes).
-5) **Лендинг + онбординг:** простая воронка, форма пилота, тариф Free (ограничение по фото) и Pro (подписка).
-6) **(Optional) Telegram-бот:** drag&drop в телеграм → ответом ZIP (после Webhook-моста).
+## Объём v2
+- **Frontend-first** сохраняется: фото-пайплайн и экспорт остаются на клиенте.
+- **Backend минимальный**: учетные записи, биллинг (вебхуки), квоты, Magic Fill, хранение черновиков и активов.
 
-> Примечание: точный Excel-шаблон Kaspi варьируется. На MVP даём CSV + README, а в следующих итерациях — генерацию под актуальный XLSX.
+## Архитектура
+- Next.js (App Router, TS). API Routes: `auth`, `billing/webhooks`, `magic-fill`, `export` (опц.), `health`.
+- БД: Postgres (Prisma). Модели:
+  - `User`, `Account` (NextAuth), `Session` (JWT use),
+  - `Subscription` { provider, plan, status, currentPeriodEnd, customerId },
+  - `UsageStat` { userId, periodYM, magicFillCount, photosProcessed },
+  - `ProductDraft` { sku, brand, type, model, keySpec, titleRU, titleKZ, descRU, descKZ, category, attributesJson },
+  - `ImageAsset` { draftId, source('upload'|'web'|'ai'|'composite'), width, height, bytes, hash, licenseNote },
+  - `BarcodeLookup` { gtin, source, brand, name, model, rawJson }.
+- Billing: MoR hosted checkout + webhooks → обновление `Subscription`.
+- Логи: pino/structured. Аналитика: Plausible.
 
-## Не-цели MVP
-- Полная автоматическая загрузка в Kaspi (нужно продавцу в кабинет).
-- Сложные генеративные сцены/рендеры (оставим пресеты).
-- Глубокая ERP/учёт (это вне задачи).
+## Потоки
+1) **Onboarding**: Landing → Google Sign-In → Pricing → /studio.
+2) **Studio**: Drop images → авто-обработка → форма → чек-лист → Export ZIP/CSV (Free/Pro лимиты).
+3) **Magic Fill**: Скан GTIN → `POST /api/magic-fill` → предзаполненная форма + сохранённый черновик → правки → Export.
+4) **Billing**: Checkout → webhook → `Subscription` активен → повышенные квоты.
 
-## Архитектура (вариант А — быстрый и дешёвый)
-- **Frontend-first (Next.js 14, App Router, TypeScript).**
-- Обработка изображений **в браузере** (WASM/ONNX) → минимум серверных ресурсов.
-- Экспорт ZIP/CSV на клиенте. Сохранение в local/session storage (позже — аккаунты).
-- i18n: (RU/KZ/EN).
-- Хостинг: **Vercel** (легчайший деплой).
+## Не-цели
+- Автоматическая загрузка в Kaspi кабинет (сейчас вручную).
+- Генеративные рендеры, которые вводят в заблуждение (риски модерации).
+- Глубокий учёт/ERP.
 
-## Архитектура (вариант B — расширяемый)
-- Monorepo (Next.js + «light» API routes для auth/billing).
-- Бэкенд-служба для пакетной обработки (BullMQ + Upstash Redis) — **после подтверждения спроса**.
-- Хранилище объектов (R2/S3) для paid-аккаунтов.
-- Биллинг: **Lemon Squeezy** (MoR), webhooks для статуса подписки.
+## Безопасность
+- Ключи/модели/LLM — только на сервере. Вебхуки с проверкой подписи. Idempotency-ключи.
+- Фото Free — не покидают устройство. Pro-хранилище (объектка) — через signed URLs + авто-удаление TTL.
 
-## Техстек
-- UI: Next.js 14/15 (App Router), React 18, TypeScript, TailwindCSS, shadcn/ui, Zod, React-Hook-Form, Zustand.
-- Обработка изображений (клиент): `@imgly/background-removal` (или `bg-removal` WASM), `browser-image-compression`, `pica`/`sharp-wasm` для ресайза.
-- Архивация/экспорт: `jszip`, `file-saver`.
-- Аналитика: Plausible.
-- Оплата: Lemon Squeezy (checkout overlay).
-- Telegram Bot (позже): `grammY` + simple webhook endpoint в Next API Routes.
-
-## Главные экранные потоки
-1) **Landing** → CTA «Попробовать бесплатно».
-2) **Studio**:
-   - Drop images → Auto cleanup → Preview before/after → Batch settings (size/format/naming).
-   - Form (Brand/Type/Model/Key spec) → Title preview → Short bullets.
-   - Category checklist (пресет) → галочки.
-   - Export ZIP/CSV.
-3) **Account (позже)**: вход по magic link, лимиты, платежи.
-
-## Структура ZIP
-/images
-<SKU>_1.jpg
-<SKU>_2.jpg
-README.md
-export.csv
-`export.csv` колонки (MVP):
-- `sku`, `name`, `brand`, `category`, `price`, `qty`,
-- `description`,
-- `image1`..`image8` (файловые имена),
-- `attributes_notes` (чек-лист того, что заполнить в кабинете).
-
-## Состояния и ограничения
-- Поддерживаем **до 50 изображений** за раз (Free) и **до 500** (Pro).
-- Поддерживаем **до 8 фото** на карточку (MVP).
-- Жёсткая валидация: min/max размер, формат, вес, EXIF-очистка.
-
-## Безопасность и приватность
-- Клиент-сайд обработка → фото не покидают устройство (для Free).
-- Для Pro (серверная обработка) — подписанный upload URL, авто-удаление через 24–48h.
-
-## Планы после MVP
-- Пакетная серверная обработка (очередь).
-- Категорийные пресеты (электроника/одежда/косметика).
-- Автоперевод RU↔KZ (двуязычные карточки).
-- Плагин «Validate before upload» (чек-лист прямо при импорте Excel).
+## Планы после v2
+- Очередь для пакетной серверной обработки (BullMQ + Upstash Redis).
+- XLSX-шаблон Kaspi и валидатор перед импортом.
+- Дополнительные категории/пресеты; улучшение OCR и парсинга.

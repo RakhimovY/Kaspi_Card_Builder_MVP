@@ -30,6 +30,44 @@
     "in_progress": "Обрабатывается",
     "beta": "Бета"
   },
+  "auth": {
+    "signin": {
+      "title": "Войти в аккаунт",
+      "description": "Войдите, чтобы продолжить работу",
+      "google": "Войти через Google",
+      "signIn": "Войти"
+    },
+    "error": {
+      "title": "Ошибка аутентификации",
+      "configuration": "Ошибка конфигурации сервера",
+      "accessDenied": "Доступ запрещен",
+      "verification": "Ошибка верификации",
+      "default": "Произошла ошибка при входе",
+      "help": "Попробуйте войти снова или обратитесь в поддержку",
+      "tryAgain": "Попробовать снова",
+      "goHome": "На главную"
+    },
+    "profile": {
+      "view": "Профиль",
+      "settings": "Настройки",
+      "signOut": "Выйти",
+      "backToHome": "На главную",
+      "lastLogin": "Последний вход",
+      "userId": "ID пользователя",
+      "usageStats": "Статистика использования",
+      "processedPhotos": "Обработано фото",
+      "exports": "Экспортов",
+      "sessions": "Сессий",
+      "quickActions": "Быстрые действия",
+      "openStudio": "Открыть студию",
+      "securitySettings": "Настройки безопасности",
+      "currentPlan": "Текущий тариф",
+      "freePlan": "Бесплатный план",
+      "freePlanLimit": "До 50 фото в месяц",
+      "upgrade": "Обновить",
+      "loadingProfile": "Загрузка профиля..."
+    }
+  },
   "landing": {
     "nav": {
       "pricing": "Тарифы"

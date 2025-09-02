@@ -223,3 +223,48 @@ export function useStudioTranslations() {
     hasError: !!error,
   };
 }
+
+export function useAuthTranslations() {
+  const { t, loading, error } = useTranslations();
+  
+  return {
+    signin: {
+      title: t('auth.signin.title'),
+      description: t('auth.signin.description'),
+      google: t('auth.signin.google'),
+      signIn: t('auth.signin.signIn'),
+    },
+    error: {
+      title: t('auth.error.title'),
+      configuration: t('auth.error.configuration'),
+      accessDenied: t('auth.error.accessDenied'),
+      verification: t('auth.error.verification'),
+      default: t('auth.error.default'),
+      help: t('auth.error.help'),
+      tryAgain: t('auth.error.tryAgain'),
+      goHome: t('auth.error.goHome'),
+    },
+    profile: {
+      view: t('auth.profile.view'),
+      settings: t('auth.profile.settings'),
+      signOut: t('auth.profile.signOut'),
+      backToHome: t('auth.profile.backToHome'),
+      lastLogin: t('auth.profile.lastLogin'),
+      userId: t('auth.profile.userId'),
+      usageStats: t('auth.profile.usageStats'),
+      processedPhotos: t('auth.profile.processedPhotos'),
+      exports: t('auth.profile.exports'),
+      sessions: t('auth.profile.sessions'),
+      quickActions: t('auth.profile.quickActions'),
+      openStudio: t('auth.profile.openStudio'),
+      securitySettings: t('auth.profile.securitySettings'),
+      currentPlan: t('auth.profile.currentPlan'),
+      freePlan: t('auth.profile.freePlan'),
+      freePlanLimit: t('auth.profile.freePlanLimit'),
+      upgrade: t('auth.profile.upgrade'),
+      loadingProfile: t('auth.profile.loadingProfile'),
+    },
+    isLoading: loading,
+    hasError: !!error,
+  };
+}

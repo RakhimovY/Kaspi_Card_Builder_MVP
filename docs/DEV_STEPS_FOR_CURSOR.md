@@ -69,7 +69,112 @@
 - ✅ Добавлена навигация на страницу тарифов в хедере лендинга
 - ✅ Переводы для страницы тарифов на RU и KZ
 
-## Этап 10 — Telegram-бот (опционально) ✅
-- ✅ Небольшой пример (псевдо-интеграция): /api/tg-webhook, ответ «поздравляем, скоро!».
-- ✅ Базовая обработка команд: /start, /help, /status, /pricing
-- ✅ Реальную обработку в боте вынести во вторую итерацию (когда будет серверная очередь).
+## Этап 10 — Backend Preflight ✅
+- **Рантайм:** Node.js ≥ 20, пакетный менеджер (pnpm|npm|yarn). ✅
+- **База/ORM:** Postgres + Prisma. ✅
+- **Auth:** NextAuth (Google) + PrismaAdapter (JWT-сессии). ✅
+- **Billing (MoR):** Lemon Squeezy | Paddle | Polar — hosted checkout + webhooks. ✅
+- **Квоты/валидации/логи:** Zod, pino. ✅
+- **ИИ/распознавание:** OpenAI SDK (или совместимый), tesseract.js (OCR fallback), `@zxing/browser` (скан штрихкода). ✅
+- **Экспорт ZIP (опц.):** `archiver`. ✅
+- **Dev-инфра:** Vitest + RTL + jest-dom; типы `@types/node`. ✅
+- **Скрипты package.json:** dev/build/start/typecheck/lint/test + prisma generate/migrate/studio. ✅
+- **ENV (пример):** `DATABASE_URL`, `NEXTAUTH_SECRET`/`NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`,  
+  `BILLING_PROVIDER` (+ секреты выбранного провайдера), `OPENAI_API_KEY`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`. ✅
+- **Каркас папок/файлов:**  
+  `/lib/server/{env.ts, prisma.ts, quota.ts, logger.ts}` ✅  
+  `app/api/{auth/[...nextauth], webhooks/billing, magic-fill, product-drafts, export, health}` (пустые заглушки). ✅
+
+
+## Этап 11 — Подготовка БД и Prisma ✅
+**Задача:** добавить Prisma, настроить Postgres, подготовить схемы и миграции.
+- ✅ Добавь `prisma/schema.prisma` с моделями: User/Account/Session/VerificationToken (NextAuth), Subscription, UsageStat, ProductDraft, ImageAsset, BarcodeLookup.
+- ✅ Сгенерируй клиент, настрой `DATABASE_URL`.
+- ✅ Создай `/lib/server/prisma.ts` с синглтоном.
+- ✅ Настроена поддержка SQLite (локальная разработка) и PostgreSQL (продакшен)
+- ✅ Создан скрипт переключения между базами данных
+- ✅ Добавлена документация по настройке БД
+**DoD:** миграции применяются локально; скрипты `prisma migrate dev`, `prisma studio` работают; юнит-тест на `prisma.$queryRaw` smoke. ✅
+
+## Этап 12 — NextAuth (Google) ✅
+**Задача:** вход по Google + PrismaAdapter.
+- Endpoint: `app/api/auth/[...nextauth]/route.ts`.
+- Сессии — JWT. На клиенте — кнопка «Войти» + «Профиль/Выход».
+**DoD:** после логина создаётся пользователь; защищённые API читают `userId` из сессии. ✅
+
+### Реализовано:
+1. **NextAuth конфигурация** с Google OAuth провайдером
+2. **PrismaAdapter** для автоматического создания пользователей в БД
+3. **JWT сессии** для клиент-серверной аутентификации
+4. **UI компоненты**: страницы входа/ошибки, кнопки аутентификации, профиль
+5. **Серверные утилиты** для проверки аутентификации в API
+6. **Защищенный API endpoint** `/api/test-auth` для тестирования
+7. **Переводы** на RU/KZ для всех текстов аутентификации
+8. **SessionProvider** в корневом layout для работы сессий
+
+### Файлы:
+- `src/app/api/auth/[...nextauth]/route.ts` - NextAuth конфигурация
+- `src/app/auth/signin/page.tsx` - страница входа
+- `src/app/auth/error/page.tsx` - страница ошибки
+- `src/app/profile/page.tsx` - профиль пользователя
+- `src/components/AuthButtons.tsx` - кнопки входа/выхода
+- `src/components/SessionProvider.tsx` - NextAuth провайдер
+- `src/lib/server/auth.ts` - серверные утилиты аутентификации
+- `src/messages/{ru,kz}.json` - переводы для аутентификации
+
+### Тестирование:
+- ✅ Проект собирается без ошибок
+- ✅ Типы TypeScript проходят проверку
+- ✅ ESLint предупреждения (не критичные)
+- ✅ Страницы аутентификации работают с Suspense
+- ✅ API endpoints настроены и защищены
+
+## Этап 13 — Billing (MoR) — Overlay + Webhooks
+**Задача:** подключить Lemon Squeezy (или Paddle/Polar) как hosted checkout.
+- Кнопки тарифов → overlay/checkout URL.
+- Эндпойнт вебхуков: `app/api/webhooks/billing/route.ts` с проверкой подписи.
+- Таблица `Subscription` обновляется по событиям `created/updated/canceled`.
+**DoD:** при успешной оплате у пользователя `Subscription.status='active'` и выставлен `plan`.
+
+## Этап 14 — Квоты/лимиты
+**Задача:** Middleware/утилита `assertQuota(userId, feature)`.
+- `UsageStat` инкрементируется при каждом Feature-вызове (magic-fill, export-server, photosProcessed).
+- Free/Pro лимиты: Free — 50 фото/мес, Pro — 500 фото/мес (значения — в конфиге). 
+**DoD:** защищённый API бросает 402/429 при превышении; интеграционный тест.
+
+## Этап 15 — Magic Fill API (v1)
+**Задача:** `POST /api/magic-fill`.
+- Вход: `{ gtin?: string, imageIds?: string[], manual?: {...} }`.
+- Логика: (1) GTIN→поиск (GS1/кеш `BarcodeLookup`), (2) OCR по загруженной фото (если есть), (3) LLM-парсинг в структуру, (4) шаблон Title/Desc RU/KZ, (5) сохранение `ProductDraft` + `ImageAsset`.
+- Ответ: `{ draftId, fields, images[] }`.
+**DoD:** юнит-тест схемы (Zod), мок-тест эндпойнта (LLM/OCR/billing — замоканы).
+
+## Этап 16 — Сканер штрихкода в Studio
+**Задача:** в правой панели формы добавить кнопку/диалог «Сканировать штрихкод» (ZXing через камеру).
+- Успешное сканирование подставляет GTIN в форму и вызывает Magic Fill.
+**DoD:** работает на популярных десктоп-браузерах, graceful-fallback без камеры.
+
+## Этап 17 — Product Draft Editor
+**Задача:** CRUD черновиков.
+- `GET /api/product-drafts`, `PATCH /api/product-drafts/:id`.
+- В Studio: список черновиков, открытие черновика, массовые правки (brand/type/model/keyspec/bullets).
+**DoD:** черновик восстанавливается после рефреша, правки сохраняются.
+
+## Этап 18 — Экспорт: серверный дубль (Pro, опционально)
+**Задача:** `POST /api/export` — собрать ZIP/CSV на сервере (для логов/статистики).
+- Клиентский экспорт остаётся дефолтным. Серверный — только Pro; учитывает квоты.
+**DoD:** ZIP идентичен клиентскому; событие использования зафиксировано.
+
+## Этап 19 — Кэш по GTIN
+**Задача:** накапливать `BarcodeLookup` и отдавать повторные запросы из кэша.
+**DoD:** cold→warm падение латентности; тест, что при повторном GTIN запросы к внешним сервисам не шлём.
+
+## Этап 20 — Набор ENV/конфигов
+**Задача:** `.env.example`, безопасная загрузка конфигов, Zod-валидатор `env.ts`.
+**DoD:** приложение не стартует без критичных переменных; ясные сообщения.
+
+## Этап 21 — Наблюдаемость и логирование
+**Задача:** pino + requestId + userId; 4xx/5xx метрики; healthcheck.
+**DoD:** /api/health отражает статус и версию; ошибки логируются структурно.
+
+> **Правило:** По завершении этапа — отметь в этом файле ✅ и дождись «дальше к следующему шагу».

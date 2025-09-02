@@ -4,6 +4,7 @@ import "./globals.css";
 import PlausibleScript from "@/components/PlausibleScript";
 import PageViewTracker from "@/components/PageViewTracker";
 import { Toaster } from "@/components/ui/toast";
+import { SessionProvider } from "@/components/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +34,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PageViewTracker />
-        {children}
-        <Toaster />
+        <SessionProvider>
+          <PageViewTracker />
+          {children}
+          <Toaster />
+        </SessionProvider>
       </body>
     </html>
   );

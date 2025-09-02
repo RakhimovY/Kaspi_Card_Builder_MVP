@@ -30,6 +30,44 @@
     "in_progress": "Өңделуде",
     "beta": "Бета"
   },
+  "auth": {
+    "signin": {
+      "title": "Есепке кіру",
+      "description": "Жұмысты жалғастыру үшін кіріңіз",
+      "google": "Google арқылы кіру",
+      "signIn": "Кіру"
+    },
+    "error": {
+      "title": "Аутентификация қатесі",
+      "configuration": "Сервер конфигурациясы қатесі",
+      "accessDenied": "Кіруге рұқсат жоқ",
+      "verification": "Растау қатесі",
+      "default": "Кіру кезінде қате орын алды",
+      "help": "Қайта кіруге тырысыңыз немесе қолдауға хабарласыңыз",
+      "tryAgain": "Қайта тырысу",
+      "goHome": "Басты бетке"
+    },
+    "profile": {
+      "view": "Профиль",
+      "settings": "Баптаулар",
+      "signOut": "Шығу",
+      "backToHome": "Басты бетке",
+      "lastLogin": "Соңғы кіру",
+      "userId": "Пайдаланушы ID",
+      "usageStats": "Пайдалану статистикасы",
+      "processedPhotos": "Өңделген фото",
+      "exports": "Экспорттар",
+      "sessions": "Сессиялар",
+      "quickActions": "Жылдам әрекеттер",
+      "openStudio": "Студияны ашу",
+      "securitySettings": "Қауіпсіздік баптаулары",
+      "currentPlan": "Ағымдағы тариф",
+      "freePlan": "Тегін жоспар",
+      "freePlanLimit": "Айына 50 фотоға дейін",
+      "upgrade": "Жаңарту",
+      "loadingProfile": "Профиль жүктелуде..."
+    }
+  },
   "landing": {
     "nav": {
       "pricing": "Тарифтар"
