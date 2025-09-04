@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, ArrowLeft, Settings, Sparkles } from 'lucide-react';
+import { Camera, ArrowLeft, Sparkles } from 'lucide-react';
 import FileDrop from '@/components/FileDrop';
 import Preview from '@/components/Preview';
 import ProductForm from '@/components/ProductForm';
 import ExportPanel from '@/components/ExportPanel';
 import ImageSettings from '@/components/ImageSettings';
+import { SubscriptionInfo } from '@/components/SubscriptionInfo';
 import { useTranslations } from '@/lib/useTranslations';
 
 export default function StudioPage() {
@@ -102,6 +103,7 @@ export default function StudioPage() {
             transition={{ delay: 0.4 }}
             className="space-y-6"
           >
+            <SubscriptionInfo />
             <ImageSettings />
             <ProductForm />
           </motion.div>

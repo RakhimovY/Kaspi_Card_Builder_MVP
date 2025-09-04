@@ -178,7 +178,7 @@ export default function FileDrop() {
       }
 
       // Добавляем README файл
-      const readmeContent = `# Экспорт изображений Kaspi Card Builder
+              const readmeContent = `# Экспорт изображений Trade Card Builder
 
 Дата экспорта: ${new Date().toLocaleString('ru-RU')}
 Количество файлов: ${completedFiles.length}
@@ -196,7 +196,7 @@ export default function FileDrop() {
 - Рекомендуемый размер: 1000x1000px или больше
 - Минимальный размер: 500x500px
 
-Сгенерировано Kaspi Card Builder
+        Сгенерировано Trade Card Builder
 `;
 
       zip.file('README.md', readmeContent);
@@ -206,7 +206,7 @@ export default function FileDrop() {
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `kaspi-images-${new Date().toISOString().split('T')[0]}.zip`;
+              a.download = `trade-images-${new Date().toISOString().split('T')[0]}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -50,7 +50,7 @@ export default function ExportPanel() {
       });
 
       const sku = generateSKU(formData);
-      const filename = `kaspi-export-${sku}-${new Date().toISOString().split('T')[0]}.zip`;
+              const filename = `trade-export-${sku}-${new Date().toISOString().split('T')[0]}.zip`;
       
       downloadFile(zipBlob, filename);
       setExportSuccess(true);

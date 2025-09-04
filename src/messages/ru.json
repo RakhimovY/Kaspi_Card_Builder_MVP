@@ -28,7 +28,9 @@
     "ready": "Готово",
     "in_queue": "В очереди",
     "in_progress": "Обрабатывается",
-    "beta": "Бета"
+    "beta": "Бета",
+    "processing": "Обработка",
+    "tryAgain": "Попробовать снова"
   },
   "auth": {
     "signin": {
@@ -121,6 +123,8 @@
         "description": "Для активных продавцов",
         "limit": "До 500 фото/месяц",
         "cta": "Оформить Pro",
+        "buyPro": "Купить Pro",
+        "activated": "Активирован",
         "features": {
           "1": "Все функции бесплатного плана",
           "2": "Расширенный генератор описаний",
@@ -143,7 +147,7 @@
   },
   "studio": {
     "title": "Студия обработки",
-    "page_title": "Kaspi Card Builder",
+    "page_title": "Trade Card Builder",
     "subtitle": "Студия обработки",
     "back_to_landing": "Назад",
     "file_drop": {
@@ -394,4 +398,4 @@
       "formats": "Форматы: JPEG/PNG/WebP"
     }
   }
-} 
+}

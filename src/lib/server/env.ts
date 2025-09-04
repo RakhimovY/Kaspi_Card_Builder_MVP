@@ -7,6 +7,8 @@ const envSchema = z.object({
   // NextAuth
   NEXTAUTH_SECRET: z.string().min(32),
   NEXTAUTH_URL: z.string().url().optional(),
+  // For ngrok support - can be set to ngrok URL
+  NEXTAUTH_NGROK_URL: z.string().url().optional(),
   
   // Google OAuth
   GOOGLE_CLIENT_ID: z.string(),
@@ -18,6 +20,8 @@ const envSchema = z.object({
   // Lemon Squeezy
   LEMON_SQUEEZY_WEBHOOK_SECRET: z.string().optional(),
   LEMON_SQUEEZY_API_KEY: z.string().optional(),
+  NEXT_PUBLIC_LEMON_SQUEEZY_PRODUCT_ID: z.string().optional(),
+  NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID: z.string().optional(),
   
   // Paddle
   PADDLE_WEBHOOK_SECRET: z.string().optional(),

@@ -155,7 +155,7 @@ export function generateReadme(): string {
 Если у вас возникли вопросы, обратитесь в службу поддержки Kaspi или к разработчикам данного инструмента.
 
 ---
-Создано с помощью Kaspi Card Builder
+        Создано с помощью Trade Card Builder
 `;
 }
 

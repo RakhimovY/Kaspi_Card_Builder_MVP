@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../[...nextauth]/route'
+import { authOptions } from '@/lib/server/auth-config'
+import { getBaseUrlFromRequest } from '@/lib/server/nextauth-url'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,10 +12,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Создаем ответ с очисткой cookies
+    const baseUrl = getBaseUrlFromRequest(request)
     const response = NextResponse.json({ 
       success: true, 
       message: 'Sign out successful',
-      redirectUrl: '/'
+      redirectUrl: `${baseUrl}/`
     })
 
     // Очищаем все cookies, связанные с аутентификацией

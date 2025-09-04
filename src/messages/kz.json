@@ -28,7 +28,9 @@
     "ready": "Дайын",
     "in_queue": "Кезекте",
     "in_progress": "Өңделуде",
-    "beta": "Бета"
+    "beta": "Бета",
+    "processing": "Өңдеу",
+    "tryAgain": "Қайта тырысу"
   },
   "auth": {
     "signin": {
@@ -121,6 +123,8 @@
         "description": "Белсенді сатушылар үшін",
         "limit": "Айына 500 фотоға дейін",
         "cta": "Pro рәсімдеу",
+        "buyPro": "Pro сатып алу",
+        "activated": "Белсендірілді",
         "features": {
           "1": "Тегін жоспардың барлық функциялары",
           "2": "Кеңейтілген сипаттама генераторы",
@@ -143,7 +147,7 @@
   },
   "studio": {
     "title": "Өңдеу студиясы",
-    "page_title": "Kaspi Card Builder",
+    "page_title": "Trade Card Builder",
     "subtitle": "Өңдеу студиясы",
     "back_to_landing": "Артқа",
     "file_drop": {
@@ -394,4 +398,4 @@
       "formats": "Форматы: JPEG/PNG/WebP"
     }
   }
-} 
+}

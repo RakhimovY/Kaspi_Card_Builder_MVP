@@ -49,6 +49,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Billing integration
+  lemonSqueezyCustomerId String? @unique // External Lemon Squeezy customer ID
+  
   // Business logic relations
   subscriptions Subscription[]
   usageStats    UsageStat[]

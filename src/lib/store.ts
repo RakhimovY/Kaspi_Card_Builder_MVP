@@ -181,7 +181,7 @@ export const useAppStore = create<AppStore>()(
       resetCategoryChecklist: () => set({ categoryChecklist: initialCategoryChecklist }),
     }),
     {
-      name: 'kaspi-card-builder-storage',
+              name: 'trade-card-builder-storage',
       partialize: (state) => ({
         settings: state.settings,
         formData: state.formData,

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kaspi Card Builder",
+  title: "Trade Card Builder",
   description: "Профессиональные карточки товаров для Kaspi Marketplace",
 };
 

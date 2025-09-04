@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { AuthButtons } from '@/components/AuthButtons';
+import { BuyProButton } from '@/components/BuyProButton';
 import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
@@ -25,34 +26,64 @@ import {
   Check,
   Star
 } from 'lucide-react';
+import { LemonSqueezyTest } from '@/components/LemonSqueezyTest';
+import { getRedirectUrl } from '@/lib/utils/url';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const { nav, hero, features, how_it_works, faq, pricing, isLoading, hasError } = useLandingTranslations();
 
   useEffect(() => {
     setMounted(true);
     trackPageView('/landing');
+    
+    // Monitor Lemon Squeezy script loading
+    const checkLemonSqueezy = () => {
+      if (typeof window !== 'undefined' && (window as any).createLemonSqueezy) {
+        (window as any).lemonSqueezyReady = true;
+        console.log('Lemon Squeezy script detected');
+      }
+    };
+    
+    // Check immediately
+    checkLemonSqueezy();
+    
+    // Check periodically until loaded
+    const interval = setInterval(checkLemonSqueezy, 500);
+    
+    // Handle hash navigation (e.g., from profile page)
+    const handleHashNavigation = () => {
+      if (window.location.hash === '#pricing') {
+        setTimeout(() => {
+          scrollToPricing();
+        }, 500); // Wait for page to load
+      }
+    };
+    
+    // Check hash on mount
+    handleHashNavigation();
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashNavigation);
+    
+    // Cleanup
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('hashchange', handleHashNavigation);
+    };
   }, []);
 
-  const handleProUpgrade = async () => {
-    setIsLoadingPayment(true);
-    try {
-      // Lemon Squeezy overlay integration
-      if (typeof window !== 'undefined' && (window as unknown as { createLemonSqueezy?: () => void }).createLemonSqueezy) {
-        (window as unknown as { createLemonSqueezy: () => void }).createLemonSqueezy()
-      } else {
-        // Fallback - redirect to Lemon Squeezy checkout
-        window.open('https://app.lemonsqueezy.com/checkout/buy/PRODUCT_ID', '_blank')
-      }
-    } catch (error) {
-      console.error('Error opening checkout:', error)
-    } finally {
-      setIsLoadingPayment(false);
+  const scrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
   };
+
 
   if (!mounted) {
     return null;
@@ -108,7 +139,7 @@ export default function LandingPage() {
               <Camera className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              Kaspi Card Builder
+              Trade Card Builder
             </h1>
           </motion.div>
           <motion.div 
@@ -116,11 +147,13 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-4"
           >
-            <a href="#pricing">
-              <Button variant="outline" className="hidden sm:flex">
-                {nav.pricing}
-              </Button>
-            </a>
+            <Button 
+              variant="outline" 
+              className="hidden sm:flex"
+              onClick={scrollToPricing}
+            >
+              {nav.pricing}
+            </Button>
             <AuthButtons />
             <LanguageSwitcher />
           </motion.div>
@@ -411,13 +444,15 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button 
-                  onClick={handleProUpgrade}
-                  disabled={isLoadingPayment}
+                <BuyProButton 
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  {isLoadingPayment ? 'Загрузка...' : pricing.pro.cta}
-                </Button>
+                  onSuccess={() => {
+                    // Redirect to studio after successful purchase
+                    setTimeout(() => {
+                      window.location.href = '/studio';
+                    }, 2500);
+                  }}
+                />
               </CardContent>
             </Card>
           </motion.div>
@@ -498,21 +533,41 @@ export default function LandingPage() {
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
-                <Button 
+                <BuyProButton 
                   size="lg" 
                   variant="outline"
-                  onClick={handleProUpgrade}
-                  disabled={isLoadingPayment}
                   className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                >
-                  <Star className="w-5 h-5 mr-2" />
-                  {isLoadingPayment ? 'Загрузка...' : 'Оформить Pro'}
-                </Button>
+                  onSuccess={() => {
+                    // Redirect to studio after successful purchase
+                    setTimeout(() => {
+                      window.location.href = '/studio';
+                    }, 2500);
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </section>
+
+      {/* Lemon Squeezy Test Section - Development Only */}
+      {process.env.NODE_ENV === 'development' && (
+        <section className="relative py-20 z-10">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                🧪 Lemon Squeezy Integration Test
+              </h2>
+              <p className="text-lg text-gray-600">
+                Development testing component for Lemon Squeezy overlay
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <LemonSqueezyTest />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="relative bg-gray-900 text-white py-16 z-10">
@@ -523,7 +578,7 @@ export default function LandingPage() {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Camera className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-xl font-bold">Kaspi Card Builder</h3>
+                <h3 className="text-xl font-bold">Trade Card Builder</h3>
               </div>
               <p className="text-gray-400 leading-relaxed">
                 Профессиональные карточки товаров для Kaspi Marketplace. Автоматизация обработки фотографий и генерация описаний.
@@ -533,29 +588,29 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-4 text-lg">Продукт</h4>
               <ul className="space-y-3 text-gray-400">
                 <li><Link href="/studio" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Студия</Link></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Тарифы</a></li>
+                <li><button onClick={scrollToPricing} className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Тарифы</button></li>
                 <li><a href="/docs" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Документация</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-lg">Поддержка</h4>
               <ul className="space-y-3 text-gray-400">
-                <li><a href="mailto:support@kaspi-card-builder.com" className="hover:text-white transition-colors flex items-center"><Mail className="w-4 h-4 mr-2" />support@kaspi-card-builder.com</a></li>
-                <li><a href="https://t.me/kaspi_card_builder" className="hover:text-white transition-colors flex items-center"><MessageCircle className="w-4 h-4 mr-2" />Telegram</a></li>
+                <li><a href="mailto:support@tradecardbuilder.kz" className="hover:text-white transition-colors flex items-center"><Mail className="w-4 h-4 mr-2" />support@tradecardbuilder.kz</a></li>
+                <li><a href="https://t.me/trade_card_builder" className="hover:text-white transition-colors flex items-center"><MessageCircle className="w-4 h-4 mr-2" />Telegram</a></li>
                 <li><a href="/faq" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />FAQ</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-lg">Контакты</h4>
               <ul className="space-y-3 text-gray-400">
-                <li className="flex items-center"><Mail className="w-4 h-4 mr-2" />info@kaspi-card-builder.com</li>
-                <li className="flex items-center"><MessageCircle className="w-4 h-4 mr-2" />@kaspi_card_builder</li>
+                <li className="flex items-center"><Mail className="w-4 h-4 mr-2" />info@tradecardbuilder.kz</li>
+                <li className="flex items-center"><MessageCircle className="w-4 h-4 mr-2" />@trade_card_builder</li>
                 <li className="flex items-center"><Clock className="w-4 h-4 mr-2" />Пн-Пт 9:00-18:00</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>© 2024 Kaspi Card Builder. Все права защищены.</p>
+            <p>© 2024 Trade Card Builder. Все права защищены.</p>
           </div>
         </div>
       </footer>
@@ -564,6 +619,16 @@ export default function LandingPage() {
       <script
         src="https://app.lemonsqueezy.com/js/lemon.js"
         defer
+        onLoad={() => {
+          console.log('Lemon Squeezy script loaded');
+          // Set a flag to indicate script is ready
+          if (typeof window !== 'undefined') {
+            (window as any).lemonSqueezyReady = true;
+          }
+        }}
+        onError={() => {
+          console.error('Failed to load Lemon Squeezy script');
+        }}
       />
 
       {/* Video Modal */}

@@ -32,7 +32,7 @@ src/
 {
   "common": {
     "loading": "Загрузка...",
-    "error": "Ошибка",
+    "error": "Ошибка"
     // ...
   },
   "landing": {
@@ -51,18 +51,18 @@ src/
 ### 1. Основной хук useTranslations
 
 ```typescript
-import { useTranslations } from '@/lib/useTranslations';
+import { useTranslations } from "@/lib/useTranslations";
 
 function MyComponent() {
   const { t, translations, loading, error, locale } = useTranslations();
-  
+
   if (loading) return <div>Загрузка...</div>;
   if (error) return <div>Ошибка загрузки переводов</div>;
-  
+
   return (
     <div>
-      <h1>{t('landing.hero.title')}</h1>
-      <p>{t('landing.hero.subtitle')}</p>
+      <h1>{t("landing.hero.title")}</h1>
+      <p>{t("landing.hero.subtitle")}</p>
     </div>
   );
 }
@@ -73,11 +73,11 @@ function MyComponent() {
 Для удобства созданы типизированные хуки для конкретных разделов:
 
 ```typescript
-import { useLandingTranslations } from '@/lib/useTranslations';
+import { useLandingTranslations } from "@/lib/useTranslations";
 
 function LandingPage() {
   const { hero, features, how_it_works, faq } = useLandingTranslations();
-  
+
   return (
     <div>
       <h1>{hero.title}</h1>
@@ -91,12 +91,12 @@ function LandingPage() {
 ### 3. Переключение языка
 
 ```typescript
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 function Header() {
   return (
     <header>
-      <h1>Kaspi Card Builder</h1>
+      <h1>Trade Card Builder</h1>
       <LanguageSwitcher />
     </header>
   );
@@ -106,19 +106,19 @@ function Header() {
 ### 4. Программное переключение
 
 ```typescript
-import { useLocaleSwitcher } from '@/lib/i18n';
+import { useLocaleSwitcher } from "@/lib/i18n";
 
 function MyComponent() {
   const { switchLocale } = useLocaleSwitcher();
-  
-  const handleLanguageChange = (locale: 'ru' | 'kz') => {
+
+  const handleLanguageChange = (locale: "ru" | "kz") => {
     switchLocale(locale);
   };
-  
+
   return (
     <div>
-      <button onClick={() => handleLanguageChange('ru')}>RU</button>
-      <button onClick={() => handleLanguageChange('kz')}>KZ</button>
+      <button onClick={() => handleLanguageChange("ru")}>RU</button>
+      <button onClick={() => handleLanguageChange("kz")}>KZ</button>
     </div>
   );
 }
@@ -139,14 +139,14 @@ function MyComponent() {
 Все компоненты с i18n должны быть клиентскими:
 
 ```typescript
-'use client';
+"use client";
 
-import { useTranslations } from '@/lib/useTranslations';
+import { useTranslations } from "@/lib/useTranslations";
 
 export default function MyComponent() {
   const { t } = useTranslations();
-  
-  return <div>{t('common.loading')}</div>;
+
+  return <div>{t("common.loading")}</div>;
 }
 ```
 
@@ -181,9 +181,11 @@ const translationsCache = new Map<Locale, Translations>();
 
 ```typescript
 // Переключение происходит через события
-window.dispatchEvent(new CustomEvent('localeChanged', { 
-  detail: { locale: newLocale } 
-}));
+window.dispatchEvent(
+  new CustomEvent("localeChanged", {
+    detail: { locale: newLocale },
+  })
+);
 ```
 
 ## Добавление новых переводов
@@ -191,6 +193,7 @@ window.dispatchEvent(new CustomEvent('localeChanged', {
 ### 1. Добавить ключи в файлы переводов
 
 В `src/messages/ru.json`:
+
 ```json
 {
   "new_section": {
@@ -201,6 +204,7 @@ window.dispatchEvent(new CustomEvent('localeChanged', {
 ```
 
 В `src/messages/kz.json`:
+
 ```json
 {
   "new_section": {
@@ -231,10 +235,10 @@ export interface Translations {
 ```typescript
 export function useNewSectionTranslations() {
   const { t, loading, error } = useTranslations();
-  
+
   return {
-    title: t('new_section.title'),
-    description: t('new_section.description'),
+    title: t("new_section.title"),
+    description: t("new_section.description"),
     isLoading: loading,
     hasError: !!error,
   };
@@ -246,6 +250,7 @@ export function useNewSectionTranslations() {
 ### 1. Структура ключей
 
 Используйте иерархическую структуру ключей:
+
 - `common.*` - общие переводы
 - `landing.*` - переводы для лендинга
 - `studio.*` - переводы для студии
@@ -280,11 +285,11 @@ export function useNewSectionTranslations() {
 ```typescript
 // Проверка текущей локали
 const locale = useCurrentLocale();
-console.log('Current locale:', locale);
+console.log("Current locale:", locale);
 
 // Проверка загрузки переводов
 const { translations, loading, error } = useTranslations();
-console.log('Translations loaded:', !!translations);
+console.log("Translations loaded:", !!translations);
 ```
 
 ## Отладка
@@ -292,12 +297,12 @@ console.log('Translations loaded:', !!translations);
 ### Проверка текущей локали
 
 ```typescript
-import { useCurrentLocale } from '@/lib/i18n';
+import { useCurrentLocale } from "@/lib/i18n";
 
 function DebugComponent() {
   const locale = useCurrentLocale();
-  console.log('Current locale:', locale);
-  
+  console.log("Current locale:", locale);
+
   return <div>Current locale: {locale}</div>;
 }
 ```
@@ -307,11 +312,11 @@ function DebugComponent() {
 ```typescript
 function DebugTranslations() {
   const { translations, loading, error } = useTranslations();
-  
-  console.log('Translations:', translations);
-  console.log('Loading:', loading);
-  console.log('Error:', error);
-  
+
+  console.log("Translations:", translations);
+  console.log("Loading:", loading);
+  console.log("Error:", error);
+
   return null;
 }
 ```
@@ -321,10 +326,10 @@ function DebugTranslations() {
 ```typescript
 function DebugLocalStorage() {
   useEffect(() => {
-    const locale = localStorage.getItem('preferred-locale');
-    console.log('Stored locale:', locale);
+    const locale = localStorage.getItem("preferred-locale");
+    console.log("Stored locale:", locale);
   }, []);
-  
+
   return null;
 }
 ```
@@ -334,6 +339,7 @@ function DebugLocalStorage() {
 Если у вас есть компоненты с хардкодными строками:
 
 ### До:
+
 ```typescript
 function OldComponent() {
   return (
@@ -347,17 +353,18 @@ function OldComponent() {
 ```
 
 ### После:
+
 ```typescript
-'use client';
+"use client";
 
 function NewComponent() {
   const { t } = useTranslations();
-  
+
   return (
     <div>
-      <h1>{t('component.title')}</h1>
-      <p>{t('component.description')}</p>
-      <button>{t('component.button')}</button>
+      <h1>{t("component.title")}</h1>
+      <p>{t("component.description")}</p>
+      <button>{t("component.button")}</button>
     </div>
   );
 }
@@ -384,6 +391,7 @@ function NewComponent() {
 ## Заключение
 
 Система i18n обеспечивает:
+
 - ✅ Поддержку русского и казахского языков
 - ✅ Типобезопасность переводов
 - ✅ Удобные хуки для использования
@@ -392,4 +400,4 @@ function NewComponent() {
 - ✅ Мгновенное переключение языка
 - ✅ Плавные анимации
 - ✅ Кэширование для производительности
-- ✅ Простоту интеграции в существующий код 
+- ✅ Простоту интеграции в существующий код

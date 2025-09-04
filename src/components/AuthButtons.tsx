@@ -2,8 +2,6 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
-import { useAuthTranslations } from '@/lib/useTranslations'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +14,11 @@ import { User, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { clearAuthData } from '@/lib/auth'
+import { getRedirectUrl } from '@/lib/utils/url'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export function AuthButtons() {
   const { data: session, status } = useSession()
-  const { profile } = useAuthTranslations()
   const router = useRouter()
 
   const handleSignOut = async () => {
@@ -81,17 +80,17 @@ export function AuthButtons() {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <User className="mr-2 h-4 w-4" />
-              <span>{profile.view}</span>
+              <span>Профиль</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
-            <span>{profile.settings}</span>
+            <span>Настройки</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
-            <span>{profile.signOut}</span>
+            <span>Выйти</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -99,7 +98,9 @@ export function AuthButtons() {
   }
 
   return (
-    <Button onClick={() => signIn('google')} variant="outline">
+    <Button onClick={() => signIn('google', { 
+      callbackUrl: getRedirectUrl('/studio')
+    })} variant="outline">
       Войти
     </Button>
   )

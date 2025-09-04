@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
       let responseText = '';
       
       if (text.includes('привет') || text.includes('hello') || text.includes('салем')) {
-        responseText = 'Привет! 👋 Добро пожаловать в Kaspi Card Builder!';
+        responseText = 'Привет! 👋 Добро пожаловать в Trade Card Builder!';
       } else if (text.includes('помощь') || text.includes('help') || text.includes('көмек')) {
-        responseText = `🤖 Kaspi Card Builder Bot
+                  responseText = `🤖 Trade Card Builder Bot
 
 Доступные команды:
 /start - Начать работу
@@ -26,12 +26,12 @@ export async function POST(request: NextRequest) {
 /status - Статус сервиса
 /pricing - Информация о тарифах
 
-Сайт: https://kaspi-card-builder.com
-Поддержка: @kaspi_card_builder`;
+        Сайт: https://tradecardbuilder.kz
+        Поддержка: @trade_card_builder`;
       } else if (text.includes('статус') || text.includes('status')) {
         responseText = '✅ Сервис работает нормально! Все системы функционируют.';
       } else if (text.includes('тариф') || text.includes('pricing') || text.includes('баға')) {
-        responseText = `💰 Тарифы Kaspi Card Builder:
+        responseText = `💰 Тарифы Trade Card Builder:
 
 🆓 Бесплатный план:
 • До 50 фото/месяц
@@ -43,9 +43,9 @@ export async function POST(request: NextRequest) {
 • Расширенные функции
 • Приоритетная поддержка
 
-Подробнее: https://kaspi-card-builder.com/pricing`;
+        Подробнее: https://tradecardbuilder.kz/pricing`;
       } else if (text.includes('start') || text === '/start') {
-        responseText = `🚀 Добро пожаловать в Kaspi Card Builder!
+        responseText = `🚀 Добро пожаловать в Trade Card Builder!
 
 Я помогу вам создать профессиональные карточки товаров для Kaspi Marketplace.
 
@@ -54,11 +54,11 @@ export async function POST(request: NextRequest) {
 ✍️ Генерация описаний
 📦 Экспорт в нужном формате
 
-Начните работу: https://kaspi-card-builder.com/studio
+        Начните работу: https://tradecardbuilder.kz/studio
 
 Напишите /help для получения справки.`;
       } else {
-        responseText = 'Поздравляем, скоро! 🎉\n\nБот находится в разработке. Пока что вы можете использовать веб-версию: https://kaspi-card-builder.com';
+        responseText = 'Поздравляем, скоро! 🎉\n\nБот находится в разработке. Пока что вы можете использовать веб-версию: https://tradecardbuilder.kz';
       }
       
       // Отправляем ответ в Telegram
