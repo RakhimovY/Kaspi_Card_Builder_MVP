@@ -12,12 +12,13 @@ import Preview from '@/components/Preview';
 import ProductForm from '@/components/ProductForm';
 import ExportPanel from '@/components/ExportPanel';
 import ImageSettings from '@/components/ImageSettings';
-import { SubscriptionInfo } from '@/components/SubscriptionInfo';
 import { useTranslations } from '@/lib/useTranslations';
+import { useAppStore } from '@/lib/store';
 
 export default function StudioPage() {
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslations();
+  const { files } = useAppStore();
 
   useEffect(() => {
     setMounted(true);
@@ -83,40 +84,72 @@ export default function StudioPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8"
+          className="max-w-7xl mx-auto"
         >
-          {/* Left Panel - File Drop and Preview */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+          {/* Step 1: Upload Images */}
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="space-y-6"
+            className="mb-8"
           >
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">1. Загрузите фотографии</h2>
+              <p className="text-gray-600">Перетащите изображения или выберите файлы для обработки</p>
+            </div>
             <FileDrop />
-            <Preview />
-          </motion.div>
+          </motion.section>
 
-          {/* Right Panel - Settings and Form */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-6"
-          >
-            <SubscriptionInfo />
-            <ImageSettings />
-            <ProductForm />
-          </motion.div>
-        </motion.div>
+          {/* Step 2: Preview & Settings */}
+          {files.length > 0 && (
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mb-8"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">2. Настройте обработку</h2>
+                <p className="text-gray-600">Просмотрите изображения и настройте параметры обработки</p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Preview />
+                <ImageSettings />
+              </div>
+            </motion.section>
+          )}
 
-        {/* Bottom Panel - Export */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 sticky bottom-4 z-10"
-        >
-          <ExportPanel />
+          {/* Step 3: Product Information */}
+          {files.length > 0 && (
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-8"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">3. Заполните информацию о товаре</h2>
+                <p className="text-gray-600">Добавьте детали товара для создания полного пакета</p>
+              </div>
+              <ProductForm />
+            </motion.section>
+          )}
+
+          {/* Step 4: Export */}
+          {files.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="sticky bottom-4 z-10"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">4. Экспорт готового пакета</h2>
+                <p className="text-gray-600">Скачайте обработанные изображения и информацию о товаре</p>
+              </div>
+              <ExportPanel />
+            </motion.section>
+          )}
         </motion.div>
       </main>
     </div>

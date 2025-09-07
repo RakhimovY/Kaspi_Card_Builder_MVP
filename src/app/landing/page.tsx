@@ -18,20 +18,16 @@ import {
   Upload, 
   Sparkles, 
   ArrowRight, 
-  Play,
   Mail,
   MessageCircle,
   Clock,
   ChevronDown,
   Check,
-  Star
 } from 'lucide-react';
 import { LemonSqueezyTest } from '@/components/LemonSqueezyTest';
-import { getRedirectUrl } from '@/lib/utils/url';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const { nav, hero, features, how_it_works, faq, pricing, isLoading, hasError } = useLandingTranslations();
 
   useEffect(() => {
@@ -40,8 +36,8 @@ export default function LandingPage() {
     
     // Monitor Lemon Squeezy script loading
     const checkLemonSqueezy = () => {
-      if (typeof window !== 'undefined' && (window as any).createLemonSqueezy) {
-        (window as any).lemonSqueezyReady = true;
+      if (typeof window !== 'undefined' && (window as unknown as { createLemonSqueezy?: unknown }).createLemonSqueezy) {
+        (window as unknown as { lemonSqueezyReady?: boolean }).lemonSqueezyReady = true;
         console.log('Lemon Squeezy script detected');
       }
     };
@@ -187,12 +183,12 @@ export default function LandingPage() {
             {hero.subtitle}
           </p>
 
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+            className="flex justify-center items-center mb-12"
           >
             <Link href="/studio">
               <Button 
@@ -203,16 +199,6 @@ export default function LandingPage() {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="text-lg px-8 py-4 border-2 border-gray-300 hover:border-gray-400 bg-white/80 backdrop-blur-sm"
-              onClick={() => setIsVideoPlaying(true)}
-            >
-              <Play className="w-5 h-5 mr-2" />
-              Смотреть демо
-            </Button>
           </motion.div>
 
           {/* Stats */}
@@ -623,7 +609,7 @@ export default function LandingPage() {
           console.log('Lemon Squeezy script loaded');
           // Set a flag to indicate script is ready
           if (typeof window !== 'undefined') {
-            (window as any).lemonSqueezyReady = true;
+            (window as unknown as { lemonSqueezyReady?: boolean }).lemonSqueezyReady = true;
           }
         }}
         onError={() => {
@@ -631,37 +617,6 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Video Modal */}
-      {isVideoPlaying && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setIsVideoPlaying(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative max-w-4xl w-full bg-white rounded-2xl overflow-hidden"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-          >
-            <div className="aspect-video bg-gray-900 flex items-center justify-center">
-              <div className="text-center text-white">
-                <Play className="w-16 h-16 mx-auto mb-4" />
-                <p className="text-lg">Демо-видео</p>
-                <p className="text-sm text-gray-400">Скоро будет доступно</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsVideoPlaying(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-            >
-              ✕
-            </button>
-          </motion.div>
-        </motion.div>
-      )}
     </div>
   );
 }
