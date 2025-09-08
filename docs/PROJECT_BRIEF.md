@@ -6,7 +6,7 @@
 
 ## Ключевые возможности
 
-1. **Photo Fixer (клиент):** удаление фона (WASM), ресайз/сжатие, проверка правил (500–5000 px; ≤25 MB; JPEG/PNG/WebP), EXIF-strip.
+1. **Photo Fixer (сервер):** удаление фона на сервере, ресайз/сжатие, проверка правил (500–5000 px; ≤25 MB; JPEG/PNG/WebP), EXIF-strip.
 2. **Title & Description Helper:** шаблон из Brand/Type/Model/Key spec; краткие буллеты; RU/KZ.
 3. **Category Checklist:** пресеты для модерации по категории.
 4. **Export:** ZIP (`/images/<SKU>_1.jpg…`) + CSV + README. Импорт в Kaspi через Excel/CSV.
@@ -30,12 +30,12 @@
 
 ## Объём v2
 
-- **Frontend-first** сохраняется: фото-пайплайн и экспорт остаются на клиенте.
+- **Серверная обработка**: удаление фона выполняется на сервере, экспорт остается на клиенте.
 - **Backend минимальный**: учетные записи, биллинг (вебхуки), квоты, Magic Fill, хранение черновиков и активов.
 
 ## Архитектура
 
-- Next.js (App Router, TS). API Routes: `auth`, `billing/webhooks`, `magic-fill`, `export` (опц.), `health`.
+- Next.js (App Router, TS). API Routes: `auth`, `billing/webhooks`, `magic-fill`, `process-photo`, `export` (опц.), `health`.
 - БД: Postgres (Prisma). Модели:
   - `User`, `Account` (NextAuth), `Session` (JWT use),
   - `Subscription` { provider, plan, status, currentPeriodEnd, customerId },
@@ -62,7 +62,7 @@
 ## Безопасность
 
 - Ключи/модели/LLM — только на сервере. Вебхуки с проверкой подписи. Idempotency-ключи.
-- Фото Free — не покидают устройство. Pro-хранилище (объектка) — через signed URLs + авто-удаление TTL.
+- Удаление фона выполняется на сервере для всех пользователей. Pro-хранилище (объектка) — через signed URLs + авто-удаление TTL.
 
 ## Планы после v2
 

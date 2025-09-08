@@ -51,6 +51,7 @@
     },
     "profile": {
       "view": "Профиль",
+      "pageTitle": "Профиль",
       "settings": "Баптаулар",
       "signOut": "Шығу",
       "backToHome": "Басты бетке",

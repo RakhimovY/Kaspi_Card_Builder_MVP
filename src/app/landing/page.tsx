@@ -3,9 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { AuthButtons } from '@/components/AuthButtons';
 import { BuyProButton } from '@/components/BuyProButton';
+import Header from '@/components/Header';
 import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
@@ -120,41 +119,11 @@ export default function LandingPage() {
       </div>
 
       {/* Header */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative container mx-auto px-4 py-6 z-10"
-      >
-        <div className="flex justify-between items-center">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center space-x-2"
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <Camera className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              Trade Card Builder
-            </h1>
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center space-x-4"
-          >
-            <Button 
-              variant="outline" 
-              className="hidden sm:flex"
-              onClick={scrollToPricing}
-            >
-              {nav.pricing}
-            </Button>
-            <AuthButtons />
-            <LanguageSwitcher />
-          </motion.div>
-        </div>
-      </motion.header>
+      <Header 
+        variant="landing"
+        showPricingButton={true}
+        onPricingClick={scrollToPricing}
+      />
 
       {/* Hero Section */}
       <section className="relative container mx-auto px-4 py-20 text-center z-10">
@@ -536,25 +505,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Lemon Squeezy Test Section - Development Only */}
-      {process.env.NODE_ENV === 'development' && (
-        <section className="relative py-20 z-10">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                🧪 Lemon Squeezy Integration Test
-              </h2>
-              <p className="text-lg text-gray-600">
-                Development testing component for Lemon Squeezy overlay
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <LemonSqueezyTest />
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Footer */}
       <footer className="relative bg-gray-900 text-white py-16 z-10">
         <div className="container mx-auto px-4">
@@ -600,23 +550,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      {/* Lemon Squeezy Script */}
-      <script
-        src="https://app.lemonsqueezy.com/js/lemon.js"
-        defer
-        onLoad={() => {
-          console.log('Lemon Squeezy script loaded');
-          // Set a flag to indicate script is ready
-          if (typeof window !== 'undefined') {
-            (window as unknown as { lemonSqueezyReady?: boolean }).lemonSqueezyReady = true;
-          }
-        }}
-        onError={() => {
-          console.error('Failed to load Lemon Squeezy script');
-        }}
-      />
-
     </div>
   );
 }

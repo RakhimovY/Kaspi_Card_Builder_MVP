@@ -6,21 +6,21 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import Header from '@/components/Header'
 import { useAuthTranslations } from '@/lib/useTranslations'
 import { 
-  ArrowLeft, 
   User, 
   Mail, 
   Calendar, 
-  Settings, 
-  Shield, 
-  Activity,
-  FileImage,
-  Download,
-  History,
   LogOut,
   Crown,
-  Zap
+  Zap,
+  Camera,
+  Sparkles,
+  CheckCircle,
+  Clock,
+  TrendingUp
 } from 'lucide-react'
 import Link from 'next/link'
 import { clearAuthData } from '@/lib/auth'
@@ -137,227 +137,214 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Заголовок и навигация */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Header */}
+      <Header 
+        variant="profile"
+        showBackButton={true}
+        backHref="/"
+        showAuthButtons={false}
+        showLanguageSwitcher={false}
+      />
+      
+      {/* Main content with matching container width */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Profile Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <Link href="/">
-              <Button variant="ghost">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {profile.backToHome}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <Avatar className="w-16 h-16 ring-4 ring-white shadow-lg">
+                <AvatarImage src={session.user.image || ''} alt={session.user.name || ''} />
+                <AvatarFallback className="text-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  {session.user.name?.charAt(0) || session.user.email?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{session.user.name}</h1>
+                <p className="text-gray-600">{session.user.email}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    <User className="w-3 h-3 mr-1" />
+                    {session.user.id}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {lastLogin}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/studio">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                  <Camera className="w-4 h-4 mr-2" />
+                  Открыть студию
+                </Button>
+              </Link>
+              <Button 
+                onClick={handleSignOut} 
+                variant="outline" 
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                {profile.signOut}
               </Button>
-            </Link>
-            <Button 
-              onClick={handleSignOut} 
-              variant="outline" 
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              {profile.signOut}
-            </Button>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Основная информация профиля */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={session.user.image || ''} alt={session.user.name || ''} />
-                    <AvatarFallback className="text-2xl">
-                      {session.user.name?.charAt(0) || session.user.email?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+        {/* Subscription Plan Card */}
+        <div className="mb-8">
+          <Card className="overflow-hidden shadow-lg border-0 bg-gradient-to-r from-white to-gray-50">
+            <CardContent className="p-6">
+              {loadingSubscription ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
                 </div>
-                <CardTitle className="text-2xl">{session.user.name}</CardTitle>
-                <p className="text-gray-600">{session.user.email}</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <User className="w-5 h-5 text-blue-500" />
+              ) : subscriptionData ? (
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-full ${
+                      subscriptionData.plan === 'pro' 
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500' 
+                        : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                    }`}>
+                      <Crown className="w-6 h-6 text-white" />
+                    </div>
                     <div>
-                      <p className="text-sm text-gray-500">{profile.userId}</p>
-                      <p className="font-medium">{session.user.id}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className={`text-xl font-bold ${
+                          subscriptionData.plan === 'pro' ? 'text-purple-800' : 'text-green-800'
+                        }`}>
+                          {subscriptionData.plan === 'pro' ? 'Pro' : 'Free'} план
+                        </h3>
+                        {subscriptionData.plan === 'pro' && (
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Активен
+                          </Badge>
+                        )}
+                      </div>
+                      <p className={`text-sm ${
+                        subscriptionData.plan === 'pro' ? 'text-purple-600' : 'text-green-600'
+                      }`}>
+                        {subscriptionData.plan === 'pro' 
+                          ? 'До 500 фото в месяц • Приоритетная обработка' 
+                          : 'До 50 фото в месяц • Базовые функции'
+                        }
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <Mail className="w-5 h-5 text-green-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium">{session.user.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <Calendar className="w-5 h-5 text-purple-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">{profile.lastLogin}</p>
-                      <p className="font-medium">{lastLogin}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Дополнительная информация и действия */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Статистика использования */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Activity className="w-5 h-5 mr-2 text-blue-500" />
-                  {profile.usageStats}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <FileImage className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                    <p className="text-2xl font-bold text-blue-600">
-                      {subscriptionData?.currentUsage?.photosProcessed || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">{profile.processedPhotos}</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Download className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                    <p className="text-2xl font-bold text-green-600">
-                      {subscriptionData?.currentUsage?.exportCount || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">{profile.exports}</p>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <History className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                    <p className="text-2xl font-bold text-purple-600">
-                      {subscriptionData?.currentUsage?.magicFillCount || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">Magic Fill</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Быстрые действия */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Settings className="w-5 h-5 mr-2 text-gray-500" />
-                  {profile.quickActions}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Link href="/studio">
-                    <Button className="w-full h-16 text-lg" variant="outline">
-                      <FileImage className="w-5 h-5 mr-2" />
-                      {profile.openStudio}
+                  
+                  {subscriptionData.plan === 'free' ? (
+                    <Button 
+                      onClick={handleUpgrade} 
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      {profile.upgrade}
                     </Button>
-                  </Link>
-                  <Button className="w-full h-16 text-lg" variant="outline" disabled>
-                    <Shield className="w-5 h-5 mr-2" />
-                    {profile.securitySettings}
+                  ) : (
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600 mb-1">Следующее списание</p>
+                      <p className="font-semibold text-gray-900">
+                        {subscriptionData.subscription?.currentPeriodEnd 
+                          ? new Date(subscriptionData.subscription.currentPeriodEnd).toLocaleDateString('ru-RU')
+                          : 'Не указано'
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">{profile.freePlan}</h3>
+                    <p className="text-sm text-gray-600">{profile.freePlanLimit}</p>
+                  </div>
+                  <Button 
+                    onClick={handleUpgrade}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    {profile.upgrade}
                   </Button>
                 </div>
-              </CardContent>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Usage Overview */}
+        {subscriptionData && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="text-center p-6 shadow-lg border-0 bg-gradient-to-br from-blue-50 to-blue-100">
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-blue-600 mb-1">
+                {subscriptionData.currentUsage.photosProcessed}
+              </h3>
+              <p className="text-sm text-gray-600 mb-2">{profile.processedPhotos}</p>
+              <div className="w-full bg-blue-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${Math.min(100, (subscriptionData.currentUsage.photosProcessed / subscriptionData.limits.photosProcessed) * 100)}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {subscriptionData.currentUsage.photosProcessed} / {subscriptionData.limits.photosProcessed}
+              </p>
             </Card>
 
-            {/* Информация о тарифе */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Crown className="w-5 h-5 mr-2 text-green-500" />
-                  {profile.currentPlan}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingSubscription ? (
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="animate-pulse space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                ) : subscriptionData ? (
-                  <div className={`p-4 rounded-lg border ${
-                    subscriptionData.plan === 'pro' 
-                      ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200' 
-                      : 'bg-green-50 border-green-200'
-                  }`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Crown className={`w-5 h-5 ${
-                          subscriptionData.plan === 'pro' ? 'text-purple-600' : 'text-green-600'
-                        }`} />
-                        <div>
-                          <p className={`font-semibold ${
-                            subscriptionData.plan === 'pro' ? 'text-purple-800' : 'text-green-800'
-                          }`}>
-                            {subscriptionData.plan === 'pro' ? 'Pro' : 'Free'} план
-                          </p>
-                          <p className={`text-sm ${
-                            subscriptionData.plan === 'pro' ? 'text-purple-600' : 'text-green-600'
-                          }`}>
-                            {subscriptionData.plan === 'pro' 
-                              ? 'До 500 фото в месяц' 
-                              : 'До 50 фото в месяц'
-                            }
-                          </p>
-                        </div>
-                      </div>
-                      {subscriptionData.plan === 'free' && (
-                        <Button 
-                          onClick={handleUpgrade} 
-                          size="sm"
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                        >
-                          <Zap className="w-4 h-4 mr-2" />
-                          {profile.upgrade}
-                        </Button>
-                      )}
-                    </div>
-                    
-                    {/* Лимиты использования */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Фото обработано:</span>
-                        <span className="font-medium">
-                          {subscriptionData.currentUsage.photosProcessed} / {subscriptionData.limits.photosProcessed}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Magic Fill:</span>
-                        <span className="font-medium">
-                          {subscriptionData.currentUsage.magicFillCount} / {subscriptionData.limits.magicFillCount}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Экспорты:</span>
-                        <span className="font-medium">
-                          {subscriptionData.currentUsage.exportCount} / {subscriptionData.limits.exportCount}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-gray-800">{profile.freePlan}</p>
-                        <p className="text-sm text-gray-600">{profile.freePlanLimit}</p>
-                      </div>
-                      <Button variant="outline" size="sm" disabled>
-                        {profile.upgrade}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
+            <Card className="text-center p-6 shadow-lg border-0 bg-gradient-to-br from-green-50 to-green-100">
+              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-green-600 mb-1">
+                {subscriptionData.currentUsage.exportCount}
+              </h3>
+              <p className="text-sm text-gray-600 mb-2">{profile.exports}</p>
+              <div className="w-full bg-green-200 rounded-full h-2">
+                <div 
+                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${Math.min(100, (subscriptionData.currentUsage.exportCount / subscriptionData.limits.exportCount) * 100)}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {subscriptionData.currentUsage.exportCount} / {subscriptionData.limits.exportCount}
+              </p>
+            </Card>
+
+            <Card className="text-center p-6 shadow-lg border-0 bg-gradient-to-br from-purple-50 to-purple-100">
+              <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-purple-600 mb-1">
+                {subscriptionData.currentUsage.magicFillCount}
+              </h3>
+              <p className="text-sm text-gray-600 mb-2">Magic Fill</p>
+              <div className="w-full bg-purple-200 rounded-full h-2">
+                <div 
+                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${Math.min(100, (subscriptionData.currentUsage.magicFillCount / subscriptionData.limits.magicFillCount) * 100)}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {subscriptionData.currentUsage.magicFillCount} / {subscriptionData.limits.magicFillCount}
+              </p>
             </Card>
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   )

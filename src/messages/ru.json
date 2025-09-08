@@ -51,6 +51,7 @@
     },
     "profile": {
       "view": "Профиль",
+      "pageTitle": "Профиль",
       "settings": "Настройки",
       "signOut": "Выйти",
       "backToHome": "На главную",

@@ -1,7 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
-import { useAppStore } from './store';
-import { processImage, ImageProcessingOptions } from './imageProcessing';
-import { trackProcessStart, trackProcessDone } from './analytics';
+import { useState, useCallback, useRef } from "react";
+import { useAppStore } from "./store";
+import { ImageProcessingOptions } from "./imageProcessing";
+import { processImageServerOnly } from "./serverImageProcessing";
+import { trackProcessStart, trackProcessDone } from "./analytics";
 
 interface ProcessingState {
   inFlight: number; // количество задач в воркерах
@@ -24,28 +25,36 @@ export function useImageProcessing() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const processingQueueRef = useRef<Set<string>>(new Set());
   const processingStateRef = useRef<ProcessingState>(processingState);
-  
+
   // Синхронизируем ref с состоянием
   processingStateRef.current = processingState;
 
   // Функция для проверки состояния паузы с yield
   const checkPauseState = async () => {
-    while (processingStateRef.current.isPaused && !processingStateRef.current.isCancelled && !abortControllerRef.current?.signal.aborted) {
-      await new Promise(resolve => setTimeout(resolve, 10)); // Очень частые проверки
+    while (
+      processingStateRef.current.isPaused &&
+      !processingStateRef.current.isCancelled &&
+      !abortControllerRef.current?.signal.aborted
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 10)); // Очень частые проверки
     }
   };
 
   // Методы управления пулом
   const pauseProcessing = useCallback(() => {
-    setProcessingState(prev => ({ ...prev, isPaused: true }));
+    setProcessingState((prev) => ({ ...prev, isPaused: true }));
   }, []);
 
   const resumeProcessing = useCallback(() => {
-    setProcessingState(prev => ({ ...prev, isPaused: false }));
+    setProcessingState((prev) => ({ ...prev, isPaused: false }));
   }, []);
 
   const cancelAllProcessing = useCallback(() => {
-    setProcessingState(prev => ({ ...prev, isCancelled: true, isPaused: false }));
+    setProcessingState((prev) => ({
+      ...prev,
+      isCancelled: true,
+      isPaused: false,
+    }));
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -69,12 +78,12 @@ export function useImageProcessing() {
 
     // Создаем новый AbortController для отмены
     abortControllerRef.current = new AbortController();
-    
+
     // Сбрасываем состояние
     setProcessingState({
       inFlight: 0,
-      queueLen: files.filter(f => f.status !== 'completed').length,
-      doneCount: files.filter(f => f.status === 'completed').length,
+      queueLen: files.filter((f) => f.status !== "completed").length,
+      doneCount: files.filter((f) => f.status === "completed").length,
       isPaused: false,
       isCancelled: false,
     });
@@ -83,50 +92,66 @@ export function useImageProcessing() {
     try {
       trackProcessStart(files.length);
 
-      const unprocessedFiles = files.filter(f => f.status !== 'completed');
-      
+      const unprocessedFiles = files.filter((f) => f.status !== "completed");
+
       for (let i = 0; i < unprocessedFiles.length; i++) {
         const file = unprocessedFiles[i];
-        
+
         // Проверяем отмену перед каждой итерацией
-        if (processingStateRef.current.isCancelled || abortControllerRef.current?.signal.aborted) {
+        if (
+          processingStateRef.current.isCancelled ||
+          abortControllerRef.current?.signal.aborted
+        ) {
           break;
         }
 
         // Ждем если на паузе - с очень частыми проверками
         await checkPauseState();
 
-        if (processingStateRef.current.isCancelled || abortControllerRef.current?.signal.aborted) {
+        if (
+          processingStateRef.current.isCancelled ||
+          abortControllerRef.current?.signal.aborted
+        ) {
           break;
         }
 
         // Yield control to browser for UI responsiveness
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         // Проверяем паузу после yield
         await checkPauseState();
 
         setCurrentFileIndex(i);
-        updateFileStatus(file.id, 'processing');
-        
+        updateFileStatus(file.id, "processing");
+
         // Добавляем в очередь обработки
         processingQueueRef.current.add(file.id);
-        setProcessingState(prev => ({ ...prev, inFlight: prev.inFlight + 1 }));
+        setProcessingState((prev) => ({
+          ...prev,
+          inFlight: prev.inFlight + 1,
+        }));
 
         // Создаем отдельный AbortController для этого файла
         const fileAbortController = new AbortController();
-        
+
         // Связываем с основным AbortController
         const mainAbortHandler = () => {
           fileAbortController.abort();
         };
-        abortControllerRef.current?.signal.addEventListener('abort', mainAbortHandler);
+        abortControllerRef.current?.signal.addEventListener(
+          "abort",
+          mainAbortHandler
+        );
 
         try {
           // Use the original File object if available, otherwise fetch from URL
-          const actualFile = file.originalFile || await fetch(file.originalUrl!).then(r => r.blob()).then(b => new File([b], file.name, { type: file.type }));
+          const actualFile =
+            file.originalFile ||
+            (await fetch(file.originalUrl!)
+              .then((r) => r.blob())
+              .then((b) => new File([b], file.name, { type: file.type })));
           if (!actualFile) {
-            throw new Error('Failed to get file data');
+            throw new Error("Failed to get file data");
           }
 
           const options: ImageProcessingOptions = {
@@ -134,10 +159,10 @@ export function useImageProcessing() {
             format: settings.format,
             quality: settings.quality,
             removeBg: settings.removeBg,
-            optimizeBgRemoval: false,
           };
 
-          const result = await processImage(
+          // Используем только серверную обработку
+          const result = await processImageServerOnly(
             actualFile,
             options,
             (progress) => {
@@ -152,30 +177,38 @@ export function useImageProcessing() {
 
           // Update file with processed data
           updateFileUrls(file.id, file.originalUrl, processedUrl);
-          updateFileStatus(file.id, 'completed');
-
+          updateFileStatus(file.id, "completed");
         } catch (error) {
           console.error(`Failed to process ${file.name}:`, error);
-          updateFileStatus(file.id, 'error', error instanceof Error ? error.message : 'Unknown error');
+          updateFileStatus(
+            file.id,
+            "error",
+            error instanceof Error ? error.message : "Unknown error"
+          );
         } finally {
           // Очищаем обработчик событий
-          abortControllerRef.current?.signal.removeEventListener('abort', mainAbortHandler);
-          
+          abortControllerRef.current?.signal.removeEventListener(
+            "abort",
+            mainAbortHandler
+          );
+
           // Убираем из очереди обработки
           processingQueueRef.current.delete(file.id);
-          setProcessingState(prev => ({ 
-            ...prev, 
+          setProcessingState((prev) => ({
+            ...prev,
             inFlight: Math.max(0, prev.inFlight - 1),
             doneCount: prev.doneCount + 1,
-            queueLen: Math.max(0, prev.queueLen - 1)
+            queueLen: Math.max(0, prev.queueLen - 1),
           }));
         }
       }
 
-      trackProcessDone(files.length, files.filter(f => f.status === 'completed').length);
-
+      trackProcessDone(
+        files.length,
+        files.filter((f) => f.status === "completed").length
+      );
     } catch (error) {
-      console.error('Processing failed:', error);
+      console.error("Processing failed:", error);
     } finally {
       // Сбрасываем состояние только если не отменено
       if (!processingStateRef.current.isCancelled) {
@@ -184,53 +217,68 @@ export function useImageProcessing() {
     }
   }, [files, settings, updateFileStatus, updateFileUrls, resetProcessingState]);
 
-  const processSingleFile = useCallback(async (fileId: string) => {
-    const file = files.find(f => f.id === fileId);
-    if (!file) return;
+  const processSingleFile = useCallback(
+    async (fileId: string) => {
+      const file = files.find((f) => f.id === fileId);
+      if (!file) return;
 
-    // Добавляем в очередь обработки
-    processingQueueRef.current.add(fileId);
-    setProcessingState(prev => ({ ...prev, inFlight: prev.inFlight + 1 }));
+      // Добавляем в очередь обработки
+      processingQueueRef.current.add(fileId);
+      setProcessingState((prev) => ({ ...prev, inFlight: prev.inFlight + 1 }));
 
-    try {
-      updateFileStatus(fileId, 'processing');
+      try {
+        updateFileStatus(fileId, "processing");
 
-      // Use the original File object if available, otherwise fetch from URL
-      const actualFile = file.originalFile || await fetch(file.originalUrl!).then(r => r.blob()).then(b => new File([b], file.name, { type: file.type }));
-      if (!actualFile) {
-        throw new Error('Failed to get file data');
+        // Use the original File object if available, otherwise fetch from URL
+        const actualFile =
+          file.originalFile ||
+          (await fetch(file.originalUrl!)
+            .then((r) => r.blob())
+            .then((b) => new File([b], file.name, { type: file.type })));
+        if (!actualFile) {
+          throw new Error("Failed to get file data");
+        }
+
+        const options: ImageProcessingOptions = {
+          maxEdgePx: settings.maxEdgePx,
+          format: settings.format,
+          quality: settings.quality,
+          removeBg: settings.removeBg,
+        };
+
+        // Используем только серверную обработку
+        const result = await processImageServerOnly(
+          actualFile,
+          options,
+          undefined,
+          abortControllerRef.current || undefined
+        );
+
+        // Create URL for processed image
+        const processedUrl = URL.createObjectURL(result.blob);
+
+        // Update file with processed data
+        updateFileUrls(fileId, file.originalUrl, processedUrl);
+        updateFileStatus(fileId, "completed");
+      } catch (error) {
+        console.error(`Failed to process ${file.name}:`, error);
+        updateFileStatus(
+          fileId,
+          "error",
+          error instanceof Error ? error.message : "Unknown error"
+        );
+      } finally {
+        // Убираем из очереди обработки
+        processingQueueRef.current.delete(fileId);
+        setProcessingState((prev) => ({
+          ...prev,
+          inFlight: Math.max(0, prev.inFlight - 1),
+          doneCount: prev.doneCount + 1,
+        }));
       }
-
-      const options: ImageProcessingOptions = {
-        maxEdgePx: settings.maxEdgePx,
-        format: settings.format,
-        quality: settings.quality,
-        removeBg: settings.removeBg,
-        optimizeBgRemoval: true, // Включаем оптимизацию по умолчанию
-      };
-
-      const result = await processImage(actualFile, options, undefined, abortControllerRef.current || undefined);
-
-      // Create URL for processed image
-      const processedUrl = URL.createObjectURL(result.blob);
-
-      // Update file with processed data
-      updateFileUrls(fileId, file.originalUrl, processedUrl);
-      updateFileStatus(fileId, 'completed');
-
-    } catch (error) {
-      console.error(`Failed to process ${file.name}:`, error);
-      updateFileStatus(fileId, 'error', error instanceof Error ? error.message : 'Unknown error');
-    } finally {
-      // Убираем из очереди обработки
-      processingQueueRef.current.delete(fileId);
-      setProcessingState(prev => ({ 
-        ...prev, 
-        inFlight: Math.max(0, prev.inFlight - 1),
-        doneCount: prev.doneCount + 1
-      }));
-    }
-  }, [files, settings, updateFileStatus, updateFileUrls]);
+    },
+    [files, settings, updateFileStatus, updateFileUrls]
+  );
 
   const getProgress = useCallback(() => {
     if (files.length === 0) return 0;
@@ -246,35 +294,35 @@ export function useImageProcessing() {
 
   // Получаем готовые файлы для экспорта
   const getCompletedFiles = useCallback(() => {
-    return files.filter(f => f.status === 'completed');
+    return files.filter((f) => f.status === "completed");
   }, [files]);
 
   // Проверяем, есть ли активная обработка
-  const isProcessing = processingState.inFlight > 0 || processingState.queueLen > 0;
+  const isProcessing =
+    processingState.inFlight > 0 || processingState.queueLen > 0;
 
   return {
     // Гранулярные флаги состояния
     processingState,
     isProcessing,
-    
+
     // Методы обработки
     processAllFiles,
     processSingleFile,
-    
+
     // Методы управления
     pauseProcessing,
     resumeProcessing,
     cancelAllProcessing,
     resetProcessingState,
-    
+
     // Утилиты
     getProgress,
     getCurrentFileName,
     getCompletedFiles,
-    
+
     // Метаданные
     currentFileIndex,
     totalFiles: files.length,
   };
 }
-

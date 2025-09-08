@@ -4,7 +4,7 @@ You are Cursor AI coding assistant for a production-grade MVP with **backend**.
 
 Build **Trade Card Builder** with accounts, subscriptions and Magic Fill:
 
-- **Photo Fixer** (client): background removal (WASM), resize/crop, compression, EXIF strip, Kaspi-limits.
+- **Photo Fixer** (server): background removal on server, resize/crop, compression, EXIF strip, Kaspi-limits.
 - **Title & Description Helper**: template from brand/type/model/key spec; bullets; RU/KZ.
 - **Category Checklist** presets.
 - **Export**: ZIP (images/…), CSV, README.

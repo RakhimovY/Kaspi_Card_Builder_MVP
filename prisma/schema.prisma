@@ -57,6 +57,7 @@ model User {
   usageStats    UsageStat[]
   productDrafts ProductDraft[]
   imageAssets   ImageAsset[]
+  imageProcessingLogs ImageProcessingLog[]
 }
 
 model VerificationToken {
@@ -164,4 +165,22 @@ model BarcodeLookup {
   updatedAt DateTime @updatedAt
 
   @@index([gtin])
+}
+
+model ImageProcessingLog {
+  id              String   @id @default(cuid())
+  userId          String
+  filename        String
+  originalSize    Int
+  processedSize   Int
+  processingTime  Int      // milliseconds
+  options         String   // JSON string with processing options
+  success         Boolean
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([success])
 }
