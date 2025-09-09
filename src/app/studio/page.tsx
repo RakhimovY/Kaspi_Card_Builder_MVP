@@ -7,18 +7,19 @@ import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Camera } from 'lucide-react';
-import FileDrop from '@/components/FileDrop';
+import UploadAndSettings from '@/components/UploadAndSettings';
 import Preview from '@/components/Preview';
 import ProductForm from '@/components/ProductForm';
 import ExportPanel from '@/components/ExportPanel';
-import ImageSettings from '@/components/ImageSettings';
 import { useTranslations } from '@/lib/useTranslations';
 import { useAppStore } from '@/lib/store';
+import { useImageProcessing } from '@/lib/useImageProcessing';
 
 export default function StudioPage() {
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslations();
   const { files } = useAppStore();
+  const { processingState } = useImageProcessing();
 
   useEffect(() => {
     setMounted(true);
@@ -47,73 +48,57 @@ export default function StudioPage() {
       />
 
       {/* Main Content */}
-      <main className="relative container mx-auto px-4 py-6 z-10">
+      <main className="relative container mx-auto px-4 py-4 z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="max-w-7xl mx-auto"
         >
-          {/* Step 1: Upload Images */}
+          {/* Step 1: Upload & Settings */}
           <motion.section 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mb-8"
+            className="mb-6"
           >
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">1. Загрузите фотографии</h2>
-              <p className="text-gray-600">Перетащите изображения или выберите файлы для обработки</p>
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">1. Загрузите и настройте</h2>
+              <p className="text-sm text-gray-600">Загрузите изображения и настройте параметры обработки</p>
             </div>
-            <FileDrop />
+            <UploadAndSettings />
           </motion.section>
 
-          {/* Step 2: Preview & Settings */}
-          {files.length > 0 && (
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mb-8"
-            >
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">2. Настройте обработку</h2>
-                <p className="text-gray-600">Просмотрите изображения и настройте параметры обработки</p>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Preview />
-                <ImageSettings />
-              </div>
-            </motion.section>
-          )}
+          {/* Step 2: Preview (only shown after processing starts) */}
+          <Preview />
 
-          {/* Step 3: Product Information */}
-          {files.length > 0 && (
+          {/* Step 3: Product Information (only shown after processing starts) */}
+          {(processingState.inFlight > 0 || processingState.doneCount > 0 || files.some(f => f.status === 'completed')) && (
             <motion.section 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mb-8"
+              className="mb-6"
             >
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">3. Заполните информацию о товаре</h2>
-                <p className="text-gray-600">Добавьте детали товара для создания полного пакета</p>
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">3. Заполните информацию о товаре</h2>
+                <p className="text-sm text-gray-600">Добавьте детали товара для создания полного пакета</p>
               </div>
               <ProductForm />
             </motion.section>
           )}
 
-          {/* Step 4: Export */}
-          {files.length > 0 && (
+          {/* Step 4: Export (only shown after processing starts) */}
+          {(processingState.inFlight > 0 || processingState.doneCount > 0 || files.some(f => f.status === 'completed')) && (
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
               className="sticky bottom-4 z-10"
             >
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">4. Экспорт готового пакета</h2>
-                <p className="text-gray-600">Скачайте обработанные изображения и информацию о товаре</p>
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">4. Экспорт готового пакета</h2>
+                <p className="text-sm text-gray-600">Скачайте обработанные изображения и информацию о товаре</p>
               </div>
               <ExportPanel />
             </motion.section>

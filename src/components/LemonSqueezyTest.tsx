@@ -25,7 +25,7 @@ export function LemonSqueezyTest() {
 
     const checkScript = () => {
       if (typeof window !== 'undefined') {
-        if ((window as any).createLemonSqueezy) {
+        if ('createLemonSqueezy' in window) {
           setScriptStatus('loaded')
           addDebugInfo('Lemon Squeezy script detected')
         } else {
@@ -79,17 +79,17 @@ export function LemonSqueezyTest() {
       return
     }
 
-    if (typeof window !== 'undefined' && (window as any).createLemonSqueezy) {
+    if (typeof window !== 'undefined' && 'createLemonSqueezy' in window) {
       setPurchaseStatus('purchasing')
       addDebugInfo('Attempting to open overlay...')
       
       try {
-        (window as any).createLemonSqueezy({
+        (window as { createLemonSqueezy: (config: unknown) => void }).createLemonSqueezy({
           productId: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_PRODUCT_ID || '123456',
           variantId: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID || '789012',
           name: 'Trade Card Builder Pro',
           email: '',
-          successCallback: (data: any) => {
+          successCallback: (data: unknown) => {
             addDebugInfo(`Payment successful: ${JSON.stringify(data)}`)
             setPurchaseStatus('success')
           },
@@ -270,7 +270,7 @@ export function LemonSqueezyTest() {
         {/* Manual Check */}
         {!mockMode && (
           <div className="text-xs text-gray-600">
-            <p>If overlay doesn't work, check:</p>
+            <p>If overlay doesn&apos;t work, check:</p>
             <ul className="list-disc list-inside mt-1 space-y-1">
               <li>Lemon Squeezy script is loaded (check Network tab)</li>
               <li>Product ID and Variant ID are correct</li>

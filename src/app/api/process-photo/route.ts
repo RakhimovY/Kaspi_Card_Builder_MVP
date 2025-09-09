@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Возвращаем результат
-    const response = new NextResponse(result.blob as Blob, {
+    const response = new NextResponse(result.blob as unknown as Blob, {
       status: 200,
       headers: {
         "Content-Type": `image/${result.format}`,
