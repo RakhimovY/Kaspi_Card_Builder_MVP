@@ -5,9 +5,9 @@ import { prisma } from "@/lib/server/prisma";
 import { assertQuota, incrementUsage } from "@/lib/server/quota";
 import {
   processImageServer,
-  imageProcessingOptionsSchema,
   type ServerImageProcessingOptions,
 } from "@/lib/server/imageProcessing";
+import { imageProcessingOptionsSchema } from "@/lib/server/image-utils";
 
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
