@@ -68,8 +68,8 @@ export interface FormData {
   
   // Legacy fields (for backward compatibility)
   category: string;
-  price: number;
-  quantity: number;
+  price: string;
+  quantity: string;
   description: string;
   additionalSpecs: string;
   extraKeywords: string[];
@@ -165,8 +165,8 @@ const initialFormData: FormData = {
   
   // Legacy fields
   category: '',
-  price: 0,
-  quantity: 1,
+  price: '',
+  quantity: '',
   description: '',
   additionalSpecs: '',
   extraKeywords: [],
@@ -180,7 +180,7 @@ const initialCategoryChecklist: CategoryChecklistState = {
 };
 
 // Функция для нормализации данных формы
-const normalizeFormData = (data: Record<string, unknown>): FormData => {
+const normalizeFormData = (data: Record<string, unknown> | FormData): FormData => {
   return {
     ...initialFormData,
     ...data,

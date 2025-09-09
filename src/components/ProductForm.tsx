@@ -25,7 +25,7 @@ export default function ProductForm() {
     resetForm,
     clearStorage
   } = useAppStore();
-  const { t } = useTranslations();
+  const { t, loading: translationsLoading } = useTranslations();
   const { processingState } = useImageProcessing();
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   
@@ -64,7 +64,6 @@ export default function ProductForm() {
         const filledIdFields = requiredIdFields.filter(field => {
           const value = formData[field as keyof typeof formData];
           if (typeof value === 'string') return value.trim().length > 0;
-          if (typeof value === 'number') return value > 0;
           return false;
         });
         return { isRequired: true, isComplete: filledIdFields.length === requiredIdFields.length };
@@ -112,10 +111,10 @@ export default function ProductForm() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-600" />
-            <span>{t('studio.form.title')}</span>
+            <span>{translationsLoading ? 'Информация о товаре' : t('studio.form.title')}</span>
             {isProcessing && (
               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                {t('studio.form.processing')}
+                {translationsLoading ? 'Обработка...' : t('studio.form.processing')}
               </span>
             )}
           </div>
@@ -139,13 +138,13 @@ export default function ProductForm() {
               variant="outline"
               size="sm"
               onClick={() => {
-                if (confirm(t('studio.form.reset_confirm'))) {
+                if (confirm(translationsLoading ? 'Сбросить форму?' : t('studio.form.reset_confirm'))) {
                   resetForm();
                 }
               }}
               className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
             >
-              {t('studio.form.reset_form')}
+              {translationsLoading ? 'Сбросить' : t('studio.form.reset_form')}
             </Button>
           </div>
         </CardTitle>
@@ -243,14 +242,17 @@ export default function ProductForm() {
                 <Progress value={getOverallProgress()} className="h-2" />
               </div>
               <div className="text-sm text-gray-600 font-medium">
-                {getOverallProgress()}% {t('common.ready')}
+                {getOverallProgress()}% {translationsLoading ? 'Готово' : t('common.ready')}
               </div>
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              {getOverallProgress() === 100 
-                ? t('studio.form.progress.complete')
-                : t('studio.form.progress.incomplete')
-              }
+              {translationsLoading ? (
+                'Загрузка...'
+              ) : (
+                getOverallProgress() === 100 
+                  ? t('studio.form.progress.complete')
+                  : t('studio.form.progress.incomplete')
+              )}
             </div>
           </div>
 
@@ -375,9 +377,15 @@ export default function ProductForm() {
                   {t('studio.form.fields.price')} *
                 </label>
                 <Input
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                  type="text"
+                  value={formData.price || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Разрешаем только цифры, точку и запятую
+                    if (value === '' || /^[\d.,]+$/.test(value)) {
+                      handleInputChange('price', value);
+                    }
+                  }}
                   placeholder={t('studio.form.fields.price_placeholder')}
                   className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -387,9 +395,15 @@ export default function ProductForm() {
                   {t('studio.form.fields.quantity')} *
                 </label>
                 <Input
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 1)}
+                  type="text"
+                  value={formData.quantity || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Разрешаем только цифры
+                    if (value === '' || /^\d+$/.test(value)) {
+                      handleInputChange('quantity', value);
+                    }
+                  }}
                   placeholder={t('studio.form.fields.quantity_placeholder')}
                   className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />

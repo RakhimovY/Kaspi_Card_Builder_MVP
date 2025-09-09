@@ -33,6 +33,7 @@ const envSchema = z.object({
   
   // OpenAI
   OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL: z.enum(['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini']).default('gpt-4o-mini'),
   
   // GTIN Provider
   GTIN_PROVIDER: z.enum(['upcitemdb', 'barcodelookup']).default('upcitemdb'),

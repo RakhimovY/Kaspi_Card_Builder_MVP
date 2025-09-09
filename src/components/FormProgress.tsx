@@ -7,7 +7,7 @@ import { useAppStore } from '@/lib/store';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function FormProgress() {
-  const { t } = useTranslations();
+  const { t, loading: translationsLoading } = useTranslations();
   const { formData } = useAppStore();
 
   const progressData = useMemo(() => {
@@ -27,18 +27,12 @@ export default function FormProgress() {
       if (typeof field.value === 'string') {
         return field.value.trim().length > 0;
       }
-      if (typeof field.value === 'number') {
-        return field.value > 0;
-      }
       return false;
     });
 
     const missingFields = requiredFields.filter(field => {
       if (typeof field.value === 'string') {
         return field.value.trim().length === 0;
-      }
-      if (typeof field.value === 'number') {
-        return field.value <= 0;
       }
       return true;
     });
@@ -64,7 +58,7 @@ export default function FormProgress() {
           ) : (
             <AlertCircle className="w-5 h-5 text-yellow-600" />
           )}
-          {t('studio.form.progress.title')}
+          {translationsLoading ? 'Заполненность' : t('studio.form.progress.title')}
         </h3>
         <span className="text-sm font-medium text-gray-600">
           {progressData.percentage}%
@@ -79,13 +73,16 @@ export default function FormProgress() {
       <div className="text-sm text-gray-600">
         {isComplete ? (
           <span className="text-green-600 font-medium">
-            {t('studio.form.progress.complete')}
+            {translationsLoading ? 'Форма заполнена полностью' : t('studio.form.progress.complete')}
           </span>
         ) : (
           <span>
-            {t('studio.form.progress.missing', { 
-              fields: progressData.missing.map(f => f.label).join(', ')
-            })}
+            {translationsLoading 
+              ? `Не хватает полей: ${progressData.missing.map(f => f.label).join(', ')}`
+              : t('studio.form.progress.missing', { 
+                  fields: progressData.missing.map(f => f.label).join(', ')
+                })
+            }
           </span>
         )}
       </div>

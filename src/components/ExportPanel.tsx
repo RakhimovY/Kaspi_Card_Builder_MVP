@@ -27,7 +27,7 @@ export default function ExportPanel() {
 
   const completedFiles = files.filter(file => file.status === 'completed' && file.processedUrl);
   const hasFiles = completedFiles.length > 0;
-  const hasFormData = formData.brand && formData.type && formData.model;
+  const hasFormData = formData.brand && formData.type && formData.model && formData.price && formData.quantity;
 
   const handleExport = async () => {
     if (!hasFiles || !hasFormData) {
