@@ -1,25 +1,17 @@
 'use client';
 
-
 import Header from '@/components/Header';
-import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Camera } from 'lucide-react';
-import UploadAndSettings from '@/components/UploadAndSettings';
-import Preview from '@/components/Preview';
-import ProductForm from '@/components/ProductForm';
+import MagicFillStep from '@/components/MagicFillStep';
+import ProductInfoStep from '@/components/ProductInfoStep';
+import PhotoEditorStep from '@/components/PhotoEditorStep';
 import ExportPanel from '@/components/ExportPanel';
-import { useTranslations } from '@/lib/useTranslations';
 import { useAppStore } from '@/lib/store';
-import { useImageProcessing } from '@/lib/useImageProcessing';
 
 export default function StudioPage() {
   const [mounted, setMounted] = useState(false);
-  const { t } = useTranslations();
-  const { files } = useAppStore();
-  const { processingState } = useImageProcessing();
+  const { currentStep } = useAppStore();
 
   useEffect(() => {
     setMounted(true);
@@ -30,13 +22,42 @@ export default function StudioPage() {
     return null;
   }
 
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 'magic-fill':
+        return '1. Magic Fill AI';
+      case 'product-info':
+        return '2. Информация о товаре';
+      case 'photo-editor':
+        return '3. Редактор фото (опционально)';
+      case 'export':
+        return '4. Экспорт готового пакета';
+      default:
+        return 'Студия';
+    }
+  };
+
+  const getStepDescription = () => {
+    switch (currentStep) {
+      case 'magic-fill':
+        return 'Автоматическое заполнение данных о товаре';
+      case 'product-info':
+        return 'Проверка и редактирование информации';
+      case 'photo-editor':
+        return 'Обработка изображений товара (опционально)';
+      case 'export':
+        return 'Скачивание готового пакета';
+      default:
+        return '';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
-      {/* Animated Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Simplified Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Header */}
@@ -48,62 +69,22 @@ export default function StudioPage() {
       />
 
       {/* Main Content */}
-      <main className="relative container mx-auto px-4 py-4 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="max-w-7xl mx-auto"
-        >
-          {/* Step 1: Upload & Settings */}
-          <motion.section 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-6"
-          >
-            <div className="text-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-1">1. Загрузите и настройте</h2>
-              <p className="text-sm text-gray-600">Загрузите изображения и настройте параметры обработки</p>
-            </div>
-            <UploadAndSettings />
-          </motion.section>
+      <main className="relative container mx-auto px-4 py-6 z-10">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Step Header */}
+          <section className="text-center space-y-2">
+            <h2 className="text-2xl font-bold text-gray-900">{getStepTitle()}</h2>
+            <p className="text-gray-600">{getStepDescription()}</p>
+          </section>
 
-          {/* Step 2: Preview (only shown after processing starts) */}
-          <Preview />
-
-          {/* Step 3: Product Information (only shown after processing starts) */}
-          {(processingState.inFlight > 0 || processingState.doneCount > 0 || files.some(f => f.status === 'completed')) && (
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mb-6"
-            >
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">3. Заполните информацию о товаре</h2>
-                <p className="text-sm text-gray-600">Добавьте детали товара для создания полного пакета</p>
-              </div>
-              <ProductForm />
-            </motion.section>
-          )}
-
-          {/* Step 4: Export (only shown after processing starts) */}
-          {(processingState.inFlight > 0 || processingState.doneCount > 0 || files.some(f => f.status === 'completed')) && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="sticky bottom-4 z-10"
-            >
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">4. Экспорт готового пакета</h2>
-                <p className="text-sm text-gray-600">Скачайте обработанные изображения и информацию о товаре</p>
-              </div>
-              <ExportPanel />
-            </motion.section>
-          )}
-        </motion.div>
+          {/* Current Step Content */}
+          <section>
+            {currentStep === 'magic-fill' && <MagicFillStep />}
+            {currentStep === 'product-info' && <ProductInfoStep />}
+            {currentStep === 'photo-editor' && <PhotoEditorStep />}
+            {currentStep === 'export' && <ExportPanel />}
+          </section>
+        </div>
       </main>
     </div>
   );

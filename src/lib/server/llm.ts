@@ -203,7 +203,7 @@ export async function enrichProductWithLlm(
         ],
         ...modelParams,
       }),
-      // Timeout after 30 seconds
+      // Timeout after 30 seconds 
       signal: AbortSignal.timeout(30000),
     })
 

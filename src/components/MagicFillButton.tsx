@@ -10,9 +10,11 @@ import { toast } from 'sonner';
 
 interface MagicFillButtonProps {
   className?: string;
+  onComplete?: () => void;
+  disabled?: boolean;
 }
 
-export default function MagicFillButton({ className }: MagicFillButtonProps) {
+export default function MagicFillButton({ className, onComplete, disabled }: MagicFillButtonProps) {
   const { t } = useTranslations();
   const { formData, updateFormData, files } = useAppStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +81,11 @@ export default function MagicFillButton({ className }: MagicFillButtonProps) {
       trackMagicFill(!!formData.gtin, imageIds.length > 0, fieldsFilled);
 
       toast.success('Magic Fill завершен! Форма заполнена автоматически.');
+      
+      // Вызываем callback если передан
+      if (onComplete) {
+        onComplete();
+      }
     } catch (error) {
       console.error('Magic Fill error:', error);
       toast.error('Ошибка Magic Fill. Попробуйте еще раз.');
@@ -92,16 +99,16 @@ export default function MagicFillButton({ className }: MagicFillButtonProps) {
   return (
     <Button
       onClick={handleMagicFill}
-      disabled={isLoading || !canUseMagicFill}
+      disabled={isLoading || !canUseMagicFill || disabled}
       className={`flex items-center gap-2 ${className}`}
-      variant="outline"
+      variant="default"
     >
       {isLoading ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
         <Sparkles className="w-4 h-4" />
       )}
-      {isLoading ? 'Заполнение...' : t('studio.form.actions.magic_fill')}
+      {isLoading ? 'Заполнение...' : 'Заполнить автоматически'}
     </Button>
   );
 }

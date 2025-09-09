@@ -104,7 +104,7 @@ export default function ProductForm() {
 
   return (
     <Card 
-      className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg compact-card"
+      className="bg-white/90 backdrop-blur-sm border-gray-200 shadow-lg"
       aria-busy={isProcessing}
     >
       <CardHeader className="pb-3">
@@ -162,75 +162,85 @@ export default function ProductForm() {
             </div>
           </div>
           
-          <TabsList className="grid w-full grid-cols-5 bg-gray-50 h-12 mx-4 mb-2">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-gray-50 h-auto mx-4 mb-2 p-1 gap-1">
             <TabsTrigger 
               value="identification" 
-              className={`flex items-center gap-1 text-xs relative ${
+              className={`flex items-center justify-center gap-1 text-xs relative px-2 py-2 min-h-[40px] ${
                 getTabStatus('identification').isComplete ? 'text-green-600' : ''
               }`}
             >
-              <QrCode className="w-3 h-3" />
-              <span className="truncate">{t('studio.form.tabs.identification')}</span>
+              <QrCode className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate text-center text-[10px] sm:text-xs leading-tight">
+                {t('studio.form.tabs.identification')}
+              </span>
               {getTabStatus('identification').isRequired && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               )}
               {getTabStatus('identification').isComplete && (
-                <CheckCircle className="w-3 h-3 text-green-600 ml-1" />
+                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
               )}
             </TabsTrigger>
             
             <TabsTrigger 
               value="content" 
-              className={`flex items-center gap-1 text-xs relative ${
+              className={`flex items-center justify-center gap-1 text-xs relative px-2 py-2 min-h-[40px] ${
                 getTabStatus('content').isComplete ? 'text-green-600' : ''
               }`}
             >
-              <Globe className="w-3 h-3" />
-              <span className="truncate">{t('studio.form.tabs.content')}</span>
+              <Globe className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate text-center text-[10px] sm:text-xs leading-tight">
+                {t('studio.form.tabs.content')}
+              </span>
               {getTabStatus('content').isRequired && (
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               )}
               {getTabStatus('content').isComplete && (
-                <CheckCircle className="w-3 h-3 text-green-600 ml-1" />
+                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
               )}
             </TabsTrigger>
             
             <TabsTrigger 
               value="variants" 
-              className={`flex items-center gap-1 text-xs relative ${
+              className={`flex items-center justify-center gap-1 text-xs relative px-2 py-2 min-h-[40px] ${
                 getTabStatus('variants').isComplete ? 'text-green-600' : ''
               }`}
             >
-              <Layers className="w-3 h-3" />
-              <span className="truncate">{t('studio.form.tabs.variants')}</span>
+              <Layers className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate text-center text-[10px] sm:text-xs leading-tight">
+                {t('studio.form.tabs.variants')}
+              </span>
               {getTabStatus('variants').isComplete && (
-                <CheckCircle className="w-3 h-3 text-green-600 ml-1" />
+                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
               )}
             </TabsTrigger>
             
             <TabsTrigger 
               value="attributes" 
-              className={`flex items-center gap-1 text-xs relative ${
+              className={`flex items-center justify-center gap-1 text-xs relative px-2 py-2 min-h-[40px] ${
                 getTabStatus('attributes').isComplete ? 'text-green-600' : ''
               }`}
             >
-              <Tag className="w-3 h-3" />
-              <span className="truncate">{t('studio.form.tabs.attributes')}</span>
+              <Tag className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate text-center text-[10px] sm:text-xs leading-tight">
+                {t('studio.form.tabs.attributes')}
+              </span>
               {getTabStatus('attributes').isComplete && (
-                <CheckCircle className="w-3 h-3 text-green-600 ml-1" />
+                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
               )}
             </TabsTrigger>
             
             <TabsTrigger 
               value="logistics" 
-              className={`flex items-center gap-1 text-xs relative ${
+              className={`flex items-center justify-center gap-1 text-xs relative px-2 py-2 min-h-[40px] ${
                 getTabStatus('logistics').isComplete ? 'text-green-600' : ''
               }`}
             >
-              <Truck className="w-3 h-3" />
-              <span className="truncate">{t('studio.form.tabs.logistics')}</span>
+              <Truck className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate text-center text-[10px] sm:text-xs leading-tight">
+                {t('studio.form.tabs.logistics')}
+              </span>
               {getTabStatus('logistics').isComplete && (
-                <CheckCircle className="w-3 h-3 text-green-600 ml-1" />
+                <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
               )}
             </TabsTrigger>
           </TabsList>

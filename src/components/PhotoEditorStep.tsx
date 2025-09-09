@@ -7,13 +7,28 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppStore } from '@/lib/store';
-import { FileItem } from '@/lib/store';
 import { useImageProcessing } from '@/lib/useImageProcessing';
 import { trackFileDrop } from '@/lib/analytics';
 import { useTranslations } from '@/lib/useTranslations';
 import { 
-  X, Upload, FileImage, AlertCircle, Play, Pause, Square, ImageIcon,
-  Settings, Zap, Image, Wand2, CheckCircle, RotateCcw, Info, AlertTriangle
+  Upload, 
+  FileImage, 
+  AlertCircle, 
+  Play, 
+  Pause, 
+  Square, 
+  ImageIcon,
+  Settings, 
+  Zap, 
+  Image, 
+  Wand2, 
+  CheckCircle, 
+  RotateCcw, 
+  Info, 
+  AlertTriangle,
+  ArrowRight,
+  ArrowLeft,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,9 +36,17 @@ const MAX_FILES = 50;
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-export default function UploadAndSettings() {
-  const { files, addFile, removeFile, clearFiles, settings, updateSettings } = useAppStore();
+export default function PhotoEditorStep() {
   const { t } = useTranslations();
+  const { 
+    files, 
+    addFile, 
+    removeFile, 
+    clearFiles, 
+    settings, 
+    updateSettings,
+    setCurrentStep 
+  } = useAppStore();
   const { 
     processingState, 
     isProcessing, 
@@ -36,7 +59,6 @@ export default function UploadAndSettings() {
   } = useImageProcessing();
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragCounter, setDragCounter] = useState(0);
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFiles = useCallback((fileList: FileList) => {
     const validateFile = (file: File): string | null => {
@@ -67,12 +89,12 @@ export default function UploadAndSettings() {
         return;
       }
 
-      const fileItem: FileItem = {
+      const fileItem = {
         id: `${Date.now()}-${Math.random()}`,
         name: file.name,
         size: file.size,
         type: file.type,
-        status: 'pending',
+        status: 'pending' as const,
         originalFile: file,
       };
 
@@ -129,7 +151,7 @@ export default function UploadAndSettings() {
     e.target.value = '';
   }, [handleFiles]);
 
-  const getStatusIcon = (status: FileItem['status']) => {
+  const getStatusIcon = (status: any) => {
     switch (status) {
       case 'pending':
         return <FileImage className="w-4 h-4 text-gray-400" />;
@@ -150,69 +172,31 @@ export default function UploadAndSettings() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Settings handlers
-  const handleMaxEdgeChange = (value: string) => {
-    const numValue = parseInt(value);
-    if (!isNaN(numValue) && numValue >= 500 && numValue <= 5000) {
-      updateSettings({ maxEdgePx: numValue });
-    }
-  };
-
-  const handleQualityChange = (value: string) => {
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue) && numValue >= 0.1 && numValue <= 1.0) {
-      updateSettings({ quality: numValue });
-    }
-  };
-
-  const handleFormatChange = (format: 'jpeg' | 'webp') => {
-    updateSettings({ format });
-  };
-
   const handleRemoveBgChange = (checked: boolean) => {
     updateSettings({ removeBg: checked });
   };
 
-  const resetToDefaults = () => {
-    updateSettings({
-      maxEdgePx: 2000,
-      quality: 0.82,
-      format: 'webp',
-      removeBg: false
-    });
+  const completedFiles = files.filter(file => file.status === 'completed' && file.processedUrl);
+  const canProceed = true; // Этап опциональный - всегда можно продолжить
+
+  const handleNext = () => {
+    setCurrentStep('export');
   };
-
-  const getQualityLabel = (quality: number) => {
-    if (quality >= 0.9) return 'Высокое';
-    if (quality >= 0.7) return 'Среднее';
-    if (quality >= 0.5) return 'Низкое';
-    return 'Очень низкое';
-  };
-
-  const getQualityColor = (quality: number) => {
-    if (quality >= 0.9) return 'text-green-600 bg-green-50';
-    if (quality >= 0.7) return 'text-blue-600 bg-blue-50';
-    if (quality >= 0.5) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
-  };
-
-
-  const isDangerousSettingDisabled = isProcessing;
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm border-gray-200 shadow-lg">
       <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Upload className="w-5 h-5 text-blue-600" />
-            <span>Загрузка и настройки</span>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Image className="w-5 h-5 text-blue-600" />
+            <span>Редактор фото</span>
             {files.length > 0 && (
               <Badge variant="secondary" className="ml-2">
                 {files.length} из {MAX_FILES}
               </Badge>
             )}
           </CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             {isProcessing && (
               <Badge variant="secondary" className="text-xs">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-1" />
@@ -231,23 +215,14 @@ export default function UploadAndSettings() {
                 className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
               >
                 <X className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Очистить</span>
+                Очистить
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={resetToDefaults}
-              className="text-xs text-gray-500 hover:text-gray-700"
-            >
-              <RotateCcw className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Сброс</span>
-            </Button>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {/* Upload Section */}
         <div
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 ${
@@ -276,7 +251,7 @@ export default function UploadAndSettings() {
               <h3 className={`text-base font-semibold transition-colors ${
                 isDragOver ? 'text-blue-700' : 'text-gray-700'
               }`}>
-                {isDragOver ? 'Отпустите файлы здесь' : 'Перетащите изображения сюда'}
+                {isDragOver ? 'Отпустите файлы здесь' : 'Загрузите изображения товара'}
               </h3>
               <p className="text-sm text-gray-500">
                 или нажмите кнопку для выбора файлов
@@ -315,6 +290,36 @@ export default function UploadAndSettings() {
             </div>
           </div>
         </div>
+
+        {/* Background Removal Setting */}
+        {files.length > 0 && (
+          <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
+            <Checkbox
+              id="remove-bg"
+              checked={settings.removeBg}
+              onCheckedChange={handleRemoveBgChange}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <label
+                htmlFor="remove-bg"
+                className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-2"
+              >
+                <Wand2 className="w-4 h-4 text-purple-600" />
+                Удалить фон
+              </label>
+              <p className="text-xs text-gray-600 mt-1">
+                Автоматически удаляет фон с изображений для лучшего вида на Kaspi
+              </p>
+              {settings.removeBg && (
+                <Badge variant="secondary" className="mt-2 text-xs">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Активно
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* File List */}
         {files.length > 0 && (
@@ -390,240 +395,9 @@ export default function UploadAndSettings() {
           </div>
         )}
 
-        {/* Settings Section */}
+        {/* Processing Controls */}
         {files.length > 0 && (
-          <div className="space-y-3 pt-3 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-blue-600" />
-              Настройки обработки
-            </h3>
-            
-            {/* Quality & Format Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Quality Preset */}
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Image className="w-4 h-4 text-blue-600" />
-                  Качество
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {[
-                    { value: 0.6, label: 'Быстро', desc: '60%' },
-                    { value: 0.82, label: 'Сбалансированно', desc: '82%' },
-                    { value: 0.95, label: 'Высокое', desc: '95%' }
-                  ].map((preset) => (
-                    <Button
-                      key={preset.value}
-                      variant={Math.abs(settings.quality - preset.value) < 0.01 ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleQualityChange(preset.value.toString())}
-                      className={`text-xs h-12 px-2 ${
-                        Math.abs(settings.quality - preset.value) < 0.01
-                          ? 'bg-blue-600 hover:bg-blue-700'
-                          : 'border-gray-200 hover:border-blue-300'
-                      }`}
-                    >
-                      <div className="text-center w-full">
-                        <div className="font-medium text-xs leading-tight">{preset.label}</div>
-                        <div className="text-xs opacity-75 leading-tight">{preset.desc}</div>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Format Selection */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">Формат</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant={settings.format === 'webp' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleFormatChange('webp')}
-                    disabled={isDangerousSettingDisabled}
-                    className={`h-12 px-2 ${
-                      settings.format === 'webp' 
-                        ? 'bg-blue-600 hover:bg-blue-700' 
-                        : 'border-gray-200 hover:border-blue-300'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    <div className="text-center w-full">
-                      <div className="font-medium text-xs leading-tight">WebP</div>
-                      <div className="text-xs opacity-75 leading-tight">Современный</div>
-                    </div>
-                  </Button>
-                  <Button
-                    variant={settings.format === 'jpeg' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleFormatChange('jpeg')}
-                    disabled={isDangerousSettingDisabled}
-                    className={`h-12 px-2 ${
-                      settings.format === 'jpeg' 
-                        ? 'bg-blue-600 hover:bg-blue-700' 
-                        : 'border-gray-200 hover:border-blue-300'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    <div className="text-center w-full">
-                      <div className="font-medium text-xs leading-tight">JPEG</div>
-                      <div className="text-xs opacity-75 leading-tight">Универсальный</div>
-                    </div>
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Background Removal */}
-            <div className="flex items-start space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
-              <Checkbox
-                id="remove-bg"
-                checked={settings.removeBg}
-                onCheckedChange={handleRemoveBgChange}
-                className="mt-0.5"
-              />
-              <div className="flex-1">
-                <label
-                  htmlFor="remove-bg"
-                  className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-2"
-                >
-                  <Wand2 className="w-4 h-4 text-purple-600" />
-                  Удалить фон
-                </label>
-                <p className="text-xs text-gray-600 mt-1">
-                  Автоматически удаляет фон с изображений для лучшего вида на Kaspi
-                </p>
-                {settings.removeBg && (
-                  <Badge variant="secondary" className="mt-2 text-xs">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Активно
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Advanced Settings */}
-            <div className="space-y-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="w-full text-gray-600 hover:text-gray-800 text-sm"
-              >
-                <Info className="w-4 h-4 mr-2" />
-                {showAdvanced ? 'Скрыть' : 'Показать'} расширенные настройки
-              </Button>
-
-              {showAdvanced && (
-                <div className="space-y-3 p-3 bg-gray-50 rounded-lg border">
-                  {/* Max Edge Size */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Image className="w-4 h-4 text-blue-600" />
-                      Максимальный размер (пиксели)
-                    </label>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <input
-                            type="range"
-                            min="500"
-                            max="5000"
-                            step="100"
-                            value={settings.maxEdgePx}
-                            onChange={(e) => handleMaxEdgeChange(e.target.value)}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                            disabled={isDangerousSettingDisabled}
-                            style={{
-                              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((settings.maxEdgePx - 500) / (5000 - 500)) * 100}%, #e5e7eb ${((settings.maxEdgePx - 500) / (5000 - 500)) * 100}%, #e5e7eb 100%)`
-                            }}
-                          />
-                        </div>
-                        <div className="w-16 text-center">
-                          <input
-                            type="number"
-                            min="500"
-                            max="5000"
-                            value={settings.maxEdgePx}
-                            onChange={(e) => handleMaxEdgeChange(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={isDangerousSettingDisabled}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>500px</span>
-                        <span>5000px</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quality Slider */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Zap className="w-4 h-4 text-blue-600" />
-                      Точная настройка качества
-                    </label>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <input
-                            type="range"
-                            min="0.1"
-                            max="1.0"
-                            step="0.01"
-                            value={settings.quality}
-                            onChange={(e) => handleQualityChange(e.target.value)}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                            style={{
-                              background: `linear-gradient(to right, #ef4444 0%, #f59e0b 25%, #3b82f6 50%, #10b981 75%, #10b981 100%)`
-                            }}
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-sm font-medium px-2 py-1 rounded ${getQualityColor(settings.quality)}`}>
-                            {Math.round(settings.quality * 100)}%
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {getQualityLabel(settings.quality)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>10%</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Processing Info */}
-            <div className="pt-3 border-t border-gray-200">
-              <div className="flex flex-wrap gap-4 text-xs text-gray-600">
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-green-500" />
-                  <span>Размер: 500-5000px</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-green-500" />
-                  <span>Формат: JPEG/WebP</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-green-500" />
-                  <span>Вес: до 25MB</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3 text-yellow-500" />
-                  <span>Качество: {Math.round(settings.quality * 100)}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Control Buttons */}
-        {files.length > 0 && (
-          <div className="space-y-3 pt-3 border-t border-gray-200">
+          <div className="space-y-3">
             {/* Start Processing Button */}
             {!isProcessing && (
               <Button
@@ -632,7 +406,7 @@ export default function UploadAndSettings() {
                 disabled={files.every(f => f.status === 'completed')}
               >
                 <Play className="w-4 h-4 mr-2" />
-                <span className="font-semibold">Начать обработку</span>
+                <span className="font-semibold">Обработать изображения</span>
                 <span className="ml-2 text-sm opacity-90">
                   ({files.filter(f => f.status === 'pending').length} файлов)
                 </span>
@@ -708,25 +482,49 @@ export default function UploadAndSettings() {
                     Отменить
                   </Button>
                 </div>
-                
-                {/* Processing Stats */}
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="text-center p-2 bg-white/50 rounded">
-                    <div className="font-semibold text-blue-900">{processingState.queueLen}</div>
-                    <div className="text-blue-700">В очереди</div>
-                  </div>
-                  <div className="text-center p-2 bg-white/50 rounded">
-                    <div className="font-semibold text-blue-900">{processingState.inFlight}</div>
-                    <div className="text-blue-700">Обрабатывается</div>
-                  </div>
-                  <div className="text-center p-2 bg-white/50 rounded">
-                    <div className="font-semibold text-green-600">{processingState.doneCount}</div>
-                    <div className="text-green-700">Готово</div>
-                  </div>
-                </div>
               </div>
             )}
+          </div>
+        )}
 
+        {/* Navigation */}
+        <div className="flex justify-between pt-6 border-t">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep('product-info')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Назад к информации
+          </Button>
+          
+          <div className="flex gap-3">
+            <Button
+              onClick={handleNext}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              Пропустить фото
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            
+            {files.length > 0 && (
+              <Button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 flex items-center gap-2"
+              >
+                Продолжить к экспорту
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Info */}
+        {files.length === 0 && (
+          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+            <AlertCircle className="w-4 h-4" />
+            <span>Этап опциональный - можете пропустить и перейти к экспорту без изображений</span>
           </div>
         )}
 
@@ -735,11 +533,10 @@ export default function UploadAndSettings() {
           <div className="text-center py-6">
             <ImageIcon className="w-10 h-10 mx-auto text-gray-300 mb-2" />
             <h3 className="text-sm font-medium text-gray-500 mb-1">Нет загруженных файлов</h3>
-            <p className="text-xs text-gray-400">Загрузите изображения для начала работы</p>
+            <p className="text-xs text-gray-400">Загрузите изображения для обработки</p>
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
-

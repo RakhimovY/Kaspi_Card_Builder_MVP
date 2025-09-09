@@ -138,18 +138,19 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-full px-4 py-2 mb-8"
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 backdrop-blur-sm border border-purple-200 rounded-full px-4 py-2 mb-8"
           >
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-gray-700">Новый инструмент для Kaspi</span>
+            <Sparkles className="w-4 h-4 text-purple-600" />
+            <span className="text-sm font-medium text-purple-700">Magic Fill AI - Революция в создании карточек</span>
           </motion.div>
 
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent leading-tight">
-            {hero.title}
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent leading-tight">
+            Magic Fill AI
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            {hero.subtitle}
+            Отсканируйте штрихкод и получите готовую карточку товара за 2 минуты. 
+            <span className="font-semibold text-purple-600">Никаких ручных действий!</span>
           </p>
 
           {/* CTA Button */}
@@ -162,9 +163,10 @@ export default function LandingPage() {
             <Link href="/studio">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+                className="text-lg px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
               >
-                {hero.cta}
+                <Sparkles className="mr-2 w-5 h-5" />
+                Попробовать Magic Fill AI
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
@@ -178,16 +180,16 @@ export default function LandingPage() {
             className="grid grid-cols-3 gap-8 max-w-2xl mx-auto"
           >
             <div className="text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-2">1 клик</div>
+              <div className="text-sm text-gray-600">Сканирование штрихкода</div>
+            </div>
+            <div className="text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">2 мин</div>
-              <div className="text-sm text-gray-600">Время обработки</div>
+              <div className="text-sm text-gray-600">Готовая карточка</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">50+</div>
-              <div className="text-sm text-gray-600">Фото за раз</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">100%</div>
-              <div className="text-sm text-gray-600">Автоматизация</div>
+              <div className="text-3xl font-bold text-indigo-600 mb-2">0%</div>
+              <div className="text-sm text-gray-600">Ручной работы</div>
             </div>
           </motion.div>
         </motion.div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAppStore } from '@/lib/store';
@@ -186,15 +185,10 @@ export default function Preview() {
   };
 
   return (
-    <motion.section 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className="mb-6"
-    >
-      <div className="text-center mb-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">2. Предварительный просмотр</h2>
-        <p className="text-sm text-gray-600">Просмотрите обработанные изображения</p>
+    <section className="space-y-4">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">2. Предварительный просмотр</h2>
+        <p className="text-gray-600">Просмотрите обработанные изображения</p>
       </div>
       
       <Card className="bg-white/90 backdrop-blur-sm border-gray-200 shadow-lg">
@@ -225,28 +219,28 @@ export default function Preview() {
         {files.length > 1 && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-700">Выберите изображение:</p>
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {files.map((file, index) => (
                 <button
                   key={file.id}
-                  className={`flex-shrink-0 p-2 rounded-lg border-2 transition-all ${
+                  className={`p-3 rounded-lg border-2 transition-all ${
                     selectedFile?.id === file.id
                       ? 'border-blue-500 bg-blue-50 shadow-md'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                   onClick={() => setSelectedFile(file.id)}
                 >
-                  <div className="flex flex-col items-center gap-1.5 min-w-0">
+                  <div className="flex flex-col items-center gap-2">
                     <div className="relative">
                       {file.originalUrl ? (
                         <img
                           src={file.originalUrl}
                           alt={file.name}
-                          className="w-10 h-10 object-cover rounded border"
+                          className="w-12 h-12 object-cover rounded border"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-gray-100 rounded border flex items-center justify-center">
-                          <FileImage className="w-5 h-5 text-gray-400" />
+                        <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center">
+                          <FileImage className="w-6 h-6 text-gray-400" />
                         </div>
                       )}
                       <div className="absolute -top-1 -right-1">
@@ -254,11 +248,11 @@ export default function Preview() {
                       </div>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-medium truncate max-w-14" title={file.name}>
-                        {file.name.length > 10 ? `${file.name.substring(0, 10)}...` : file.name}
+                      <p className="text-xs font-medium truncate w-full" title={file.name}>
+                        {file.name.length > 12 ? `${file.name.substring(0, 12)}...` : file.name}
                       </p>
-                      <Badge variant="secondary" className="text-xs mt-0.5 px-1 py-0">
-                        {index + 1}
+                      <Badge variant="secondary" className="text-xs mt-1 px-1 py-0">
+                        #{index + 1}
                       </Badge>
                     </div>
                   </div>
@@ -295,9 +289,9 @@ export default function Preview() {
 
             {/* Image Comparison or Single View */}
             {showComparison && selectedFile.processedUrl ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <FileImage className="w-4 h-4" />
                     До обработки
                   </h3>
@@ -307,8 +301,8 @@ export default function Preview() {
                     isProcessed={false}
                   />
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
                     После обработки
                   </h3>
@@ -365,6 +359,6 @@ export default function Preview() {
         )}
       </CardContent>
     </Card>
-    </motion.section>
+    </section>
   );
 }

@@ -84,6 +84,14 @@ export interface CategoryChecklistState {
   checkedItems: string[];
 }
 
+export type StudioStep = 'magic-fill' | 'product-info' | 'photo-editor' | 'export';
+
+export interface StudioState {
+  currentStep: StudioStep;
+  setCurrentStep: (step: StudioStep) => void;
+  resetStudio: () => void;
+}
+
 // Store slices
 interface FilesSlice {
   files: FileItem[];
@@ -123,7 +131,7 @@ interface ChecklistSlice {
 }
 
 // Combined store
-interface AppStore extends FilesSlice, SettingsSlice, FormSlice, ChecklistSlice {}
+interface AppStore extends FilesSlice, SettingsSlice, FormSlice, ChecklistSlice, StudioState {}
 
 const initialSettings: Settings = {
   maxEdgePx: 2000,
@@ -309,6 +317,11 @@ export const useAppStore = create<AppStore>()(
         };
       }),
       resetCategoryChecklist: () => set({ categoryChecklist: initialCategoryChecklist }),
+
+      // Studio slice
+      currentStep: 'magic-fill',
+      setCurrentStep: (step) => set({ currentStep: step }),
+      resetStudio: () => set({ currentStep: 'magic-fill' }),
     }),
     {
       name: 'trade-card-builder-storage',

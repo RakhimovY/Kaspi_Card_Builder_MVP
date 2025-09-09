@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
-import { Settings, Download, CheckCircle, AlertCircle, Package, FileText } from 'lucide-react';
+import { Settings, Download, CheckCircle, AlertCircle, Package, FileText, ArrowLeft, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { exportToZip, downloadFile, generateSKU } from '@/lib/exportUtils';
 import { useTranslations } from '@/lib/useTranslations';
@@ -22,7 +22,7 @@ export default function ExportPanel() {
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportSuccess, setExportSuccess] = useState(false);
   
-  const { files, formData } = useAppStore();
+  const { files, formData, setCurrentStep, resetStudio } = useAppStore();
   const { t } = useTranslations();
 
   const completedFiles = files.filter(file => file.status === 'completed' && file.processedUrl);
@@ -30,8 +30,8 @@ export default function ExportPanel() {
   const hasFormData = formData.brand && formData.type && formData.model && formData.price && formData.quantity;
 
   const handleExport = async () => {
-    if (!hasFiles || !hasFormData) {
-      const errorMsg = t('studio.export.insufficient_data');
+    if (!hasFormData) {
+      const errorMsg = 'Заполните информацию о товаре для экспорта';
       setExportError(errorMsg);
       toast.error(errorMsg);
       return;
@@ -88,15 +88,33 @@ export default function ExportPanel() {
     return <Download className="w-4 h-4" />;
   };
 
-  const isButtonDisabled = isExporting || !hasFiles || !hasFormData;
+  const isButtonDisabled = isExporting || !hasFormData;
+
+  const handleReset = () => {
+    if (confirm('Сбросить все данные и начать заново?')) {
+      resetStudio();
+      toast.success('Данные сброшены');
+    }
+  };
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-xl compact-card">
+    <Card className="bg-white/90 backdrop-blur-sm border-gray-200 shadow-lg">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="w-5 h-5 text-blue-600" />
-          {t('studio.export.title')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-blue-600" />
+            {t('studio.export.title')}
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Начать заново
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Form Progress */}
@@ -107,13 +125,13 @@ export default function ExportPanel() {
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-blue-600" />
             <span className="text-gray-600">
-              {t('studio.export.files_count', { count: completedFiles.length })}
+              {hasFiles ? `${completedFiles.length} изображений готово` : 'Изображения не загружены (опционально)'}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-green-600" />
             <span className="text-gray-600">
-              {hasFormData ? t('studio.export.form_complete') : t('studio.export.form_incomplete')}
+              {hasFormData ? 'Информация о товаре готова' : 'Информация о товаре неполная'}
             </span>
           </div>
         </div>
@@ -149,34 +167,47 @@ export default function ExportPanel() {
           </div>
         )}
 
-        {/* Export Button */}
-        <Button
-          onClick={handleExport}
-          disabled={isButtonDisabled}
-          className={`w-full ${
-            isExporting
-              ? 'bg-blue-600 cursor-not-allowed'
-              : exportSuccess
-              ? 'bg-green-600 hover:bg-green-700'
-              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
-          } text-white shadow-lg hover:shadow-xl transition-all duration-300`}
-        >
-          {getButtonIcon()}
-          <span className="ml-2">{getButtonText()}</span>
-        </Button>
+        {/* Navigation */}
+        <div className="flex justify-between pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep('photo-editor')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {hasFiles ? 'Назад к фото' : 'Добавить фото'}
+          </Button>
+          
+          <Button
+            onClick={handleExport}
+            disabled={isButtonDisabled}
+            className={`${
+              isExporting
+                ? 'bg-blue-600 cursor-not-allowed'
+                : exportSuccess
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
+            } text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2`}
+          >
+            {getButtonIcon()}
+            <span>{getButtonText()}</span>
+          </Button>
+        </div>
 
         {/* Requirements Info */}
-        {!hasFiles && (
-          <div className="text-center py-4 text-gray-500">
-            <Package className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm">{t('studio.export.no_files')}</p>
+        {!hasFormData && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+            <AlertCircle className="w-4 h-4" />
+            <span>Заполните информацию о товаре для экспорта</span>
           </div>
         )}
 
-        {!hasFormData && (
-          <div className="text-center py-4 text-gray-500">
-            <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm">{t('studio.export.incomplete_form')}</p>
+        {/* Success Message */}
+        {exportSuccess && (
+          <div className="text-center py-4 bg-green-50 rounded-lg border border-green-200">
+            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-600" />
+            <p className="text-green-800 font-medium">Экспорт завершен успешно!</p>
+            <p className="text-green-700 text-sm mt-1">Файл загружен в папку загрузок</p>
           </div>
         )}
       </CardContent>
