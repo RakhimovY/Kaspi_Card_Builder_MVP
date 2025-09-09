@@ -1,5 +1,80 @@
 # API Documentation
 
+## Magic Fill API
+
+### POST /api/magic-fill
+
+Automatically fills product form fields using GTIN lookup, OCR, and LLM enrichment.
+
+**Authentication:** Required (Bearer token)
+
+**Request Body:**
+```json
+{
+  "gtin": "4895229101234",
+  "imageIds": ["uuid1", "uuid2"],
+  "manual": {
+    "brand": "Samsung",
+    "type": "Phone",
+    "model": "Galaxy S24",
+    "keySpec": "128GB, Black",
+    "category": "electronics"
+  }
+}
+```
+
+**Request Schema:**
+- `gtin` (optional): String 8-14 characters, GTIN/UPC/EAN barcode
+- `imageIds` (optional): Array of UUIDs, max 5 image assets for OCR
+- `manual` (optional): Manual field overrides
+
+**Response:**
+```json
+{
+  "draftId": "uuid",
+  "fields": {
+    "sku": "samsung-galaxy-s24",
+    "brand": "Samsung",
+    "type": "Phone",
+    "model": "Galaxy S24",
+    "keySpec": "128GB, Black",
+    "titleRU": "Смартфон Samsung Galaxy S24 128GB",
+    "titleKZ": "Смартфон Samsung Galaxy S24 128GB",
+    "descRU": "• Высокое качество и надежность...",
+    "descKZ": "• Жоғары сапа және сенімділік...",
+    "category": "electronics",
+    "gtin": "4895229101234",
+    "attributes": {
+      "brand": "Samsung",
+      "model": "Galaxy S24",
+      "power": "220В, 50-60Гц",
+      "warranty": "12 месяцев"
+    }
+  },
+  "images": ["uuid1", "uuid2"],
+  "metadata": {
+    "confidence": 0.92,
+    "processingTime": 3500,
+    "traceId": "uuid",
+    "sources": {
+      "gtin": true,
+      "ocr": true,
+      "llm": true
+    }
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Success
+- `401` - Unauthorized
+- `429` - Quota exceeded
+- `500` - Server error
+
+**Quotas:**
+- Free plan: 10 requests/month
+- Pro plan: 100 requests/month
+
 ## Health Check
 
 ### GET /api/health

@@ -60,7 +60,7 @@ export async function PATCH(
       },
     })
 
-    log.info({ message: 'Draft updated', draftId: id })
+    log('Draft updated', { draftId: id })
     return NextResponse.json({ draft: updatedDraft })
 
   } catch (error) {
@@ -95,7 +95,7 @@ export async function GET(
       )
     }
 
-    log.info({ message: 'Draft retrieved', draftId: id })
+    log('Draft retrieved', { draftId: id })
     return NextResponse.json({ draft })
 
   } catch (error) {
@@ -133,7 +133,7 @@ export async function DELETE(
       where: { id },
     })
 
-    log.info({ message: 'Draft deleted', draftId: id })
+    log('Draft deleted', { draftId: id })
     return NextResponse.json({ success: true })
 
   } catch (error) {

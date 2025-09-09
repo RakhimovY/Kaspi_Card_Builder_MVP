@@ -11,7 +11,7 @@ export interface ApiHandlerOptions {
 
 export interface ApiContext {
   requestId: string
-  log: any
+  log: (message: string, data?: Record<string, unknown>) => void
   userId?: string
 }
 
@@ -28,7 +28,9 @@ export function createApiContext(
   
   return {
     requestId,
-    log,
+    log: (message: string, data?: Record<string, unknown>) => {
+      log.info({ message, ...data })
+    },
     userId: 'temp-user-id' // TODO: Get from session
   }
 }
@@ -38,9 +40,9 @@ export function createApiContext(
  */
 export function handleApiError(
   error: unknown,
-  log: any
+  log: (message: string, data?: Record<string, unknown>) => void
 ): NextResponse {
-  log.error({ error: error instanceof Error ? error.message : 'Unknown error' })
+  log('error', { error: error instanceof Error ? error.message : 'Unknown error' })
   
   if (error instanceof Error && error.name === 'QuotaError') {
     return NextResponse.json(
@@ -80,7 +82,7 @@ export async function performApiChecks(
 
   if (options.requireQuota && userId) {
     try {
-      await assertQuota(userId, options.requireQuota)
+      await assertQuota(userId, options.requireQuota as "photos" | "magicFill" | "export" | "imageProcessing")
     } catch (error) {
       return handleApiError(error, log)
     }
@@ -98,7 +100,7 @@ export async function incrementApiUsage(
 ): Promise<void> {
   const { userId } = context
   if (userId) {
-    await incrementUsage(userId, usageType)
+    await incrementUsage(userId, usageType as "photos" | "magicFill" | "export" | "imageProcessing")
   }
 }
 

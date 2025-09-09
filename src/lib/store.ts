@@ -180,7 +180,7 @@ const initialCategoryChecklist: CategoryChecklistState = {
 };
 
 // Функция для нормализации данных формы
-const normalizeFormData = (data: any): FormData => {
+const normalizeFormData = (data: Record<string, unknown>): FormData => {
   return {
     ...initialFormData,
     ...data,

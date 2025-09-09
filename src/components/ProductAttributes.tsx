@@ -140,7 +140,7 @@ export default function ProductAttributes() {
       {/* Пресеты атрибутов */}
       {showPresets && presets.length > 0 && (
         <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
-          <h4 className="font-medium text-blue-900 mb-3">Пресеты для категории "{formData.category}"</h4>
+          <h4 className="font-medium text-blue-900 mb-3">Пресеты для категории &quot;{formData.category}&quot;</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {presets.map((preset, index) => (
               <Button
@@ -164,7 +164,7 @@ export default function ProductAttributes() {
         <div className="text-center py-8 text-gray-500">
           <Tag className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>{t('studio.form.attributes.no_attributes')}</p>
-          <p className="text-sm mt-2">Нажмите "Добавить атрибут" или используйте пресеты</p>
+          <p className="text-sm mt-2">Нажмите &quot;Добавить атрибут&quot; или используйте пресеты</p>
         </div>
       ) : (
         <div className="space-y-3">

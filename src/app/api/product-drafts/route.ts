@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    log.info({ message: 'Drafts retrieved', count: drafts.length })
+    log('Drafts retrieved', { count: drafts.length })
     return NextResponse.json({ drafts })
 
   } catch (error) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    log.info({ message: 'Draft created', draftId: draft.id })
+    log('Draft created', { draftId: draft.id })
     return NextResponse.json({ draft }, { status: 201 })
 
   } catch (error) {

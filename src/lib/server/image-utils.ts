@@ -50,7 +50,7 @@ export function validateImageBuffer(
 
   // Проверка формата файла
   const fileExtension = filename.toLowerCase().split('.').pop()
-  if (!fileExtension || !IMAGE_CONSTRAINTS.SUPPORTED_FORMATS.includes(fileExtension)) {
+  if (!fileExtension || !(IMAGE_CONSTRAINTS.SUPPORTED_FORMATS as readonly string[]).includes(fileExtension)) {
     errors.push('Неподдерживаемый формат файла. Разрешены: JPEG, PNG, WebP')
   }
 

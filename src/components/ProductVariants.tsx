@@ -102,7 +102,7 @@ export default function ProductVariants() {
         <div className="text-center py-8 text-gray-500">
           <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>{t('studio.form.variants.no_variants')}</p>
-          <p className="text-sm mt-2">Нажмите "Добавить вариант" для создания вариантов товара</p>
+          <p className="text-sm mt-2">Нажмите &quot;Добавить вариант&quot; для создания вариантов товара</p>
         </div>
       ) : (
         <div className="space-y-4">

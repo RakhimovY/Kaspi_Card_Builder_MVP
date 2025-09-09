@@ -34,6 +34,11 @@ const envSchema = z.object({
   // OpenAI
   OPENAI_API_KEY: z.string().optional(),
   
+  // GTIN Provider
+  GTIN_PROVIDER: z.enum(['upcitemdb', 'barcodelookup']).default('upcitemdb'),
+  UPCITEMDB_USER_KEY: z.string().optional(),
+  BARCODE_LOOKUP_API_KEY: z.string().optional(),
+  
   // Analytics
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: z.string().optional(),
   
@@ -83,5 +88,31 @@ export const getBillingConfig = () => {
       }
     default:
       return null
+  }
+}
+
+// Helper to get GTIN provider config
+export const getGtinConfig = () => {
+  switch (env.GTIN_PROVIDER) {
+    case 'upcitemdb':
+      return {
+        provider: 'upcitemdb' as const,
+        userKey: env.UPCITEMDB_USER_KEY,
+        baseUrl: 'https://api.upcitemdb.com/prod',
+        trialUrl: 'https://api.upcitemdb.com/prod/trial',
+      }
+    case 'barcodelookup':
+      return {
+        provider: 'barcodelookup' as const,
+        apiKey: env.BARCODE_LOOKUP_API_KEY,
+        baseUrl: 'https://api.barcodelookup.com/v3',
+      }
+    default:
+      return {
+        provider: 'upcitemdb' as const,
+        userKey: undefined,
+        baseUrl: 'https://api.upcitemdb.com/prod',
+        trialUrl: 'https://api.upcitemdb.com/prod/trial',
+      }
   }
 }
