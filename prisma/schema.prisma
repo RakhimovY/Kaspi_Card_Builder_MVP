@@ -86,7 +86,7 @@ model Subscription {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, provider])
+  @@unique([userId, provider], name: "userId_provider")
   @@index([status, currentPeriodEnd])
 }
 
@@ -102,7 +102,7 @@ model UsageStat {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, periodYM])
+  @@unique([userId, periodYM], name: "userId_periodYM")
   @@index([periodYM])
 }
 

@@ -119,20 +119,19 @@ export async function POST(request: NextRequest) {
 
     // Сохраняем информацию об обработке в базу данных
     try {
-      // TODO: Временно закомментировано из-за проблем с типами Prisma
-      // await prisma.imageProcessingLog.create({
-      //   data: {
-      //     userId,
-      //     filename: imageFile.name,
-      //     originalSize: result.originalSize,
-      //     processedSize: result.size,
-      //     processingTime: result.processingTime,
-      //     options: JSON.stringify(options),
-      //     success: true,
-      //   },
-      // });
+      await prisma.imageProcessingLog.create({
+        data: {
+          userId,
+          filename: imageFile.name,
+          originalSize: result.originalSize,
+          processedSize: result.size,
+          processingTime: result.processingTime,
+          options: JSON.stringify(options),
+          success: true,
+        },
+      });
       // log.info({
-      //   message: "Processing completed (logging disabled)",
+      //   message: "Processing completed",
       //   userId,
       //   filename: imageFile.name,
       //   originalSize: result.originalSize,
@@ -200,21 +199,20 @@ export async function POST(request: NextRequest) {
     try {
       const session = await getServerSession(authOptions);
       if (session?.user?.id) {
-        // TODO: Временно закомментировано из-за проблем с типами Prisma
-        // await prisma.imageProcessingLog.create({
-        //   data: {
-        //     userId: session.user.id,
-        //     filename: 'unknown',
-        //     originalSize: 0,
-        //     processedSize: 0,
-        //     processingTime: 0,
-        //     options: '{}',
-        //     success: false,
-        //     errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        //   },
-        // });
+        await prisma.imageProcessingLog.create({
+          data: {
+            userId: session.user.id,
+            filename: 'unknown',
+            originalSize: 0,
+            processedSize: 0,
+            processingTime: 0,
+            options: '{}',
+            success: false,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          },
+        });
         // log.error({
-        //   message: "Processing failed (error logging disabled)",
+        //   message: "Processing failed",
         //   userId: session.user.id,
         //   error: error instanceof Error ? error.message : "Unknown error",
         // });

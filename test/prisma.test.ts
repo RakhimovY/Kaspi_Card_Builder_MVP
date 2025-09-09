@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { prisma } from '../lib/server/prisma'
+import { prisma } from '../src/lib/server/prisma'
 
 describe('Prisma Database Connection', () => {
   beforeAll(async () => {
@@ -14,7 +14,7 @@ describe('Prisma Database Connection', () => {
   it('should connect to database successfully', async () => {
     // Test basic query
     const result = await prisma.$queryRaw`SELECT 1 as test`
-    expect(result).toEqual([{ test: 1 }])
+    expect(result).toEqual([{ test: 1n }])
   })
 
   it('should have correct database schema', async () => {

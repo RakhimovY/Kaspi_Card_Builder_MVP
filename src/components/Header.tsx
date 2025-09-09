@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { AuthButtons } from '@/components/AuthButtons';
@@ -21,7 +22,7 @@ import {
 interface HeaderProps {
   variant?: 'landing' | 'studio' | 'profile' | 'minimal';
   showBackButton?: boolean;
-  backHref?: string;
+  backHref?: Route;
   backLabel?: string;
   title?: string;
   subtitle?: string;
@@ -97,7 +98,7 @@ export default function Header({
   const displayBackLabel = backLabel || getDefaultBackLabel();
 
   // Mobile menu items
-  const mobileMenuItems = [
+  const mobileMenuItems: Array<{ href: Route; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { href: '/landing', label: 'Главная', icon: Home },
     { href: '/studio', label: 'Студия', icon: Camera },
     { href: '/profile', label: 'Профиль', icon: User },
@@ -117,7 +118,7 @@ export default function Header({
           className="flex items-center space-x-2 sm:space-x-4"
         >
           {showBackButton && (
-            <Link href={backHref as any} className="flex items-center space-x-2 group">
+            <Link href={backHref} className="flex items-center space-x-2 group">
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
               <span className="text-gray-600 group-hover:text-blue-600 transition-colors text-sm sm:text-base hidden sm:inline">
                 {displayBackLabel}
@@ -218,7 +219,7 @@ export default function Header({
                 return (
                   <Link
                     key={item.href}
-                    href={item.href as any}
+                    href={item.href}
                     onClick={closeMobileMenu}
                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                   >
