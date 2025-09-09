@@ -210,7 +210,21 @@
         "basic": "Негізгі",
         "details": "Толық",
         "description": "Сипаттама",
-        "checklist": "Чек-лист"
+        "checklist": "Чек-лист",
+        "identification": "Негізгі деректер",
+        "content": "Сипаттамалар",
+        "variants": "Нұсқалар (міндетті емес)",
+        "attributes": "Атрибуттар (міндетті емес)",
+        "logistics": "Логистика (міндетті емес)"
+      },
+      "tabs_hint": {
+        "required": "Міндетті",
+        "optional": "Міндетті емес",
+        "description": "Негізгі деректер және Сипаттамалар. Нұсқалар, Атрибуттар, Логистика"
+      },
+      "progress": {
+        "complete": "Барлық міндетті өрістер толтырылды!",
+        "incomplete": "Аяқтау үшін міндетті өрістерді толтырыңыз"
       },
       "fields": {
         "brand": "Бренд *",
@@ -230,7 +244,58 @@
         "quantity": "Саны",
         "quantity_placeholder": "1",
         "description": "Тауар сипаттамасы",
-        "description_placeholder": "Тауардың толық сипаттамасы..."
+        "description_placeholder": "Тауардың толық сипаттамасы...",
+        "gtin": "Штрихкод (GTIN)",
+        "gtin_placeholder": "Штрихкодты енгізіңіз немесе сканерлеңіз",
+        "title_ru": "Тақырып (RU)",
+        "title_ru_placeholder": "Тауар атауы орысша",
+        "title_kz": "Тақырып (KZ)",
+        "title_kz_placeholder": "Тауар атауы қазақша",
+        "desc_ru": "Сипаттама (RU)",
+        "desc_ru_placeholder": "Тауар сипаттамасы орысша",
+        "desc_kz": "Сипаттама (KZ)",
+        "desc_kz_placeholder": "Тауар сипаттамасы қазақша"
+      },
+      "variants": {
+        "title": "Тауар нұсқалары",
+        "sku": "Нұсқа SKU",
+        "color": "Түс",
+        "size": "Өлшем",
+        "capacity": "Көлем/Сыйымдылық",
+        "compat": "Үйлесімділік",
+        "add": "Нұсқа қосу",
+        "remove": "Жою",
+        "no_variants": "Нұсқалар қосылмаған"
+      },
+      "attributes": {
+        "title": "Атрибуттар",
+        "key": "Кілт",
+        "value": "Мән",
+        "add": "Атрибут қосу",
+        "remove": "Жою",
+        "no_attributes": "Атрибуттар қосылмаған"
+      },
+      "logistics": {
+        "title": "Логистика және сәйкестік",
+        "weight": "Салмақ, кг",
+        "dimensions": "Габариттер, см (Ұ×Е×Б)",
+        "bundle": "Жабдықтама",
+        "warranty": "Кепілдік",
+        "country": "Шығу елі",
+        "cert": "Сертификаттау/ТР ТС",
+        "power": "Электрмен жабдықтау/Қуат",
+        "age": "Жас шектеулері"
+      },
+      "actions": {
+        "scan_barcode": "Штрихкодты сканерлеу",
+        "magic_fill": "Magic Fill толтыру",
+        "generate": "Жасау",
+        "preview_csv": "CSV алдын ала қарау"
+      },
+      "progress": {
+        "title": "Толтырылғандық",
+        "missing": "Өрістер жетіспейді: {fields}",
+        "complete": "Форма толығымен толтырылған"
       },
       "categories": {
         "electronics": "Электроника",

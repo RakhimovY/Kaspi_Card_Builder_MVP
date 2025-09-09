@@ -15,6 +15,7 @@ const draftSchema = z.object({
   descKZ: z.string().optional(),
   category: z.string().optional(),
   attributes: z.record(z.string(), z.unknown()).optional(),
+  variantsJson: z.record(z.string(), z.unknown()).optional(),
   gtin: z.string().optional(),
 })
 
@@ -60,8 +61,9 @@ export async function POST(request: NextRequest) {
     const draft = await prisma.productDraft.create({
       data: {
         ...draftData,
-        userId: context.userId,
+        userId: context.userId!,
         attributes: draftData.attributes ? JSON.parse(JSON.stringify(draftData.attributes)) : null,
+        variantsJson: draftData.variantsJson ? JSON.parse(JSON.stringify(draftData.variantsJson)) : null,
       },
       include: {
         images: true,

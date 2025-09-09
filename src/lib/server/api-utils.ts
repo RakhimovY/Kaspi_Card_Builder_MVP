@@ -24,7 +24,7 @@ export function createApiContext(
   method: string = 'POST'
 ): ApiContext {
   const requestId = crypto.randomUUID()
-  const log = logger.child({ requestId, endpoint, method }) as any
+  const log = logger.child({ requestId, endpoint, method })
   
   return {
     requestId,
@@ -80,7 +80,7 @@ export async function performApiChecks(
 
   if (options.requireQuota && userId) {
     try {
-      await assertQuota(userId, options.requireQuota as any)
+      await assertQuota(userId, options.requireQuota)
     } catch (error) {
       return handleApiError(error, log)
     }
@@ -98,7 +98,7 @@ export async function incrementApiUsage(
 ): Promise<void> {
   const { userId } = context
   if (userId) {
-    await incrementUsage(userId, usageType as any)
+    await incrementUsage(userId, usageType)
   }
 }
 

@@ -88,16 +88,22 @@ export function generateCSV(files: FileItem[], formData: FormData, sku: string):
     imageNames.push('');
   }
 
+  // Создаем описание с атрибутами
+  const description = generateDescription(formData);
+  
+  // Создаем строку атрибутов
+  const attributesNotes = generateAttributesNotes(formData);
+
   const row = [
     sku,
-    formData.generatedTitle || `${formData.type} ${formData.brand} ${formData.model}`,
+    formData.titleRU || formData.generatedTitle || `${formData.type} ${formData.brand} ${formData.model}`,
     formData.brand,
     formData.category,
     formData.price.toString(),
     formData.quantity.toString(),
-    formData.generatedDescription || formData.description,
+    description,
     ...imageNames,
-    formData.additionalSpecs || ''
+    attributesNotes
   ];
 
   // Экранируем значения для CSV
@@ -113,6 +119,131 @@ export function generateCSV(files: FileItem[], formData: FormData, sku: string):
 }
 
 /**
+ * Генерирует описание товара с атрибутами
+ */
+function generateDescription(formData: FormData): string {
+  let description = formData.descRU || formData.generatedDescription || formData.description || '';
+  
+  // Добавляем логистическую информацию
+  const logisticsInfo = [];
+  if (formData.weight) logisticsInfo.push(`Вес: ${formData.weight} кг`);
+  if (formData.dimensions) logisticsInfo.push(`Габариты: ${formData.dimensions} см`);
+  if (formData.warranty) logisticsInfo.push(`Гарантия: ${formData.warranty}`);
+  if (formData.country) logisticsInfo.push(`Страна: ${formData.country}`);
+  if (formData.bundle) logisticsInfo.push(`Комплектация: ${formData.bundle}`);
+  
+  if (logisticsInfo.length > 0) {
+    description += '\n\nДополнительная информация:\n' + logisticsInfo.join('\n');
+  }
+  
+  return description;
+}
+
+/**
+ * Генерирует строку атрибутов для CSV
+ */
+function generateAttributesNotes(formData: FormData): string {
+  const attributes = [];
+  
+  // Добавляем атрибуты из формы
+  (formData.attributes || []).forEach(attr => {
+    if (attr.key && attr.value) {
+      attributes.push(`${attr.key}: ${attr.value}`);
+    }
+  });
+  
+  // Добавляем логистические атрибуты
+  if (formData.cert) attributes.push(`Сертификация: ${formData.cert}`);
+  if (formData.power) attributes.push(`Питание: ${formData.power}`);
+  if (formData.age) attributes.push(`Возраст: ${formData.age}`);
+  
+  // Добавляем GTIN если есть
+  if (formData.gtin) attributes.push(`GTIN: ${formData.gtin}`);
+  
+  return attributes.join('; ');
+}
+
+/**
+ * Генерирует CSV для KZ локали (отдельный файл)
+ */
+export function generateCSVKZ(files: FileItem[], formData: FormData, baseSku: string): string {
+  const headers = [
+    'sku',
+    'name',
+    'brand', 
+    'category',
+    'price',
+    'qty',
+    'description',
+    'image1',
+    'image2', 
+    'image3',
+    'image4',
+    'image5',
+    'image6',
+    'image7',
+    'image8',
+    'attributes_notes'
+  ];
+
+  const rows: string[] = [];
+  rows.push(headers.join(','));
+
+  // Генерируем имена изображений для основного товара
+  const imageNames = files
+    .filter(file => file.status === 'completed' && file.processedUrl)
+    .map((_, index) => `${baseSku}_${index + 1}.${formData.type === 'jpeg' ? 'jpg' : 'webp'}`)
+    .slice(0, 8);
+
+  // Заполняем недостающие изображения пустыми строками
+  while (imageNames.length < 8) {
+    imageNames.push('');
+  }
+
+  // Создаем описание и атрибуты для KZ
+  const description = formData.descKZ || formData.descRU || formData.generatedDescription || formData.description || '';
+  const attributesNotes = generateAttributesNotes(formData);
+
+  // Основной товар для KZ
+  const mainRow = [
+    baseSku,
+    formData.titleKZ || formData.titleRU || formData.generatedTitle || `${formData.type} ${formData.brand} ${formData.model}`,
+    formData.brand,
+    formData.category,
+    formData.price.toString(),
+    formData.quantity.toString(),
+    description,
+    ...imageNames,
+    attributesNotes
+  ];
+
+  rows.push(escapeCSVRow(mainRow));
+
+  // Варианты товара для KZ
+  if (formData.variants && formData.variants.length > 0) {
+    (formData.variants || []).forEach((variant, index) => {
+      if (variant.sku) {
+        const variantRow = [
+          variant.sku,
+          formData.titleKZ || formData.titleRU || formData.generatedTitle || `${formData.type} ${formData.brand} ${formData.model}`,
+          formData.brand,
+          formData.category,
+          formData.price.toString(),
+          formData.quantity.toString(),
+          description,
+          ...imageNames, // Варианты используют те же изображения
+          generateVariantAttributes(formData, variant)
+        ];
+        
+        rows.push(escapeCSVRow(variantRow));
+      }
+    });
+  }
+
+  return rows.join('\n');
+}
+
+/**
  * Создает README.md с инструкциями
  */
 export function generateReadme(): string {
@@ -121,7 +252,8 @@ export function generateReadme(): string {
 ## Содержимое архива
 
 - **images/** - папка с обработанными изображениями товара
-- **export.csv** - файл с данными товара для импорта в Kaspi
+- **export_ru.csv** - файл с данными товара для импорта в Kaspi (русская версия)
+- **export_kz.csv** - файл с данными товара для импорта в Kaspi (казахская версия, если заполнена)
 - **README.md** - данная инструкция
 
 ## Как загрузить товар в Kaspi
@@ -136,7 +268,7 @@ export function generateReadme(): string {
    - Войдите в личный кабинет продавца Kaspi
    - Перейдите в раздел "Товары" → "Добавить товар"
    - Выберите "Импорт из CSV"
-   - Загрузите файл export.csv
+   - Загрузите файл export_ru.csv (или export_kz.csv для казахского рынка)
    - Загрузите изображения из папки images/
 
 3. **Важные ограничения Kaspi:**
@@ -174,7 +306,7 @@ export async function exportToZip(
     throw new Error('Не удалось создать папку images в архиве');
   }
 
-  const sku = generateSKU(formData);
+  const baseSku = generateSKU(formData);
   const completedFiles = files.filter(file => 
     file.status === 'completed' && file.processedUrl
   );
@@ -187,7 +319,7 @@ export async function exportToZip(
   for (let i = 0; i < completedFiles.length; i++) {
     const file = completedFiles[i];
     const fileExtension = formData.type === 'jpeg' ? 'jpg' : 'webp';
-    const fileName = `${sku}_${i + 1}.${fileExtension}`;
+    const fileName = `${baseSku}_${i + 1}.${fileExtension}`;
     
     try {
       // Получаем обработанное изображение
@@ -199,7 +331,7 @@ export async function exportToZip(
       
       // Обновляем прогресс
       if (onProgress) {
-        const progress = ((i + 1) / completedFiles.length) * 0.8; // 80% на изображения
+        const progress = ((i + 1) / completedFiles.length) * 0.7; // 70% на изображения
         onProgress(progress);
       }
     } catch (error) {
@@ -208,9 +340,15 @@ export async function exportToZip(
     }
   }
 
-  // Добавляем CSV файл
-  const csvContent = generateCSV(completedFiles, formData, sku);
-  zip.file('export.csv', csvContent);
+  // Генерируем CSV с поддержкой вариаций (RU версия)
+  const csvContentRU = generateCSVWithVariants(completedFiles, formData, baseSku);
+  zip.file('export_ru.csv', csvContentRU);
+
+  // Генерируем CSV для KZ версии (если есть titleKZ)
+  if (formData.titleKZ && formData.titleKZ.trim()) {
+    const csvContentKZ = generateCSVKZ(completedFiles, formData, baseSku);
+    zip.file('export_kz.csv', csvContentKZ);
+  }
 
   // Добавляем README
   const readmeContent = generateReadme();
@@ -233,6 +371,123 @@ export async function exportToZip(
   }
 
   return zipBlob;
+}
+
+/**
+ * Создает CSV с поддержкой вариаций товара
+ */
+function generateCSVWithVariants(files: FileItem[], formData: FormData, baseSku: string): string {
+  const headers = [
+    'sku',
+    'name', 
+    'brand',
+    'category',
+    'price',
+    'qty',
+    'description',
+    'image1',
+    'image2', 
+    'image3',
+    'image4',
+    'image5',
+    'image6',
+    'image7',
+    'image8',
+    'attributes_notes'
+  ];
+
+  const rows: string[] = [];
+  rows.push(headers.join(','));
+
+  // Генерируем имена изображений для основного товара
+  const imageNames = files
+    .filter(file => file.status === 'completed' && file.processedUrl)
+    .map((_, index) => `${baseSku}_${index + 1}.${formData.type === 'jpeg' ? 'jpg' : 'webp'}`)
+    .slice(0, 8);
+
+  // Заполняем недостающие изображения пустыми строками
+  while (imageNames.length < 8) {
+    imageNames.push('');
+  }
+
+  // Создаем описание и атрибуты
+  const description = generateDescription(formData);
+  const attributesNotes = generateAttributesNotes(formData);
+
+  // Основной товар
+  const mainRow = [
+    baseSku,
+    formData.titleRU || formData.generatedTitle || `${formData.type} ${formData.brand} ${formData.model}`,
+    formData.brand,
+    formData.category,
+    formData.price.toString(),
+    formData.quantity.toString(),
+    description,
+    ...imageNames,
+    attributesNotes
+  ];
+
+  rows.push(escapeCSVRow(mainRow));
+
+  // Варианты товара
+  if (formData.variants && formData.variants.length > 0) {
+    (formData.variants || []).forEach((variant, index) => {
+      if (variant.sku) {
+        const variantRow = [
+          variant.sku,
+          formData.titleRU || formData.generatedTitle || `${formData.type} ${formData.brand} ${formData.model}`,
+          formData.brand,
+          formData.category,
+          formData.price.toString(),
+          formData.quantity.toString(),
+          description,
+          ...imageNames, // Варианты используют те же изображения
+          generateVariantAttributes(formData, variant)
+        ];
+        
+        rows.push(escapeCSVRow(variantRow));
+      }
+    });
+  }
+
+  return rows.join('\n');
+}
+
+/**
+ * Генерирует атрибуты для варианта товара
+ */
+function generateVariantAttributes(formData: FormData, variant: { sku: string; color?: string; size?: string; capacity?: string; compat?: string }): string {
+  const attributes = [];
+  
+  // Добавляем атрибуты варианта
+  if (variant.color) attributes.push(`Цвет: ${variant.color}`);
+  if (variant.size) attributes.push(`Размер: ${variant.size}`);
+  if (variant.capacity) attributes.push(`Объем: ${variant.capacity}`);
+  if (variant.compat) attributes.push(`Совместимость: ${variant.compat}`);
+  
+  // Добавляем основные атрибуты
+  (formData.attributes || []).forEach(attr => {
+    if (attr.key && attr.value) {
+      attributes.push(`${attr.key}: ${attr.value}`);
+    }
+  });
+  
+  return attributes.join('; ');
+}
+
+/**
+ * Экранирует строку для CSV
+ */
+function escapeCSVRow(row: string[]): string {
+  const escapedRow = row.map(value => {
+    const stringValue = String(value);
+    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+  });
+  
+  return escapedRow.join(',');
 }
 
 /**

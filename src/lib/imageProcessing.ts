@@ -33,7 +33,11 @@ export function validateImage(
   width?: number,
   height?: number
 ): ImageValidationResult {
-  return validateImageFile(file, width, height);
+  const result = validateImageFile(file, width, height);
+  return {
+    ...result,
+    warnings: result.warnings || []
+  };
 }
 
 /**

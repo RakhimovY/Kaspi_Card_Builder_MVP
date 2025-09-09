@@ -210,7 +210,21 @@
         "basic": "Основное",
         "details": "Детали",
         "description": "Описание",
-        "checklist": "Чек-лист"
+        "checklist": "Чек-лист",
+        "identification": "Основные данные",
+        "content": "Описания",
+        "variants": "Варианты (опционально)",
+        "attributes": "Атрибуты (опционально)",
+        "logistics": "Логистика (опционально)"
+      },
+      "tabs_hint": {
+        "required": "Обязательно",
+        "optional": "Опционально",
+        "description": "Основные данные и Описания. Варианты, Атрибуты, Логистика"
+      },
+      "progress": {
+        "complete": "Все обязательные поля заполнены!",
+        "incomplete": "Заполните обязательные поля для завершения"
       },
       "fields": {
         "brand": "Бренд *",
@@ -230,7 +244,58 @@
         "quantity": "Количество",
         "quantity_placeholder": "1",
         "description": "Описание товара",
-        "description_placeholder": "Подробное описание товара..."
+        "description_placeholder": "Подробное описание товара...",
+        "gtin": "Штрихкод (GTIN)",
+        "gtin_placeholder": "Введите или отсканируйте штрихкод",
+        "title_ru": "Заголовок (RU)",
+        "title_ru_placeholder": "Название товара на русском",
+        "title_kz": "Тақырып (KZ)",
+        "title_kz_placeholder": "Тауар атауы қазақша",
+        "desc_ru": "Описание (RU)",
+        "desc_ru_placeholder": "Описание товара на русском",
+        "desc_kz": "Сипаттама (KZ)",
+        "desc_kz_placeholder": "Тауар сипаттамасы қазақша"
+      },
+      "variants": {
+        "title": "Варианты товара",
+        "sku": "SKU варианта",
+        "color": "Цвет",
+        "size": "Размер",
+        "capacity": "Объём/Ёмкость",
+        "compat": "Совместимость",
+        "add": "Добавить вариант",
+        "remove": "Удалить",
+        "no_variants": "Варианты не добавлены"
+      },
+      "attributes": {
+        "title": "Атрибуты",
+        "key": "Ключ",
+        "value": "Значение",
+        "add": "Добавить атрибут",
+        "remove": "Удалить",
+        "no_attributes": "Атрибуты не добавлены"
+      },
+      "logistics": {
+        "title": "Логистика и соответствие",
+        "weight": "Вес, кг",
+        "dimensions": "Габариты, см (Д×Ш×В)",
+        "bundle": "Комплектация",
+        "warranty": "Гарантия",
+        "country": "Страна происхождения",
+        "cert": "Сертификация/ТР ТС",
+        "power": "Питание/Мощность",
+        "age": "Возрастные ограничения"
+      },
+      "actions": {
+        "scan_barcode": "Сканировать штрихкод",
+        "magic_fill": "Заполнить Magic Fill",
+        "generate": "Сгенерировать",
+        "preview_csv": "Предпросмотр CSV"
+      },
+      "progress": {
+        "title": "Заполненность",
+        "missing": "Не хватает полей: {fields}",
+        "complete": "Форма заполнена полностью"
       },
       "categories": {
         "electronics": "Электроника",

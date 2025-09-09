@@ -11,7 +11,8 @@ import { Settings, Download, CheckCircle, AlertCircle, Package, FileText } from 
 import { useAppStore } from '@/lib/store';
 import { exportToZip, downloadFile, generateSKU } from '@/lib/exportUtils';
 import { useTranslations } from '@/lib/useTranslations';
-import { trackExportZip } from '@/lib/analytics';
+import { trackExportZip, trackExportCsvReady } from '@/lib/analytics';
+import FormProgress from './FormProgress';
 
 import { toast } from 'sonner';
 
@@ -59,6 +60,7 @@ export default function ExportPanel() {
       
       // Отправляем аналитику
       trackExportZip(completedFiles.length);
+      trackExportCsvReady((formData.variants || []).length > 0, (formData.attributes || []).length > 0);
       
       // Сбрасываем успех через 3 секунды
       setTimeout(() => setExportSuccess(false), 3000);
@@ -97,6 +99,9 @@ export default function ExportPanel() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Form Progress */}
+        <FormProgress />
+
         {/* Status Display */}
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">

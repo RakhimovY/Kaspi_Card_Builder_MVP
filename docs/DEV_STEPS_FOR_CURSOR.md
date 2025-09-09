@@ -240,7 +240,11 @@
 **Задача:** `POST /api/magic-fill`.
 
 - Вход: `{ gtin?: string, imageIds?: string[], manual?: {...} }`.
-- Логика: (1) GTIN→поиск (GS1/кеш `BarcodeLookup`), (2) OCR по загруженной фото (если есть), (3) LLM-парсинг в структуру, (4) шаблон Title/Desc RU/KZ, (5) сохранение `ProductDraft` + `ImageAsset`.
+- Логика: 
+(1) GTIN→поиск (GS1/кеш `BarcodeLookup`), 
+(2) OCR по загруженной фото (если есть), 
+(3) LLM-парсинг в структуру, (4) шаблон Title/Desc RU/KZ, 
+(5) сохранение `ProductDraft` + `ImageAsset`.
 - Ответ: `{ draftId, fields, images[] }`.
   **DoD:** юнит-тест схемы (Zod), мок-тест эндпойнта (LLM/OCR/billing — замоканы).
 

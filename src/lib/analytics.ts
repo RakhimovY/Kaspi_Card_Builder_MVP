@@ -119,3 +119,87 @@ export function trackPageView(page: string): void {
     },
   });
 }
+
+/**
+ * Track barcode scan event
+ * @param success - Whether scan was successful
+ */
+export function trackBarcodeScan(success: boolean): void {
+  trackEvent({
+    name: 'scan_barcode',
+    props: {
+      success,
+    },
+  });
+}
+
+/**
+ * Track Magic Fill usage event
+ * @param hasGtin - Whether GTIN was provided
+ * @param hasImages - Whether images were provided
+ * @param fieldsFilled - Number of fields filled
+ */
+export function trackMagicFill(hasGtin: boolean, hasImages: boolean, fieldsFilled: number): void {
+  trackEvent({
+    name: 'magic_fill_used',
+    props: {
+      has_gtin: hasGtin,
+      has_images: hasImages,
+      fields_filled: fieldsFilled,
+    },
+  });
+}
+
+/**
+ * Track variants addition event
+ * @param variantCount - Number of variants added
+ */
+export function trackVariantsAdded(variantCount: number): void {
+  trackEvent({
+    name: 'variants_added',
+    props: {
+      variant_count: variantCount,
+    },
+  });
+}
+
+/**
+ * Track attributes addition event
+ * @param attributeCount - Number of attributes added
+ */
+export function trackAttributesAdded(attributeCount: number): void {
+  trackEvent({
+    name: 'attributes_added',
+    props: {
+      attribute_count: attributeCount,
+    },
+  });
+}
+
+/**
+ * Track CSV export ready event
+ * @param hasVariants - Whether variants are included
+ * @param hasAttributes - Whether attributes are included
+ */
+export function trackExportCsvReady(hasVariants: boolean, hasAttributes: boolean): void {
+  trackEvent({
+    name: 'export_csv_ready',
+    props: {
+      has_variants: hasVariants,
+      has_attributes: hasAttributes,
+    },
+  });
+}
+
+/**
+ * Track checkout start event
+ * @param plan - Plan being purchased
+ */
+export function trackCheckoutStart(plan: string): void {
+  trackEvent({
+    name: 'start_checkout',
+    props: {
+      plan,
+    },
+  });
+}

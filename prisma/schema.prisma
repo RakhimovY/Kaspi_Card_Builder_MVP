@@ -120,6 +120,7 @@ model ProductDraft {
   descKZ      String?
   category    String?
   attributes  Json?    // flexible attributes object
+  variantsJson Json?   // product variants (color, size, capacity, etc.)
   status      String   @default("draft") // "draft" | "ready" | "exported"
   gtin        String?  // barcode if available
   createdAt   DateTime @default(now())

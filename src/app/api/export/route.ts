@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/server/prisma'
-import { createApiHandler, createApiContext, handleApiError } from '@/lib/server/api-utils'
 import { z } from 'zod'
 
 const exportSchema = z.object({
@@ -8,11 +6,10 @@ const exportSchema = z.object({
   format: z.enum(['zip', 'csv']).default('zip'),
 })
 
-export const POST = createApiHandler(
-  async (context, { draftIds, format }) => {
-    const { log } = context
-
-    log.info({ message: 'Export request', draftIds: draftIds.length, format })
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { draftIds, format } = exportSchema.parse(body)
 
     // TODO: Verify user has Pro subscription
     // TODO: Fetch drafts and images
@@ -27,12 +24,12 @@ export const POST = createApiHandler(
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
     }
 
-    log.info({ message: 'Export completed', exportId: result.exportId })
     return NextResponse.json(result)
-  },
-  exportSchema,
-  {
-    requireQuota: 'export',
-    incrementUsage: 'export'
+  } catch (error) {
+    console.error('Export error:', error)
+    return NextResponse.json(
+      { error: 'Export failed' },
+      { status: 500 }
+    )
   }
-)
+}

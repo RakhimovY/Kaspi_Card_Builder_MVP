@@ -21,12 +21,52 @@ export interface Settings {
   removeBg: boolean;
 }
 
+export interface ProductVariant {
+  id: string;
+  sku: string;
+  color?: string;
+  size?: string;
+  capacity?: string;
+  compat?: string;
+}
+
+export interface ProductAttribute {
+  key: string;
+  value: string;
+}
+
 export interface FormData {
+  // Identification
+  sku: string;
+  gtin?: string;
   brand: string;
   type: string;
   model: string;
   keySpec: string;
-  sku: string;
+  
+  // Content RU/KZ
+  titleRU: string;
+  titleKZ: string;
+  descRU: string;
+  descKZ: string;
+  
+  // Variants
+  variants: ProductVariant[];
+  
+  // Attributes
+  attributes: ProductAttribute[];
+  
+  // Logistics
+  weight?: number;
+  dimensions?: string; // "Д×Ш×В"
+  bundle?: string;
+  warranty?: string;
+  country?: string;
+  cert?: string;
+  power?: string;
+  age?: string;
+  
+  // Legacy fields (for backward compatibility)
   category: string;
   price: number;
   quantity: number;
@@ -65,6 +105,13 @@ interface FormSlice {
   formData: FormData;
   updateFormData: (data: Partial<FormData>) => void;
   resetForm: () => void;
+  clearStorage: () => void;
+  addVariant: (variant: Omit<ProductVariant, 'id'>) => void;
+  updateVariant: (id: string, variant: Partial<ProductVariant>) => void;
+  removeVariant: (id: string) => void;
+  addAttribute: (attribute: ProductAttribute) => void;
+  updateAttribute: (index: number, attribute: Partial<ProductAttribute>) => void;
+  removeAttribute: (index: number) => void;
 }
 
 interface ChecklistSlice {
@@ -86,11 +133,37 @@ const initialSettings: Settings = {
 };
 
 const initialFormData: FormData = {
+  // Identification
+  sku: '',
+  gtin: '',
   brand: '',
   type: '',
   model: '',
   keySpec: '',
-  sku: '',
+  
+  // Content RU/KZ
+  titleRU: '',
+  titleKZ: '',
+  descRU: '',
+  descKZ: '',
+  
+  // Variants
+  variants: [],
+  
+  // Attributes
+  attributes: [],
+  
+  // Logistics
+  weight: undefined,
+  dimensions: '',
+  bundle: '',
+  warranty: '',
+  country: '',
+  cert: '',
+  power: '',
+  age: '',
+  
+  // Legacy fields
   category: '',
   price: 0,
   quantity: 1,
@@ -104,6 +177,19 @@ const initialFormData: FormData = {
 const initialCategoryChecklist: CategoryChecklistState = {
   categoryId: '',
   checkedItems: [],
+};
+
+// Функция для нормализации данных формы
+const normalizeFormData = (data: any): FormData => {
+  return {
+    ...initialFormData,
+    ...data,
+    // Убеждаемся, что variants и attributes всегда являются массивами
+    variants: Array.isArray(data?.variants) ? data.variants : [],
+    attributes: Array.isArray(data?.attributes) ? data.attributes : [],
+    // Убеждаемся, что extraKeywords является массивом
+    extraKeywords: Array.isArray(data?.extraKeywords) ? data.extraKeywords : [],
+  };
 };
 
 export const useAppStore = create<AppStore>()(
@@ -158,6 +244,50 @@ export const useAppStore = create<AppStore>()(
         formData: { ...state.formData, ...data }
       })),
       resetForm: () => set({ formData: initialFormData }),
+      clearStorage: () => {
+        // Очищаем localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('trade-card-builder-storage');
+        }
+        // Сбрасываем store с нормализованными данными
+        set({ formData: normalizeFormData(initialFormData) });
+      },
+      addVariant: (variant) => set((state) => ({
+        formData: {
+          ...state.formData,
+          variants: [...(Array.isArray(state.formData.variants) ? state.formData.variants : []), { ...variant, id: crypto.randomUUID() }]
+        }
+      })),
+      updateVariant: (id, variant) => set((state) => ({
+        formData: {
+          ...state.formData,
+          variants: (Array.isArray(state.formData.variants) ? state.formData.variants : []).map(v => v.id === id ? { ...v, ...variant } : v)
+        }
+      })),
+      removeVariant: (id) => set((state) => ({
+        formData: {
+          ...state.formData,
+          variants: (Array.isArray(state.formData.variants) ? state.formData.variants : []).filter(v => v.id !== id)
+        }
+      })),
+      addAttribute: (attribute) => set((state) => ({
+        formData: {
+          ...state.formData,
+          attributes: [...(Array.isArray(state.formData.attributes) ? state.formData.attributes : []), attribute]
+        }
+      })),
+      updateAttribute: (index, attribute) => set((state) => ({
+        formData: {
+          ...state.formData,
+          attributes: (Array.isArray(state.formData.attributes) ? state.formData.attributes : []).map((a, i) => i === index ? { ...a, ...attribute } : a)
+        }
+      })),
+      removeAttribute: (index) => set((state) => ({
+        formData: {
+          ...state.formData,
+          attributes: (Array.isArray(state.formData.attributes) ? state.formData.attributes : []).filter((_, i) => i !== index)
+        }
+      })),
 
       // Category checklist slice
       categoryChecklist: initialCategoryChecklist,
@@ -181,12 +311,18 @@ export const useAppStore = create<AppStore>()(
       resetCategoryChecklist: () => set({ categoryChecklist: initialCategoryChecklist }),
     }),
     {
-              name: 'trade-card-builder-storage',
+      name: 'trade-card-builder-storage',
       partialize: (state) => ({
         settings: state.settings,
         formData: state.formData,
         categoryChecklist: state.categoryChecklist,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Нормализуем данные при загрузке из localStorage
+          state.formData = normalizeFormData(state.formData);
+        }
+      },
     }
   )
 );

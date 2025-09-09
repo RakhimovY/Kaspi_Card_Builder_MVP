@@ -385,11 +385,6 @@ export default function UploadAndSettings() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-gray-800">Загруженные файлы</h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span className="text-green-600">✓ {files.filter(f => f.status === 'completed').length}</span>
-                <span className="text-blue-600">⏳ {files.filter(f => f.status === 'processing').length}</span>
-                <span className="text-red-600">✗ {files.filter(f => f.status === 'error').length}</span>
-              </div>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-48 overflow-y-auto component-scrollbar">
