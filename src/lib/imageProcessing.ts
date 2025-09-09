@@ -1,11 +1,14 @@
-// Клиентская реализация удаления фона удалена - используется только серверная обработка
+import { 
+  IMAGE_CONSTRAINTS,
+  validateImageFile,
+  formatFileSize
+} from './server/image-utils'
 
 export interface ImageProcessingOptions {
   maxEdgePx: number;
   format: "jpeg" | "webp";
   quality: number;
   removeBg: boolean;
-  // optimizeBgRemoval удален - удаление фона выполняется только на сервере
 }
 
 export interface ImageValidationResult {
@@ -22,11 +25,6 @@ export interface ProcessedImage {
   format: string;
 }
 
-// Validation constants
-const MIN_SIZE = 500;
-const MAX_SIZE = 5000;
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
-
 /**
  * Validates image dimensions and file size
  */
@@ -35,37 +33,7 @@ export function validateImage(
   width?: number,
   height?: number
 ): ImageValidationResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  // File size validation
-  if (file.size > MAX_FILE_SIZE) {
-    errors.push(
-      `Файл слишком большой (${formatFileSize(
-        file.size
-      )}). Максимум: ${formatFileSize(MAX_FILE_SIZE)}`
-    );
-  }
-
-  // Dimensions validation (if available)
-  if (width && height) {
-    if (width < MIN_SIZE || height < MIN_SIZE) {
-      warnings.push(
-        `Размер изображения меньше ${MIN_SIZE}px. Рекомендуется: минимум ${MIN_SIZE}px`
-      );
-    }
-    if (width > MAX_SIZE || height > MAX_SIZE) {
-      warnings.push(
-        `Размер изображения больше ${MAX_SIZE}px. Будет уменьшено до ${MAX_SIZE}px`
-      );
-    }
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings,
-  };
+  return validateImageFile(file, width, height);
 }
 
 /**
@@ -298,16 +266,7 @@ function loadImage(file: File | Blob): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Formats file size for display
- */
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
+// formatFileSize перенесена в image-utils.ts
 
 /**
  * Gets image dimensions from file

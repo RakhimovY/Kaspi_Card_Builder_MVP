@@ -1,11 +1,5 @@
 import { ImageProcessingOptions } from "./imageProcessing";
-
-export interface ServerImageProcessingOptions {
-  removeBg: boolean;
-  quality: number;
-  format: "png" | "jpeg" | "webp";
-  maxEdgePx: number;
-}
+import { convertToServerOptions, type ImageProcessingOptions as ServerImageProcessingOptions } from "./server/image-utils";
 
 export interface ServerProcessingResult {
   blob: Blob;
@@ -16,24 +10,7 @@ export interface ServerProcessingResult {
   compressionRatio: number;
 }
 
-/**
- * Конвертирует клиентские опции в серверные
- */
-export function convertToServerOptions(
-  options: ImageProcessingOptions
-): ServerImageProcessingOptions {
-  return {
-    removeBg: options.removeBg,
-    quality: options.quality,
-    format:
-      options.format === "jpeg"
-        ? "jpeg"
-        : options.format === "webp"
-        ? "webp"
-        : "png",
-    maxEdgePx: options.maxEdgePx,
-  };
-}
+// convertToServerOptions перенесена в image-utils.ts
 
 /**
  * Обработка изображения на сервере

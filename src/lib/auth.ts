@@ -42,7 +42,7 @@ export function clearAuthData() {
         const request = indexedDB.deleteDatabase('next-auth')
         request.onsuccess = () => console.log('IndexedDB cleared')
         request.onerror = () => console.log('IndexedDB clear failed')
-      } catch (e) {
+      } catch {
         console.log('IndexedDB not available')
       }
     }

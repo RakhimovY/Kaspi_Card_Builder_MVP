@@ -2,32 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/server/auth-config";
 import { prisma } from "@/lib/server/prisma";
-import { logger } from "@/lib/server/logger";
 import { assertQuota, incrementUsage } from "@/lib/server/quota";
 import {
   processImageServer,
   imageProcessingOptionsSchema,
   type ServerImageProcessingOptions,
 } from "@/lib/server/imageProcessing";
-// import { z } from "zod"; // Не используется
-
-// Схема для валидации multipart/form-data (не используется, так как валидация происходит в processImageServer)
-// const processPhotoSchema = z.object({
-//   image: z.any(), // File из FormData
-//   options: z.string().optional(), // JSON строка с опциями
-// });
 
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
-  // Временно отключаем логирование для избежания проблем с worker
-  // const log = logger.child({
-  //   requestId,
-  //   endpoint: "process-photo",
-  //   method: "POST",
-  // });
 
   try {
-    // Проверяем аутентификацию
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       console.log("Unauthorized request to process-photo");
@@ -38,26 +23,15 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    // log.info({ message: "Process photo request", userId });
     console.log("Process photo request", { userId });
 
-    // Проверяем квоты
     await assertQuota(userId, "imageProcessing");
 
-    // Парсим multipart/form-data
-    // log.info({ message: "Parsing form data" });
     console.log("Parsing form data");
     const formData = await request.formData();
     const imageFile = formData.get("image") as File;
     const optionsString = formData.get("options") as string;
 
-    // log.info({
-    //   message: "Form data parsed",
-    //   hasImage: !!imageFile,
-    //   imageName: imageFile?.name,
-    //   imageSize: imageFile?.size,
-    //   hasOptions: !!optionsString,
-    // });
     console.log("Form data parsed", {
       hasImage: !!imageFile,
       imageName: imageFile?.name,
@@ -66,7 +40,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!imageFile) {
-      // log.error({ message: "No image file provided" });
       console.log("No image file provided");
       return NextResponse.json(
         { error: "No image file provided", code: "MISSING_IMAGE" },
@@ -74,13 +47,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Парсим опции
     let options: ServerImageProcessingOptions;
     try {
       const parsedOptions = optionsString ? JSON.parse(optionsString) : {};
       options = imageProcessingOptionsSchema.parse(parsedOptions);
     } catch (error) {
-      // log.error({ message: "Invalid options provided", error });
       console.log("Invalid options provided", error);
       return NextResponse.json(
         { error: "Invalid processing options", code: "INVALID_OPTIONS" },
@@ -88,36 +59,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // log.info({
-    //   message: "Processing image",
-    //   filename: imageFile.name,
-    //   size: imageFile.size,
-    //   options,
-    // });
     console.log("Processing image", {
       filename: imageFile.name,
       size: imageFile.size,
       options,
     });
 
-    // Конвертируем File в Buffer
     const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-    // Обрабатываем изображение
     const result = await processImageServer(
       buffer,
       imageFile.name,
       options,
       (progress) => {
-        // log.debug({ message: "Processing progress", progress });
         console.log("Processing progress", progress);
       }
     );
 
-    // Инкрементируем использование
     await incrementUsage(userId, "imageProcessing");
 
-    // Сохраняем информацию об обработке в базу данных
     try {
       await prisma.imageProcessingLog.create({
         data: {
@@ -130,14 +90,6 @@ export async function POST(request: NextRequest) {
           success: true,
         },
       });
-      // log.info({
-      //   message: "Processing completed",
-      //   userId,
-      //   filename: imageFile.name,
-      //   originalSize: result.originalSize,
-      //   processedSize: result.size,
-      //   processingTime: result.processingTime,
-      // });
       console.log("Processing completed", {
         userId,
         filename: imageFile.name,
@@ -146,15 +98,9 @@ export async function POST(request: NextRequest) {
         processingTime: result.processingTime,
       });
     } catch (dbError) {
-      // log.warn({
-      //   message: "Failed to save processing log",
-      //   error: dbError instanceof Error ? dbError.message : "Unknown error",
-      // });
       console.log("Failed to save processing log", dbError);
-      // Не прерываем выполнение из-за ошибки логирования
     }
 
-    // Возвращаем результат
     const response = new NextResponse(result.blob as unknown as Blob, {
       status: 200,
       headers: {
@@ -168,15 +114,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // log.info({
-    //   message: "Image processing completed successfully",
-    //   originalSize: result.originalSize,
-    //   processedSize: result.size,
-    //   processingTime: result.processingTime,
-    //   compressionRatio: Math.round(
-    //     (1 - result.size / result.originalSize) * 100
-    //   ),
-    // });
     console.log("Image processing completed successfully", {
       originalSize: result.originalSize,
       processedSize: result.size,
@@ -188,14 +125,8 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    // log.error({
-    //   message: "Image processing failed",
-    //   error: error instanceof Error ? error.message : "Unknown error",
-    //   stack: error instanceof Error ? error.stack : undefined,
-    // });
     console.log("Image processing failed", error);
 
-    // Сохраняем ошибку в базу данных
     try {
       const session = await getServerSession(authOptions);
       if (session?.user?.id) {
@@ -211,21 +142,12 @@ export async function POST(request: NextRequest) {
             errorMessage: error instanceof Error ? error.message : 'Unknown error',
           },
         });
-        // log.error({
-        //   message: "Processing failed",
-        //   userId: session.user.id,
-        //   error: error instanceof Error ? error.message : "Unknown error",
-        // });
         console.log("Processing failed", {
           userId: session.user.id,
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     } catch (dbError) {
-      // log.warn({
-      //   message: "Failed to save error log",
-      //   error: dbError instanceof Error ? dbError.message : "Unknown error",
-      // });
       console.log("Failed to save error log", dbError);
     }
 
@@ -253,14 +175,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint для получения информации о возможностях обработки
 export async function GET() {
-  // const log = logger.child({ endpoint: "process-photo", method: "GET" });
-
   try {
     const capabilities = {
       supportedFormats: ["jpeg", "png", "webp"],
-      maxFileSize: 25 * 1024 * 1024, // 25MB
+      maxFileSize: 25 * 1024 * 1024,
       maxEdgeSize: 5000,
       minEdgeSize: 500,
       features: {
@@ -273,16 +192,10 @@ export async function GET() {
       },
     };
 
-    // log.info({ message: "Process photo capabilities requested" });
     console.log("Process photo capabilities requested");
     return NextResponse.json(capabilities);
   } catch (error) {
-    // log.error({
-    //   message: "Failed to get capabilities",
-    //   error: error instanceof Error ? error.message : "Unknown error",
-    // });
     console.log("Failed to get capabilities", error);
-
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
