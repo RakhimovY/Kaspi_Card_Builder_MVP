@@ -36,11 +36,11 @@ export async function extractTextFromImage(
 
     try {
       // Load language data
-      await (worker as any).loadLanguage(language)
-      await (worker as any).initialize(language)
+      await (worker as unknown as { loadLanguage: (lang: string) => Promise<void> }).loadLanguage(language)
+      await (worker as unknown as { initialize: (lang: string) => Promise<void> }).initialize(language)
 
       // Set parameters for better accuracy
-      await (worker as any).setParameters({
+      await (worker as unknown as { setParameters: (params: Record<string, unknown>) => Promise<void> }).setParameters({
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789.,!?;:()[]{}"\'/-+=@#$%^&*~`|\\<>',
         tessedit_pageseg_mode: 6, // Assume uniform block of text
       })
@@ -52,7 +52,7 @@ export async function extractTextFromImage(
 
       // Process image with timeout
       const result = await Promise.race([
-        (worker as any).recognize(imageBuffer),
+        (worker as unknown as { recognize: (buffer: Buffer) => Promise<{ data: { text: string; confidence: number } }> }).recognize(imageBuffer),
         timeoutPromise,
       ])
 
@@ -73,7 +73,7 @@ export async function extractTextFromImage(
       }
 
     } finally {
-      await (worker as any).terminate()
+      await (worker as unknown as { terminate: () => Promise<void> }).terminate()
     }
 
   } catch (error) {

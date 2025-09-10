@@ -332,7 +332,6 @@ export async function exportToZip(
           onProgress(progress);
         }
       } catch (error) {
-        console.error(`Ошибка при добавлении файла ${fileName}:`, error);
         throw new Error(`Не удалось добавить изображение ${fileName}`);
       }
     }

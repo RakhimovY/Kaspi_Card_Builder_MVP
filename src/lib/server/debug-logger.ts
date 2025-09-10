@@ -6,7 +6,7 @@ interface DebugLogEntry {
   service: 'gtin' | 'llm' | 'ocr'
   action: 'request' | 'response' | 'error'
   gtin?: string
-  data: any
+  data: Record<string, unknown>
   traceId?: string
 }
 
@@ -52,7 +52,7 @@ class DebugLogger {
     })
   }
 
-  logGtinResponse(gtin: string, response: any, traceId?: string) {
+  logGtinResponse(gtin: string, response: Record<string, unknown>, traceId?: string) {
     this.log({
       timestamp: new Date().toISOString(),
       service: 'gtin',
@@ -63,7 +63,7 @@ class DebugLogger {
     })
   }
 
-  logGtinError(gtin: string, error: any, traceId?: string) {
+  logGtinError(gtin: string, error: Record<string, unknown>, traceId?: string) {
     this.log({
       timestamp: new Date().toISOString(),
       service: 'gtin',
@@ -91,7 +91,7 @@ class DebugLogger {
     })
   }
 
-  logLlmResponse(response: any, traceId?: string) {
+  logLlmResponse(response: Record<string, unknown>, traceId?: string) {
     this.log({
       timestamp: new Date().toISOString(),
       service: 'llm',
@@ -101,7 +101,7 @@ class DebugLogger {
     })
   }
 
-  logLlmError(error: any, traceId?: string) {
+  logLlmError(error: Record<string, unknown>, traceId?: string) {
     this.log({
       timestamp: new Date().toISOString(),
       service: 'llm',

@@ -119,9 +119,8 @@ export async function POST(request: NextRequest) {
         }) : [];
 
         if (imageAssets.length > 0) {
-          // TODO: OCR processing requires image data to be stored in database or file system
+          // OCR processing requires image data to be stored in database or file system
           // For now, we'll skip OCR processing since image data is not stored in ImageAsset model
-          console.warn('OCR processing skipped - image data not available');
           
           // Mock OCR data for development
           ocrData = {

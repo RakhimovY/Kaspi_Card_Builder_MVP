@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Settings, Download, CheckCircle, AlertCircle, Package, FileText, ArrowLeft, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
@@ -66,7 +64,6 @@ export default function ExportPanel() {
       setTimeout(() => setExportSuccess(false), 3000);
       
     } catch (error) {
-      console.error('Export error:', error);
       const errorMsg = error instanceof Error ? error.message : t('studio.export.error');
       setExportError(errorMsg);
       toast.error(errorMsg, { id: 'export' });

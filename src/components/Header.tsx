@@ -15,7 +15,6 @@ import {
   X,
   Home,
   User,
-  Settings
 } from 'lucide-react';
 
 interface HeaderProps {

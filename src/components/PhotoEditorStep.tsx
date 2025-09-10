@@ -142,7 +142,7 @@ export default function PhotoEditorStep() {
     e.target.value = '';
   }, [handleFiles]);
 
-  const getStatusIcon = (status: any) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
         return <FileImage className="w-4 h-4 text-gray-400" />;

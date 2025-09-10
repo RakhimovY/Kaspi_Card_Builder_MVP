@@ -23,7 +23,6 @@ import {
   ChevronDown,
   Check,
 } from 'lucide-react';
-import { LemonSqueezyTest } from '@/components/LemonSqueezyTest';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -37,7 +36,7 @@ export default function LandingPage() {
     const checkLemonSqueezy = () => {
       if (typeof window !== 'undefined' && (window as unknown as { createLemonSqueezy?: unknown }).createLemonSqueezy) {
         (window as unknown as { lemonSqueezyReady?: boolean }).lemonSqueezyReady = true;
-        console.log('Lemon Squeezy script detected');
+        // Lemon Squeezy script detected
       }
     };
     

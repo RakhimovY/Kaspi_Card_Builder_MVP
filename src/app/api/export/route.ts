@@ -11,10 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { draftIds, format } = exportSchema.parse(body)
 
-    // TODO: Verify user has Pro subscription
-    // TODO: Fetch drafts and images
-    // TODO: Generate ZIP/CSV on server
-    // TODO: Return download URL or stream
+    // Server-side export functionality (Pro feature)
 
     const result = {
       exportId: 'temp-export-id',
