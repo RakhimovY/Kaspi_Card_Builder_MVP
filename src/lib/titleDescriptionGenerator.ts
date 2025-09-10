@@ -73,7 +73,7 @@ function generateCharacteristics(formData: FormData, locale: 'ru' | 'kz'): strin
     keySpec ? `• Основные характеристики: ${keySpec}` : null,
     additionalSpecs ? `• Дополнительные характеристики: ${additionalSpecs}` : null,
     `• Категория: ${getCategoryLabel(category, locale)}`,
-    `• Цена: ${price.toLocaleString('ru-RU')} ₸`
+    `• Цена: ${price.toLocaleString()} ₸`
   ].filter(Boolean);
 
   return characteristics.join('\n');

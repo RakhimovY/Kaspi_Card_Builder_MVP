@@ -48,7 +48,7 @@ export function AuthButtons() {
   if (status === 'loading') {
     return (
       <div className="flex items-center space-x-2">
-        <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+        <div className="w-7 h-7 bg-gray-200 rounded-lg animate-pulse" />
         <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
       </div>
     )
@@ -58,8 +58,8 @@ export function AuthButtons() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8">
+          <Button variant="ghost" className="relative h-7 w-7 rounded-lg">
+            <Avatar className="h-7 w-7 rounded-lg">
               <AvatarImage src={session.user.image || ''} alt={session.user.name || ''} />
               <AvatarFallback>
                 {session.user.name?.charAt(0) || session.user.email?.charAt(0) || 'U'}

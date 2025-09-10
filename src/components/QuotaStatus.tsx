@@ -65,8 +65,8 @@ export default function QuotaStatus({ feature = 'magicFill', className }: QuotaS
 
   const getStatusColor = () => {
     if (isAtLimit) return 'destructive';
-    if (isNearLimit) return 'warning';
-    return 'success';
+    if (isNearLimit) return 'secondary';
+    return 'default';
   };
 
   const getStatusIcon = () => {

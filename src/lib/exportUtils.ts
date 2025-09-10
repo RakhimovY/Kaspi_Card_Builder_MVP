@@ -311,32 +311,35 @@ export async function exportToZip(
     file.status === 'completed' && file.processedUrl
   );
 
-  if (completedFiles.length === 0) {
-    throw new Error('Нет обработанных изображений для экспорта');
-  }
-
-  // Добавляем изображения
-  for (let i = 0; i < completedFiles.length; i++) {
-    const file = completedFiles[i];
-    const fileExtension = formData.type === 'jpeg' ? 'jpg' : 'webp';
-    const fileName = `${baseSku}_${i + 1}.${fileExtension}`;
-    
-    try {
-      // Получаем обработанное изображение
-      const response = await fetch(file.processedUrl!);
-      const blob = await response.blob();
-      const arrayBuffer = await blobToArrayBuffer(blob);
+  // Добавляем изображения (если есть)
+  if (completedFiles.length > 0) {
+    for (let i = 0; i < completedFiles.length; i++) {
+      const file = completedFiles[i];
+      const fileExtension = formData.type === 'jpeg' ? 'jpg' : 'webp';
+      const fileName = `${baseSku}_${i + 1}.${fileExtension}`;
       
-      imagesFolder.file(fileName, arrayBuffer);
-      
-      // Обновляем прогресс
-      if (onProgress) {
-        const progress = ((i + 1) / completedFiles.length) * 0.7; // 70% на изображения
-        onProgress(progress);
+      try {
+        // Получаем обработанное изображение
+        const response = await fetch(file.processedUrl!);
+        const blob = await response.blob();
+        const arrayBuffer = await blobToArrayBuffer(blob);
+        
+        imagesFolder.file(fileName, arrayBuffer);
+        
+        // Обновляем прогресс
+        if (onProgress) {
+          const progress = ((i + 1) / completedFiles.length) * 0.7; // 70% на изображения
+          onProgress(progress);
+        }
+      } catch (error) {
+        console.error(`Ошибка при добавлении файла ${fileName}:`, error);
+        throw new Error(`Не удалось добавить изображение ${fileName}`);
       }
-    } catch (error) {
-      console.error(`Ошибка при добавлении файла ${fileName}:`, error);
-      throw new Error(`Не удалось добавить изображение ${fileName}`);
+    }
+  } else {
+    // Если нет изображений, обновляем прогресс на 70%
+    if (onProgress) {
+      onProgress(0.7);
     }
   }
 

@@ -32,8 +32,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const MAX_FILES = 50;
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 export default function PhotoEditorStep() {
@@ -65,18 +63,12 @@ export default function PhotoEditorStep() {
       if (!ALLOWED_TYPES.includes(file.type)) {
         return t('studio.file_drop.file_validation.unsupported_format');
       }
-      if (file.size > MAX_FILE_SIZE) {
-        return t('studio.file_drop.file_validation.file_too_large');
-      }
       return null;
     };
 
     const newFiles: File[] = Array.from(fileList);
     
-    if (files.length + newFiles.length > MAX_FILES) {
-      toast.error(t('studio.file_drop.file_validation.max_files_exceeded', { max: MAX_FILES }));
-      return;
-    }
+    // File limit validation removed
 
     let addedCount = 0;
     let errorCount = 0;
@@ -89,6 +81,7 @@ export default function PhotoEditorStep() {
         return;
       }
 
+      const url = URL.createObjectURL(file);
       const fileItem = {
         id: `${Date.now()}-${Math.random()}`,
         name: file.name,
@@ -96,10 +89,8 @@ export default function PhotoEditorStep() {
         type: file.type,
         status: 'pending' as const,
         originalFile: file,
+        originalUrl: url,
       };
-
-      const url = URL.createObjectURL(file);
-      fileItem.originalUrl = url;
 
       addFile(fileItem);
       addedCount++;
@@ -177,6 +168,14 @@ export default function PhotoEditorStep() {
   };
 
   const completedFiles = files.filter(file => file.status === 'completed' && file.processedUrl);
+  
+  // Определяем, есть ли файлы в процессе обработки
+  const hasProcessingFiles = files.some(file => file.status === 'processing');
+  const hasPendingFiles = files.some(file => file.status === 'pending');
+  
+  // Блокируем навигацию, если есть файлы в обработке или ожидании
+  const isNavigationDisabled = hasProcessingFiles || (hasPendingFiles && files.length > 0);
+  
   const canProceed = true; // Этап опциональный - всегда можно продолжить
 
   const handleNext = () => {
@@ -189,10 +188,10 @@ export default function PhotoEditorStep() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Image className="w-5 h-5 text-blue-600" />
-            <span>Редактор фото</span>
+            <span>Обработка изображений (опционально)</span>
             {files.length > 0 && (
               <Badge variant="secondary" className="ml-2">
-                {files.length} из {MAX_FILES}
+                {files.length} файлов
               </Badge>
             )}
           </CardTitle>
@@ -283,10 +282,6 @@ export default function PhotoEditorStep() {
             
             <div className="text-xs text-gray-400 flex justify-center gap-4">
               <span>JPEG, PNG, WebP</span>
-              <span>•</span>
-              <span>до 25MB</span>
-              <span>•</span>
-              <span>макс. {MAX_FILES}</span>
             </div>
           </div>
         </div>
@@ -503,6 +498,7 @@ export default function PhotoEditorStep() {
               onClick={handleNext}
               variant="outline"
               className="flex items-center gap-2"
+              disabled={isNavigationDisabled}
             >
               Пропустить фото
               <ArrowRight className="w-4 h-4" />
@@ -512,6 +508,7 @@ export default function PhotoEditorStep() {
               <Button
                 onClick={handleNext}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 flex items-center gap-2"
+                disabled={isNavigationDisabled}
               >
                 Продолжить к экспорту
                 <ArrowRight className="w-4 h-4" />
@@ -525,6 +522,19 @@ export default function PhotoEditorStep() {
           <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
             <AlertCircle className="w-4 h-4" />
             <span>Этап опциональный - можете пропустить и перейти к экспорту без изображений</span>
+          </div>
+        )}
+
+        {/* Processing Info */}
+        {isNavigationDisabled && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
+            <AlertTriangle className="w-4 h-4" />
+            <span>
+              {hasProcessingFiles 
+                ? 'Дождитесь завершения обработки изображений перед переходом к следующему шагу'
+                : 'Загружены файлы, но обработка не начата. Нажмите "Обработать изображения" или удалите файлы для продолжения'
+              }
+            </span>
           </div>
         )}
 

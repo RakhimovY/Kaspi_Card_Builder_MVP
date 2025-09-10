@@ -11,7 +11,6 @@ import { useTranslations, useAuthTranslations } from '@/lib/useTranslations';
 import { 
   Camera, 
   ArrowLeft, 
-  Sparkles, 
   Menu, 
   X,
   Home,
@@ -28,7 +27,6 @@ interface HeaderProps {
   subtitle?: string;
   showPricingButton?: boolean;
   onPricingClick?: () => void;
-  showBetaBadge?: boolean;
   showAuthButtons?: boolean;
   showLanguageSwitcher?: boolean;
   className?: string;
@@ -43,7 +41,6 @@ export default function Header({
   subtitle,
   showPricingButton = false,
   onPricingClick,
-  showBetaBadge = false,
   showAuthButtons = true,
   showLanguageSwitcher = true,
   className = ''
@@ -163,12 +160,6 @@ export default function Header({
             </Button>
           )}
           
-          {showBetaBadge && (
-            <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-full px-3 py-1">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">{t('common.beta')}</span>
-            </div>
-          )}
           
           {showAuthButtons && <AuthButtons />}
           {showLanguageSwitcher && <LanguageSwitcher />}
@@ -245,12 +236,6 @@ export default function Header({
                 </Button>
               )}
               
-              {showBetaBadge && (
-                <div className="flex items-center justify-center space-x-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                  <Sparkles className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-700">{t('common.beta')}</span>
-                </div>
-              )}
               
               <div className="flex space-x-2">
                 {showAuthButtons && (

@@ -7,6 +7,7 @@ import MagicFillStep from '@/components/MagicFillStep';
 import ProductInfoStep from '@/components/ProductInfoStep';
 import PhotoEditorStep from '@/components/PhotoEditorStep';
 import ExportPanel from '@/components/ExportPanel';
+import StepRoadmap from '@/components/StepRoadmap';
 import { useAppStore } from '@/lib/store';
 
 export default function StudioPage() {
@@ -22,35 +23,6 @@ export default function StudioPage() {
     return null;
   }
 
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 'magic-fill':
-        return '1. Magic Fill AI';
-      case 'product-info':
-        return '2. Информация о товаре';
-      case 'photo-editor':
-        return '3. Редактор фото (опционально)';
-      case 'export':
-        return '4. Экспорт готового пакета';
-      default:
-        return 'Студия';
-    }
-  };
-
-  const getStepDescription = () => {
-    switch (currentStep) {
-      case 'magic-fill':
-        return 'Автоматическое заполнение данных о товаре';
-      case 'product-info':
-        return 'Проверка и редактирование информации';
-      case 'photo-editor':
-        return 'Обработка изображений товара (опционально)';
-      case 'export':
-        return 'Скачивание готового пакета';
-      default:
-        return '';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -64,17 +36,15 @@ export default function StudioPage() {
       <Header 
         variant="studio"
         showBackButton={false}
-        showBetaBadge={true}
         showAuthButtons={true}
       />
 
       {/* Main Content */}
       <main className="relative container mx-auto px-4 py-6 z-10">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Step Header */}
-          <section className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-gray-900">{getStepTitle()}</h2>
-            <p className="text-gray-600">{getStepDescription()}</p>
+          {/* Step Roadmap */}
+          <section>
+            <StepRoadmap />
           </section>
 
           {/* Current Step Content */}

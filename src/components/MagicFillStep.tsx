@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,6 @@ import {
 import { toast } from 'sonner';
 import BarcodeScanner from './BarcodeScanner';
 import MagicFillButton from './MagicFillButton';
-import QuotaStatus from './QuotaStatus';
 
 export default function MagicFillStep() {
   const { t } = useTranslations();
@@ -32,6 +31,7 @@ export default function MagicFillStep() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [gtinValidation, setGtinValidation] = useState<{ isValid: boolean; message: string } | null>(null);
+  const manualEntryRef = useRef<HTMLDivElement>(null);
 
   const handleBarcodeScan = (barcode: string) => {
     setManualGtin(barcode);
@@ -73,59 +73,60 @@ export default function MagicFillStep() {
     <div className="max-w-2xl mx-auto">
       {/* Magic Fill AI Block - Main */}
       <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full -translate-y-16 translate-x-16 animate-float"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400/20 to-indigo-400/20 rounded-full translate-y-12 -translate-x-12 animate-float-delayed"></div>
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-4 right-4 w-2 h-2 bg-purple-400 rounded-full"></div>
+          <div className="absolute top-8 right-8 w-1 h-1 bg-blue-400 rounded-full"></div>
+          <div className="absolute bottom-6 left-6 w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
+          <div className="absolute bottom-4 left-4 w-1 h-1 bg-purple-400 rounded-full"></div>
+        </div>
         
-        <CardContent className="p-8 relative z-10">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-full mb-6 shadow-lg relative transition-all duration-300 hover:scale-110 hover:shadow-xl">
-              <Wand2 className="w-10 h-10 text-white" />
+        <CardContent className="p-6 relative z-10">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-lg mb-4 shadow-lg relative transition-all duration-300 hover:scale-105 hover:shadow-xl">
+              <Wand2 className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-3xl font-bold text-gray-800 mb-3 animate-fade-in">Magic Fill AI</h3>
-            <p className="text-lg text-gray-600 mb-2 animate-fade-in-delay">Автоматическое заполнение данных о товаре</p>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3 animate-fade-in">Magic Fill AI</h3>
             <p className="text-sm text-gray-500 animate-fade-in-delay-2">Отсканируйте штрихкод и получите готовую карточку за 2 минуты</p>
           </div>
 
           <div className="space-y-6">
             {/* GTIN Input */}
-            <div className="flex gap-4 items-center justify-center">
-              <Input
-                value={manualGtin}
-                onChange={(e) => handleManualGtinChange(e.target.value)}
-                placeholder="Введите GTIN или отсканируйте штрихкод"
-                className="flex-1 max-w-md text-center text-lg font-mono border-purple-200 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 hover:border-purple-300"
-              />
-              <Button
-                onClick={() => setIsBarcodeScannerOpen(true)}
-                variant="outline"
-                size="lg"
-                className="px-6 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <Camera className="w-5 h-5 mr-2 relative z-10" />
-                <span className="relative z-10">Сканировать</span>
-              </Button>
+            <div className="flex flex-col gap-4 items-center justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
+                <Input
+                  value={manualGtin}
+                  onChange={(e) => handleManualGtinChange(e.target.value)}
+                  placeholder="Введите GTIN или отсканируйте штрихкод"
+                  className={`flex-1 max-w-md text-center text-base sm:text-lg font-mono transition-all duration-300 placeholder:text-sm sm:placeholder:text-base ${
+                    gtinValidation 
+                      ? gtinValidation.isValid 
+                        ? 'border-green-400 focus:border-green-500 focus:ring-green-400 bg-green-50/50' 
+                        : 'border-red-400 focus:border-red-500 focus:ring-red-400 bg-red-50/50'
+                      : 'border-purple-200 focus:border-purple-400 focus:ring-purple-400 hover:border-purple-300'
+                  }`}
+                />
+                <Button
+                  onClick={() => setIsBarcodeScannerOpen(true)}
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto px-4 sm:px-6 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2 relative z-10" />
+                  <span className="relative z-10 text-sm sm:text-base">Сканировать</span>
+                </Button>
+              </div>
+              
+              {/* Error/Success Message */}
+              {gtinValidation && !gtinValidation.isValid && (
+                <div className="flex items-center gap-2 text-sm text-red-600 animate-fade-in-scale max-w-md text-center">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{gtinValidation.message}</span>
+                </div>
+              )}
             </div>
 
-            {/* Status */}
-            {gtinValidation && (
-              <div className={`flex items-center justify-center gap-2 text-sm p-3 rounded-lg border animate-fade-in-scale ${
-                gtinValidation.isValid 
-                  ? 'text-green-600 bg-green-50 border-green-200' 
-                  : 'text-red-600 bg-red-50 border-red-200'
-              }`}>
-                {gtinValidation.isValid ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  <AlertCircle className="w-5 h-5" />
-                )}
-                <span className="font-medium">{gtinValidation.message}</span>
-                {gtinValidation.isValid && (
-                  <span className="text-xs text-gray-500 ml-2">({manualGtin})</span>
-                )}
-              </div>
-            )}
 
             {/* Magic Fill Button */}
             <div className="flex justify-center">
@@ -147,40 +148,36 @@ export default function MagicFillStep() {
             )}
           </div>
 
-          {/* Quota Status */}
-          <div className="mt-6">
-            <QuotaStatus feature="magicFill" />
-          </div>
 
           {/* Manual Entry Toggle */}
           <div className="mt-8 pt-6 border-t border-purple-200">
             <div className="text-center space-y-2">
               <Button
-                onClick={() => setShowManualEntry(!showManualEntry)}
+                onClick={() => {
+                  const newShowState = !showManualEntry;
+                  setShowManualEntry(newShowState);
+                  
+                  // Scroll to manual entry section after showing it
+                  if (newShowState) {
+                    setTimeout(() => {
+                      if (manualEntryRef.current) {
+                        manualEntryRef.current.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'center',
+                          inline: 'nearest'
+                        });
+                      }
+                    }, 200); // Increased delay to ensure animation completes
+                  }
+                }}
                 variant="ghost"
                 size="sm"
                 className="text-gray-500 hover:text-gray-700 text-sm transition-all duration-300 hover:scale-105 hover:bg-gray-100"
               >
                 <FileText className="w-4 h-4 mr-2" />
-                {showManualEntry ? 'Скрыть' : 'Заполнить вручную'}
+                {showManualEntry ? 'Скрыть' : 'Нет штрихкода? Заполнить вручную'}
               </Button>
               
-              {/* Debug: Clear all fields button */}
-              <div>
-                <Button
-                  onClick={() => {
-                    resetFormData(); // Используем новую функцию для очистки
-                    setManualGtin('');
-                    setGtinValidation(null);
-                    toast.success('Все поля очищены');
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="text-red-500 hover:text-red-700 text-xs border-red-200 hover:border-red-300"
-                >
-                  Очистить все поля
-                </Button>
-              </div>
             </div>
           </div>
         </CardContent>
@@ -188,11 +185,18 @@ export default function MagicFillStep() {
 
       {/* Manual Entry Block - Collapsible */}
       {showManualEntry && (
-        <Card className="mt-6 bg-gradient-to-br from-gray-50 to-blue-50 border-gray-200 shadow-lg animate-slide-down">
+        <div ref={manualEntryRef} className="mt-6">
+          <Card className="bg-gradient-to-br from-gray-50 to-blue-50 border-gray-200 shadow-lg animate-slide-down">
           <CardContent className="p-6">
             <div className="text-center mb-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-2">Ручное заполнение</h4>
-              <p className="text-sm text-gray-600">Заполните основные поля вручную</p>
+              <h4 className="text-lg font-semibold text-gray-800 mb-2">Заполнение без GTIN</h4>
+              <p className="text-sm text-gray-600 mb-3">
+                Если у вас нет штрихкода, заполните основные поля вручную
+              </p>
+              <div className="inline-flex items-center gap-2 text-xs text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                <Wand2 className="w-3 h-3" />
+                <span>Magic Fill AI всё равно поможет с описаниями на следующем шаге</span>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -227,7 +231,7 @@ export default function MagicFillStep() {
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
                   }`}
                 >
-                  Продолжить
+                  Продолжить к Magic Fill AI
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -240,6 +244,7 @@ export default function MagicFillStep() {
             </div>
           </CardContent>
         </Card>
+        </div>
       )}
     </div>
 
