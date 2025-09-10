@@ -25,7 +25,7 @@ const upcitemdbItemSchema = z.object({
     domain: z.string().optional(),
     title: z.string().optional(),
     currency: z.string().optional(),
-    list_price: z.string().optional(),
+    list_price: z.union([z.string(), z.number()]).optional(),
     price: z.number().optional(),
     shipping: z.string().optional(),
     condition: z.string().optional(),
@@ -89,14 +89,6 @@ export async function lookupGtinUpcitemdb(
       headers['user_key'] = config.userKey
     }
 
-    logger.info({
-      message: 'GTIN lookup request',
-      gtin,
-      provider: 'upcitemdb',
-      usePaidEndpoint,
-      url: url.replace(config.userKey || '', '[REDACTED]'),
-    })
-
     // Log to debug file
     debugLogger.logGtinRequest(gtin, url, headers)
 
@@ -109,14 +101,6 @@ export async function lookupGtinUpcitemdb(
 
     if (!response.ok) {
       const errorText = await response.text()
-      logger.error({
-        message: 'GTIN lookup failed',
-        gtin,
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText,
-        url: url.replace(config.userKey || '', '[REDACTED]'),
-      })
       
       return {
         success: false,
@@ -125,14 +109,6 @@ export async function lookupGtinUpcitemdb(
     }
 
     const rawData = await response.json()
-    
-    // Log raw response for debugging
-    logger.info({
-      message: 'GTIN lookup raw response',
-      gtin,
-      rawResponse: rawData,
-      responseSize: JSON.stringify(rawData).length,
-    })
     
     // Log to debug file
     debugLogger.logGtinResponse(gtin, rawData)
@@ -160,45 +136,12 @@ export async function lookupGtinUpcitemdb(
       rawData: rawData,
     }
 
-    // Log detailed normalized data for debugging
-    logger.info({
-      message: 'GTIN lookup successful - normalized data',
-      gtin,
-      normalizedData: {
-        brand: normalized.brand,
-        name: normalized.name,
-        model: normalized.model,
-        category: normalized.category,
-        description: normalized.description,
-        price: normalized.price,
-        currency: normalized.currency,
-        imagesCount: normalized.images?.length || 0,
-      },
-      rawItemData: {
-        title: item.title,
-        brand: item.brand,
-        model: item.model,
-        category: item.category,
-        description: item.description,
-        color: item.color,
-        size: item.size,
-        dimension: item.dimension,
-        weight: item.weight,
-      }
-    })
-
     return {
       success: true,
       data: normalized,
     }
 
   } catch (error) {
-    logger.error({
-      message: 'GTIN lookup error',
-      gtin,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-    })
 
     return {
       success: false,

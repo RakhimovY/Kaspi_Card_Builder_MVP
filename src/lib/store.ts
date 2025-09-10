@@ -90,6 +90,7 @@ export interface StudioState {
   currentStep: StudioStep;
   setCurrentStep: (step: StudioStep) => void;
   resetStudio: () => void;
+  resetFormData: () => void;
 }
 
 // Store slices
@@ -322,18 +323,19 @@ export const useAppStore = create<AppStore>()(
       currentStep: 'magic-fill',
       setCurrentStep: (step) => set({ currentStep: step }),
       resetStudio: () => set({ currentStep: 'magic-fill' }),
+      resetFormData: () => set({ formData: initialFormData }),
     }),
     {
       name: 'trade-card-builder-storage',
       partialize: (state) => ({
         settings: state.settings,
-        formData: state.formData,
+        // Убираем formData из localStorage - не сохраняем данные формы
         categoryChecklist: state.categoryChecklist,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Нормализуем данные при загрузке из localStorage
-          state.formData = normalizeFormData(state.formData);
+          // Сбрасываем formData к начальным значениям при загрузке
+          state.formData = initialFormData;
         }
       },
     }

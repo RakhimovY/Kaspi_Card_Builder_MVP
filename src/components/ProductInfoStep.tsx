@@ -31,7 +31,8 @@ export default function ProductInfoStep() {
     formData, 
     updateFormData, 
     setCurrentStep, 
-    resetStudio 
+    resetStudio,
+    resetFormData
   } = useAppStore();
   
   const [showGenerator, setShowGenerator] = useState(false);
@@ -330,7 +331,10 @@ export default function ProductInfoStep() {
         <div className="flex justify-between pt-6 border-t">
           <Button
             variant="outline"
-            onClick={() => setCurrentStep('magic-fill')}
+            onClick={() => {
+              resetFormData(); // Очищаем все данные формы
+              setCurrentStep('magic-fill');
+            }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />

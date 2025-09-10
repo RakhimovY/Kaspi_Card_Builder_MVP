@@ -1,5 +1,4 @@
 import { env } from './env'
-import { logger } from './logger'
 import { debugLogger } from './debug-logger'
 
 export interface ProductData {
@@ -75,9 +74,7 @@ export async function enrichProductWithLlm(
   productData: ProductData
 ): Promise<LlmEnrichmentResult> {
   if (!env.OPENAI_API_KEY) {
-    logger.warn({
-      message: 'OpenAI API key not configured, using fallback',
-    })
+    console.warn('OpenAI API key not configured, using fallback')
     return enrichProductFallback(productData)
   }
 
@@ -87,24 +84,7 @@ export async function enrichProductWithLlm(
     // Get optimal parameters for the model
     const modelParams = getModelParameters(env.OPENAI_MODEL)
     
-    logger.info({
-      message: 'Starting LLM enrichment',
-      model: env.OPENAI_MODEL,
-      modelParams,
-      hasGtinData: !!productData.gtinData,
-      hasOcrText: !!productData.ocrText,
-      promptLength: prompt.length,
-      productData: {
-        brand: productData.brand,
-        type: productData.type,
-        model: productData.model,
-        keySpec: productData.keySpec,
-        category: productData.category,
-        gtinDataKeys: productData.gtinData ? Object.keys(productData.gtinData) : [],
-        ocrTextLength: productData.ocrText?.length || 0,
-      },
-      fullPrompt: prompt,
-    })
+    // Starting LLM enrichment
 
     // Log to debug file
     debugLogger.logLlmRequest(prompt, env.OPENAI_MODEL)
@@ -209,12 +189,7 @@ export async function enrichProductWithLlm(
 
     if (!response.ok) {
       const errorText = await response.text()
-      logger.error({
-        message: 'OpenAI API request failed',
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText,
-      })
+      console.error('OpenAI API request failed:', response.status, response.statusText)
       throw new Error(`OpenAI API error: ${response.status}`)
     }
 
@@ -222,12 +197,7 @@ export async function enrichProductWithLlm(
     const content = data.choices?.[0]?.message?.content
 
     // Log raw LLM response
-    logger.info({
-      message: 'LLM raw response received',
-      responseData: data,
-      content: content,
-      usage: data.usage,
-    })
+    // LLM response received
 
     // Log to debug file
     debugLogger.logLlmResponse(data)
@@ -242,37 +212,12 @@ export async function enrichProductWithLlm(
     // Validate and improve Kazakh translations
     const validatedResult = validateAndImproveKazakhTranslations(result, productData)
 
-    logger.info({
-      message: 'LLM enrichment completed - parsed result',
-      confidence: validatedResult.confidence,
-      hasTitle: !!validatedResult.titleRU,
-      hasDescription: !!validatedResult.descriptionRU,
-      kazakhQuality: {
-        titleQuality: validateKazakhQuality(validatedResult.titleKZ || ''),
-        descriptionQuality: validateKazakhQuality(validatedResult.descriptionKZ || ''),
-      },
-      parsedResult: {
-        brand: validatedResult.brand,
-        type: validatedResult.type,
-        model: validatedResult.model,
-        keySpec: validatedResult.keySpec,
-        category: validatedResult.category,
-        titleRU: validatedResult.titleRU,
-        titleKZ: validatedResult.titleKZ,
-        descriptionRU: validatedResult.descriptionRU,
-        descriptionKZ: validatedResult.descriptionKZ,
-        attributes: validatedResult.attributes,
-        confidence: validatedResult.confidence,
-      }
-    })
+    // LLM enrichment completed
 
     return validatedResult
 
   } catch (error) {
-    logger.error({
-      message: 'LLM enrichment failed',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
+    console.error('LLM enrichment failed:', error instanceof Error ? error.message : 'Unknown error')
 
     // Fallback to rule-based enrichment
     return enrichProductFallback(productData)
@@ -313,7 +258,7 @@ function buildEnrichmentPrompt(productData: ProductData): string {
     parts.push(productData.ocrText)
   }
 
-  return parts.join('\n')
+  return parts.join('\n');
 }
 
 /**

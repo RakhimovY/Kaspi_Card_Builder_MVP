@@ -12,6 +12,11 @@ export interface QuotaConfig {
     magicFillPerMonth: number;
     exportPerMonth: number;
   };
+  anonymous: {
+    photosPerMonth: number;
+    magicFillPerMonth: number;
+    exportPerMonth: number;
+  };
 }
 
 export const DEFAULT_QUOTAS: QuotaConfig = {
@@ -24,6 +29,11 @@ export const DEFAULT_QUOTAS: QuotaConfig = {
     photosPerMonth: 500,
     magicFillPerMonth: 100,
     exportPerMonth: 50,
+  },
+  anonymous: {
+    photosPerMonth: 10,
+    magicFillPerMonth: 5,
+    exportPerMonth: 2,
   },
 };
 
@@ -111,7 +121,61 @@ export async function assertQuota(
   //   current,
   //   limit,
   // });
-  console.log("Quota check passed", { userId, feature, plan, current, limit });
+}
+
+export async function assertIpQuota(
+  ipAddress: string,
+  feature: "photos" | "magicFill" | "export" | "imageProcessing"
+): Promise<void> {
+  const periodYM = getCurrentPeriod();
+  const quotas = DEFAULT_QUOTAS.anonymous;
+
+  const ipQuota = await prisma.ipQuota.findUnique({
+    where: {
+      ipAddress_periodYM: {
+        ipAddress,
+        periodYM,
+      },
+    },
+  });
+
+  const usage = ipQuota || {
+    magicFillCount: 0,
+    photosProcessed: 0,
+    exportCount: 0,
+  };
+
+  let current: number;
+  let limit: number;
+
+  switch (feature) {
+    case "photos":
+    case "imageProcessing":
+      current = usage.photosProcessed;
+      limit = quotas.photosPerMonth;
+      break;
+    case "magicFill":
+      current = usage.magicFillCount;
+      limit = quotas.magicFillPerMonth;
+      break;
+    case "export":
+      current = usage.exportCount;
+      limit = quotas.exportPerMonth;
+      break;
+    default:
+      throw new Error(`Unknown feature: ${feature}`);
+  }
+
+  if (current >= limit) {
+    throw new QuotaError(
+      `Anonymous quota exceeded for ${feature}`,
+      "QUOTA_EXCEEDED",
+      feature,
+      current,
+      limit
+    );
+  }
+
 }
 
 export async function incrementUsage(
@@ -155,7 +219,42 @@ export async function incrementUsage(
   //   count,
   //   periodYM,
   // });
-  console.log("Usage incremented", { userId, feature, count, periodYM });
+}
+
+export async function incrementIpUsage(
+  ipAddress: string,
+  feature: "photos" | "magicFill" | "export" | "imageProcessing",
+  count: number = 1
+): Promise<void> {
+  const periodYM = getCurrentPeriod();
+
+  await prisma.ipQuota.upsert({
+    where: {
+      ipAddress_periodYM: {
+        ipAddress,
+        periodYM,
+      },
+    },
+    update: {
+      [feature === "photos" || feature === "imageProcessing"
+        ? "photosProcessed"
+        : feature === "magicFill"
+        ? "magicFillCount"
+        : "exportCount"]: {
+        increment: count,
+      },
+    },
+    create: {
+      ipAddress,
+      periodYM,
+      [feature === "photos" || feature === "imageProcessing"
+        ? "photosProcessed"
+        : feature === "magicFill"
+        ? "magicFillCount"
+        : "exportCount"]: count,
+    },
+  });
+
 }
 
 function getCurrentPeriod(): string {

@@ -185,3 +185,18 @@ model ImageProcessingLog {
   @@index([userId, createdAt])
   @@index([success])
 }
+
+model IpQuota {
+  id              String   @id @default(cuid())
+  ipAddress       String
+  periodYM        String   // "2024-01" format
+  magicFillCount  Int      @default(0)
+  photosProcessed Int      @default(0)
+  exportCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([ipAddress, periodYM], name: "ipAddress_periodYM")
+  @@index([periodYM])
+  @@index([ipAddress])
+}

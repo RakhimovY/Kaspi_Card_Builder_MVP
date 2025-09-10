@@ -1,7 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from './logger'
-import { assertQuota, incrementUsage } from './quota'
+import { assertQuota, incrementUsage, assertIpQuota, incrementIpUsage } from './quota'
 import { z } from 'zod'
+
+/**
+ * Получает IP-адрес клиента из запроса
+ */
+export function getClientIp(request: NextRequest): string {
+  // Проверяем заголовки прокси
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIp = request.headers.get('x-real-ip')
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
+  
+  if (forwarded) {
+    // x-forwarded-for может содержать несколько IP через запятую
+    return forwarded.split(',')[0].trim()
+  }
+  
+  if (realIp) {
+    return realIp
+  }
+  
+  if (cfConnectingIp) {
+    return cfConnectingIp
+  }
+  
+  // Fallback на connection.remoteAddress (может не работать в некоторых окружениях)
+  return '127.0.0.1' // fallback для разработки
+}
 
 export interface ApiHandlerOptions {
   requireAuth?: boolean
@@ -13,6 +39,7 @@ export interface ApiContext {
   requestId: string
   log: (message: string, data?: Record<string, unknown>) => void
   userId?: string
+  ipAddress: string
 }
 
 /**
@@ -24,14 +51,16 @@ export function createApiContext(
   method: string = 'POST'
 ): ApiContext {
   const requestId = crypto.randomUUID()
-  const log = logger.child({ requestId, endpoint, method })
+  // const log = logger.child({ requestId, endpoint, method })
+  const ipAddress = getClientIp(request)
   
   return {
     requestId,
     log: (message: string, data?: Record<string, unknown>) => {
-      log.info({ message, ...data })
+      console.log(message, data)
     },
-    userId: 'temp-user-id' // TODO: Get from session
+    userId: 'temp-user-id', // TODO: Get from session
+    ipAddress
   }
 }
 
@@ -71,7 +100,7 @@ export async function performApiChecks(
   context: ApiContext,
   options: ApiHandlerOptions
 ): Promise<NextResponse | null> {
-  const { log, userId } = context
+  const { log, userId, ipAddress } = context
 
   if (options.requireAuth && !userId) {
     return NextResponse.json(
@@ -80,9 +109,15 @@ export async function performApiChecks(
     )
   }
 
-  if (options.requireQuota && userId) {
+  if (options.requireQuota) {
     try {
-      await assertQuota(userId, options.requireQuota as "photos" | "magicFill" | "export" | "imageProcessing")
+      if (userId) {
+        // Авторизованный пользователь - проверяем пользовательские квоты
+        await assertQuota(userId, options.requireQuota as "photos" | "magicFill" | "export" | "imageProcessing")
+      } else {
+        // Неавторизованный пользователь - проверяем IP-квоты
+        await assertIpQuota(ipAddress, options.requireQuota as "photos" | "magicFill" | "export" | "imageProcessing")
+      }
     } catch (error) {
       return handleApiError(error, log)
     }
@@ -98,9 +133,11 @@ export async function incrementApiUsage(
   context: ApiContext,
   usageType: string
 ): Promise<void> {
-  const { userId } = context
+  const { userId, ipAddress } = context
   if (userId) {
     await incrementUsage(userId, usageType as "photos" | "magicFill" | "export" | "imageProcessing")
+  } else {
+    await incrementIpUsage(ipAddress, usageType as "photos" | "magicFill" | "export" | "imageProcessing")
   }
 }
 

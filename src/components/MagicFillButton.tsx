@@ -20,8 +20,8 @@ export default function MagicFillButton({ className, onComplete, disabled }: Mag
   const [isLoading, setIsLoading] = useState(false);
 
   const handleMagicFill = async () => {
-    if (!formData.gtin && !formData.brand && !formData.type) {
-      toast.error('Заполните GTIN или основные поля для Magic Fill');
+    if (!formData.gtin) {
+      toast.error('Введите GTIN для Magic Fill');
       return;
     }
 
@@ -31,26 +31,24 @@ export default function MagicFillButton({ className, onComplete, disabled }: Mag
       const completedFiles = files.filter(file => file.status === 'completed');
       const imageIds = completedFiles.map(file => file.id);
 
+      const requestBody = {
+        gtin: formData.gtin,
+        imageIds: imageIds.length > 0 ? imageIds : undefined,
+        // Для Magic Fill НЕ отправляем ручные данные, чтобы использовать только GTIN
+        manual: undefined,
+      };
+
       const response = await fetch('/api/magic-fill', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          gtin: formData.gtin,
-          imageIds: imageIds.length > 0 ? imageIds : undefined,
-          manual: {
-            brand: formData.brand,
-            type: formData.type,
-            model: formData.model,
-            keySpec: formData.keySpec,
-            category: formData.category,
-          },
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new Error('Magic Fill failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Magic Fill failed');
       }
 
       const result = await response.json();
@@ -88,13 +86,14 @@ export default function MagicFillButton({ className, onComplete, disabled }: Mag
       }
     } catch (error) {
       console.error('Magic Fill error:', error);
-      toast.error('Ошибка Magic Fill. Попробуйте еще раз.');
+      const errorMessage = error instanceof Error ? error.message : 'Ошибка Magic Fill. Попробуйте еще раз.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const canUseMagicFill = formData.gtin || formData.brand || formData.type;
+  const canUseMagicFill = formData.gtin?.trim();
 
   return (
     <Button

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/server/prisma'
 import { getUserIdFromRequest } from '@/lib/server/auth'
-import { assertQuota, incrementUsage } from '@/lib/server/quota'
+import { assertQuota, incrementUsage, assertIpQuota, incrementIpUsage, QuotaError } from '@/lib/server/quota'
 import { lookupGtin } from '@/lib/server/gtin-lookup'
 import { extractKeyInfoFromOcr } from '@/lib/server/ocr'
 import { enrichProductWithLlm } from '@/lib/server/llm'
-import { logger } from '@/lib/server/logger'
 import { env } from '@/lib/server/env'
 import { debugLogger } from '@/lib/server/debug-logger'
+import { getClientIp } from '@/lib/server/api-utils'
 import { z } from 'zod'
 
 const magicFillSchema = z.object({
@@ -28,32 +28,26 @@ const magicFillSchema = z.object({
 export async function POST(request: NextRequest) {
   const traceId = crypto.randomUUID()
   const startTime = Date.now()
+  const ipAddress = getClientIp(request)
+  
+  // Get authenticated user (optional) - объявляем вне try блока
+  let userId: string | null = null
 
   try {
-    // Get authenticated user
-    const userId = await getUserIdFromRequest(request)
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    userId = await getUserIdFromRequest(request)
+    
+    // Check quota - для авторизованных пользователей или по IP
+    if (userId) {
+      await assertQuota(userId, 'magicFill')
+    } else {
+      await assertIpQuota(ipAddress, 'magicFill')
     }
 
-    // Check quota
-    await assertQuota(userId, 'magicFill')
-
-    // Parse and validate request
     const body = await request.json()
     const validationResult = magicFillSchema.safeParse(body)
     
     if (!validationResult.success) {
-      logger.error({
-        message: 'Magic Fill validation failed',
-        traceId,
-        userId,
-        errors: validationResult.error.errors,
-        body,
-      })
+      console.error('Magic Fill validation failed:', validationResult.error.errors)
       
       return NextResponse.json(
         { 
@@ -66,15 +60,11 @@ export async function POST(request: NextRequest) {
     }
     
     const { gtin, imageIds, manual } = validationResult.data
-
-    logger.info({
-      message: 'Magic Fill request started',
-      traceId,
-      userId,
-      gtin,
-      imageIds: imageIds?.length,
-      hasManual: !!manual,
-    })
+    
+    // Дополнительная проверка - если manual данные пришли, но мы в режиме Magic Fill, игнорируем их
+    if (manual && Object.values(manual).some(v => v && String(v).trim())) {
+      console.warn('Manual data received in Magic Fill mode, ignoring it');
+    }
 
     let gtinData = null;
     let ocrData = null;
@@ -89,12 +79,6 @@ export async function POST(request: NextRequest) {
 
         if (cached) {
           gtinData = cached.rawJson as Record<string, unknown>;
-          logger.info({ 
-            message: 'GTIN found in cache', 
-            traceId,
-            gtin,
-            fromCache: true 
-          });
         } else {
           // External GTIN lookup
           const lookupResult = await lookupGtin(gtin);
@@ -114,51 +98,30 @@ export async function POST(request: NextRequest) {
               }
             });
             
-            logger.info({ 
-              message: 'GTIN lookup successful and cached', 
-              traceId,
-              gtin,
-              brand: lookupResult.data.brand,
-              fromCache: false 
-            });
           } else {
-            logger.warn({ 
-              message: 'GTIN lookup failed', 
-              traceId,
-              gtin,
-              error: lookupResult.error 
-            });
+            console.warn('GTIN lookup failed:', lookupResult.error);
           }
         }
       } catch (error) {
-        logger.error({ 
-          message: 'GTIN lookup error', 
-          traceId,
-          gtin, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
-        });
+        console.error('GTIN lookup error:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
     // 2. OCR Processing (if images provided)
     if (imageIds && imageIds.length > 0) {
       try {
-        // Get image assets from database
-        const imageAssets = await prisma.imageAsset.findMany({
+        // Get image assets from database (только для авторизованных пользователей)
+        const imageAssets = userId ? await prisma.imageAsset.findMany({
           where: {
             id: { in: imageIds },
             userId: userId
           }
-        });
+        }) : [];
 
         if (imageAssets.length > 0) {
           // TODO: OCR processing requires image data to be stored in database or file system
           // For now, we'll skip OCR processing since image data is not stored in ImageAsset model
-          logger.warn({ 
-            message: 'OCR processing skipped - image data not available', 
-            traceId,
-            imageCount: imageAssets.length
-          });
+          console.warn('OCR processing skipped - image data not available');
           
           // Mock OCR data for development
           ocrData = {
@@ -168,40 +131,69 @@ export async function POST(request: NextRequest) {
           };
         }
       } catch (error) {
-        logger.error({ 
-          message: 'OCR processing failed', 
-          traceId,
-          imageIds, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
-        });
+        console.error('OCR processing failed:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
     // 3. LLM Enrichment
-    const productData = {
-      brand: manual?.brand || (gtinData as Record<string, unknown>)?.brand as string,
-      type: manual?.type || (gtinData as Record<string, unknown>)?.category as string,
-      model: manual?.model || (gtinData as Record<string, unknown>)?.model as string,
-      keySpec: manual?.keySpec,
-      category: manual?.category || (gtinData as Record<string, unknown>)?.category as string,
+    const gtinItems = gtinData && (gtinData as Record<string, unknown>)?.items as Array<Record<string, unknown>>;
+    const hasGtinData = gtinItems && gtinItems.length > 0 && gtinItems[0]?.brand;
+    
+    const productData = hasGtinData ? {
+      brand: gtinItems[0]?.brand as string,
+      type: gtinItems[0]?.title as string,
+      model: gtinItems[0]?.model as string,
+      keySpec: gtinItems[0]?.description as string,
+      category: gtinItems[0]?.category as string,
       gtinData: gtinData || undefined,
+      ocrText: ocrData?.text,
+    } : {
+      brand: manual?.brand || undefined,
+      type: manual?.type || undefined,
+      model: manual?.model || undefined,
+      keySpec: manual?.keySpec || undefined,
+      category: manual?.category || undefined,
+      gtinData: undefined,
       ocrText: ocrData?.text,
     };
 
     const enrichedData = await enrichProductWithLlm(productData);
 
-    logger.info({
-      message: 'LLM enrichment completed',
-      traceId,
-      confidence: enrichedData.confidence,
-      hasTitle: !!enrichedData.titleRU,
-      hasDescription: !!enrichedData.descriptionRU,
-    });
-
     // 4. Create ProductDraft
-    const draft = await prisma.productDraft.create({
-      data: {
-        userId: userId,
+    let draft = null;
+    if (userId) {
+      draft = await prisma.productDraft.create({
+        data: {
+          userId: userId,
+          sku: generateSKU(enrichedData.brand || 'unknown', enrichedData.model || 'unknown'),
+          brand: enrichedData.brand || 'Неизвестный бренд',
+          type: enrichedData.type || 'Товар',
+          model: enrichedData.model || 'Модель',
+          keySpec: enrichedData.keySpec || 'Основные характеристики',
+          titleRU: enrichedData.titleRU || 'Название товара',
+          titleKZ: enrichedData.titleKZ || 'Тауар атауы',
+          descRU: enrichedData.descriptionRU || 'Описание товара',
+          descKZ: enrichedData.descriptionKZ || 'Тауар сипаттамасы',
+          category: enrichedData.category || 'other',
+          gtin,
+          attributes: enrichedData.attributes || {},
+          status: 'draft'
+        }
+      });
+    }
+
+    // 5. Increment usage counter
+    if (userId) {
+      await incrementUsage(userId, 'magicFill');
+    } else {
+      await incrementIpUsage(ipAddress, 'magicFill');
+    }
+
+    const processingTime = Date.now() - startTime;
+
+    const result = {
+      draftId: draft?.id || null,
+      fields: {
         sku: generateSKU(enrichedData.brand || 'unknown', enrichedData.model || 'unknown'),
         brand: enrichedData.brand || 'Неизвестный бренд',
         type: enrichedData.type || 'Товар',
@@ -214,36 +206,14 @@ export async function POST(request: NextRequest) {
         category: enrichedData.category || 'other',
         gtin,
         attributes: enrichedData.attributes || {},
-        status: 'draft'
-      }
-    });
-
-    // 5. Increment usage counter
-    await incrementUsage(userId, 'magicFill');
-
-    const processingTime = Date.now() - startTime;
-
-    const result = {
-      draftId: draft.id,
-      fields: {
-        sku: draft.sku,
-        brand: draft.brand,
-        type: draft.type,
-        model: draft.model,
-        keySpec: draft.keySpec,
-        titleRU: draft.titleRU,
-        titleKZ: draft.titleKZ,
-        descRU: draft.descRU,
-        descKZ: draft.descKZ,
-        category: draft.category,
-        gtin: draft.gtin,
-        attributes: draft.attributes,
       },
       images: imageIds || [],
       metadata: {
         confidence: enrichedData.confidence,
         processingTime,
         traceId,
+        isAuthenticated: !!userId,
+        dataSource: hasGtinData ? 'GTIN' : 'MANUAL',
         sources: {
           gtin: !!gtinData,
           ocr: !!ocrData,
@@ -252,44 +222,51 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    logger.info({ 
-      message: 'Magic Fill completed successfully', 
-      traceId,
-      userId,
-      draftId: result.draftId,
-      processingTime,
-      confidence: enrichedData.confidence
-    });
-
     return NextResponse.json(result)
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error({
-      message: 'Magic Fill failed',
-      traceId,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      processingTime,
-    });
+    console.error('Magic Fill failed:', error instanceof Error ? error.message : 'Unknown error');
 
     // Return appropriate error response
+    if (error instanceof QuotaError) {
+      const isAnonymous = !userId;
+      const message = isAnonymous 
+        ? `Вы использовали все бесплатные попытки (${error.limit}) для этого IP-адреса. Зарегистрируйтесь для получения большего лимита.`
+        : `Вы превысили лимит использования (${error.current}/${error.limit}). Обновите подписку для увеличения лимита.`;
+      
+      return NextResponse.json(
+        { 
+          error: message,
+          code: 'QUOTA_EXCEEDED',
+          isAnonymous,
+          current: error.current,
+          limit: error.limit,
+          traceId 
+        },
+        { status: 429 }
+      );
+    }
+    
     if (error instanceof Error) {
-      if (error.message === 'Unauthorized') {
-        return NextResponse.json(
-          { error: 'Unauthorized', traceId },
-          { status: 401 }
-        );
-      }
-      if (error.message.includes('Quota exceeded')) {
-        return NextResponse.json(
-          { error: 'Quota exceeded', code: 'QUOTA_EXCEEDED', traceId },
-          { status: 429 }
-        );
-      }
       if (error.message.includes('JSON')) {
         return NextResponse.json(
-          { error: 'Invalid JSON in request body', traceId },
+          { 
+            error: 'Неверный формат данных запроса', 
+            code: 'INVALID_JSON',
+            traceId 
+          },
+          { status: 400 }
+        );
+      }
+      
+      if (error.message.includes('validation')) {
+        return NextResponse.json(
+          { 
+            error: 'Ошибка валидации данных', 
+            code: 'VALIDATION_ERROR',
+            traceId 
+          },
           { status: 400 }
         );
       }
@@ -297,7 +274,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { 
-        error: 'Magic Fill failed', 
+        error: 'Произошла ошибка при обработке запроса. Попробуйте еще раз.', 
+        code: 'INTERNAL_ERROR',
         traceId,
         message: error instanceof Error ? error.message : 'Unknown error'
       },

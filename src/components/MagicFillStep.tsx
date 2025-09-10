@@ -22,10 +22,11 @@ import {
 import { toast } from 'sonner';
 import BarcodeScanner from './BarcodeScanner';
 import MagicFillButton from './MagicFillButton';
+import QuotaStatus from './QuotaStatus';
 
 export default function MagicFillStep() {
   const { t } = useTranslations();
-  const { formData, updateFormData, setCurrentStep } = useAppStore();
+  const { formData, updateFormData, setCurrentStep, resetFormData } = useAppStore();
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [manualGtin, setManualGtin] = useState(formData.gtin || '');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,8 +64,9 @@ export default function MagicFillStep() {
     toast.success('Magic Fill завершен! Переходим к редактированию информации о товаре.');
   };
 
-  const canProceed = formData.gtin || formData.brand || formData.type;
+  // Логика для кнопок
   const canUseMagicFill = manualGtin.trim() && gtinValidation?.isValid;
+  const canProceedManual = formData.brand?.trim() && formData.type?.trim() && formData.model?.trim();
 
   return (
     <>
@@ -137,11 +139,22 @@ export default function MagicFillStep() {
                 }`}
               />
             </div>
+            
+            {!canUseMagicFill && (
+              <div className="text-center text-sm text-gray-500 mt-2">
+                Введите валидный GTIN для автоматического заполнения
+              </div>
+            )}
+          </div>
+
+          {/* Quota Status */}
+          <div className="mt-6">
+            <QuotaStatus feature="magicFill" />
           </div>
 
           {/* Manual Entry Toggle */}
           <div className="mt-8 pt-6 border-t border-purple-200">
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <Button
                 onClick={() => setShowManualEntry(!showManualEntry)}
                 variant="ghost"
@@ -151,6 +164,23 @@ export default function MagicFillStep() {
                 <FileText className="w-4 h-4 mr-2" />
                 {showManualEntry ? 'Скрыть' : 'Заполнить вручную'}
               </Button>
+              
+              {/* Debug: Clear all fields button */}
+              <div>
+                <Button
+                  onClick={() => {
+                    resetFormData(); // Используем новую функцию для очистки
+                    setManualGtin('');
+                    setGtinValidation(null);
+                    toast.success('Все поля очищены');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-500 hover:text-red-700 text-xs border-red-200 hover:border-red-300"
+                >
+                  Очистить все поля
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -187,15 +217,24 @@ export default function MagicFillStep() {
                 />
               </div>
 
-              {canProceed && (
-                <div className="flex justify-center">
-                  <Button
-                    onClick={() => setCurrentStep('product-info')}
-                    className="w-full max-w-md bg-gradient-to-r from-gray-600 to-blue-600 hover:from-gray-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
-                    Продолжить
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => setCurrentStep('product-info')}
+                  disabled={!canProceedManual}
+                  className={`w-full max-w-md shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 ${
+                    canProceedManual
+                      ? 'bg-gradient-to-r from-gray-600 to-blue-600 hover:from-gray-700 hover:to-blue-700 text-white cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  Продолжить
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+              
+              {!canProceedManual && (
+                <div className="text-center text-sm text-gray-500 mt-2">
+                  Заполните все поля: Бренд, Тип товара, Модель
                 </div>
               )}
             </div>
