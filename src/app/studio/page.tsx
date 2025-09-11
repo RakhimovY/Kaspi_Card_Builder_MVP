@@ -1,6 +1,7 @@
 'use client';
 
 import Header from '@/components/Header';
+import SubscriptionSuccessWatcher from '@/components/SubscriptionSuccessWatcher';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
 import MagicFillStep from '@/components/MagicFillStep';
@@ -41,6 +42,7 @@ export default function StudioPage() {
 
       {/* Main Content */}
       <main className="relative container mx-auto px-4 py-4 md:py-8 z-10">
+        <SubscriptionSuccessWatcher />
         <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
           {/* Step Roadmap */}
           <section>

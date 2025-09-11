@@ -7,6 +7,8 @@ import { logger } from '@/lib/server/logger'
 export const POST = Webhooks({
   webhookSecret: env.POLAR_WEBHOOK_SECRET,
   onPayload: async (payload) => {
+    logger.info({ endpoint: 'polar/webhooks', message: 'Webhook received', payload: JSON.stringify(payload) })
+    
     if (isSubscriptionEvent(payload)) {
       await upsertSubscription(payload)
     } else {
