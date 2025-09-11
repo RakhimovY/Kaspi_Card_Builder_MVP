@@ -9,32 +9,11 @@
 - ✅ Добавил security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
 - ✅ Настроил редиректы для SEO
 
-#### 3.2 Создаю валидацию environment variables
-```typescript
-// lib/server/env-validation.ts
-import { z } from 'zod'
-
-const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
-  NEXTAUTH_SECRET: z.string().min(32),
-  NEXTAUTH_URL: z.string().url(),
-  GOOGLE_CLIENT_ID: z.string().min(1),
-  GOOGLE_CLIENT_SECRET: z.string().min(1),
-  OPENAI_API_KEY: z.string().min(1),
-  BILLING_PROVIDER: z.enum(['lemon-squeezy', 'paddle', 'polar']),
-  LEMON_SQUEEZY_WEBHOOK_SECRET: z.string().min(1),
-  LEMON_SQUEEZY_API_KEY: z.string().min(1),
-  NEXT_PUBLIC_LEMON_SQUEEZY_PRODUCT_ID: z.string().min(1),
-  NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID: z.string().min(1),
-  GTIN_PROVIDER: z.enum(['upcitemdb', 'barcodelookup']),
-  UPCITEMDB_USER_KEY: z.string().min(1),
-  NEXT_PUBLIC_PLAUSIBLE_DOMAIN: z.string().min(1),
-  NODE_ENV: z.enum(['development', 'production']),
-  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']),
-})
-
-export const env = envSchema.parse(process.env)
-```
+#### 3.2 Обновил валидацию environment variables
+- ✅ Объединил функционал в основной файл `lib/server/env.ts`
+- ✅ Добавил функции `validateEnvironment()` и `getEnvironmentInfo()`
+- ✅ Убрал дублирование кода
+- ✅ Обновил health check endpoint для использования новых функций
 
 ### 👤 Пользователь - что делаешь:
 

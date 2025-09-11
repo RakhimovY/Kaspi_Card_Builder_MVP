@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/server/prisma'
 import { logger } from '@/lib/server/logger'
-import { validateEnvironment, getEnvironmentInfo } from '@/lib/server/env-validation'
+import { validateEnvironment, getEnvironmentInfo } from '@/lib/server/env'
 
 /**
  * Health check endpoint for uptime monitoring
@@ -32,7 +32,7 @@ export async function GET() {
       status: dbStatus === 'connected' && envValidation.valid ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: envInfo.NODE_ENV,
+      nodeEnv: envInfo.NODE_ENV,
       version: process.env.npm_package_version || '0.1.0',
       database: {
         status: dbStatus,
