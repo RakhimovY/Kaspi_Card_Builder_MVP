@@ -1,4 +1,5 @@
 import { env } from './env'
+import { Polar as PolarSDK } from '@polar-sh/sdk'
 
 // Polar.sh API types
 interface PolarCustomer {
@@ -40,14 +41,22 @@ interface PolarPrice {
   updated_at: string
 }
 
+// Official Polar SDK instance per docs: https://docs.polar.sh/api-reference/introduction#using-sdks
+export const polar = new PolarSDK({
+  accessToken: env.POLAR_ACCESS_TOKEN,
+  server: env.NODE_ENV === 'development' ? 'sandbox' : 'production',
+})
+
 class PolarAPI {
   private apiKey: string
   private baseUrl: string
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
-    // Allow overriding base URL to support sandbox in development
-    this.baseUrl = env.POLAR_API_BASE_URL || 'https://api.polar.sh/v1'
+    // Select base URL strictly by environment (mirrors SDK server option)
+    this.baseUrl = env.NODE_ENV === 'development'
+      ? 'https://sandbox-api.polar.sh/v1'
+      : 'https://api.polar.sh/v1'
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
