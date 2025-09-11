@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { CreditCard, Loader2, CheckCircle } from 'lucide-react'
+import { CreditCard, Loader2, CheckCircle, Crown } from 'lucide-react'
 import { useTranslations } from '@/lib/useTranslations'
+import { useSession } from 'next-auth/react'
 
 interface BuyProButtonProps {
   className?: string
@@ -11,6 +12,15 @@ interface BuyProButtonProps {
   size?: "default" | "sm" | "lg" | "icon"
   disabled?: boolean
   onSuccess?: () => void
+}
+
+interface SubscriptionData {
+  plan: string
+  status: string
+  subscription: {
+    plan: string
+    status: string
+  } | null
 }
 
 export function BuyProButton({ 
@@ -21,7 +31,36 @@ export function BuyProButton({
   onSuccess 
 }: BuyProButtonProps) {
   const { t } = useTranslations()
+  const { data: session } = useSession()
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'purchasing' | 'success' | 'error'>('idle')
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false)
+
+  // Fetch subscription data when component mounts or session changes
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchSubscriptionData()
+    }
+  }, [session])
+
+  const fetchSubscriptionData = async () => {
+    setIsLoadingSubscription(true)
+    try {
+      const response = await fetch('/api/subscription')
+      if (response.ok) {
+        const data = await response.json()
+        setSubscriptionData(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch subscription data:', error)
+    } finally {
+      setIsLoadingSubscription(false)
+    }
+  }
+
+  // Check if user already has Pro subscription
+  const hasProSubscription = subscriptionData?.plan === 'pro' && subscriptionData?.status === 'active'
+  const isDisabled = disabled || hasProSubscription || isLoadingSubscription
 
   const handlePurchase = async () => {
     setPurchaseStatus('purchasing')
@@ -64,6 +103,16 @@ export function BuyProButton({
   }
 
   const getButtonContent = () => {
+    // Show Pro status if user already has Pro subscription
+    if (hasProSubscription) {
+      return (
+        <>
+          <Crown className="w-4 h-4 mr-2" />
+          У вас уже есть Pro
+        </>
+      )
+    }
+
     switch (purchaseStatus) {
       case 'purchasing':
         return (
@@ -97,6 +146,7 @@ export function BuyProButton({
   }
 
   const getButtonVariant = () => {
+    if (hasProSubscription) return 'secondary'
     if (purchaseStatus === 'success') return 'default'
     if (purchaseStatus === 'error') return 'destructive'
     return variant
@@ -105,7 +155,7 @@ export function BuyProButton({
   return (
     <Button
       onClick={handlePurchase}
-      disabled={disabled || purchaseStatus === 'purchasing' || purchaseStatus === 'success'}
+      disabled={isDisabled || purchaseStatus === 'purchasing' || purchaseStatus === 'success'}
       variant={getButtonVariant()}
       size={size}
       className={className}

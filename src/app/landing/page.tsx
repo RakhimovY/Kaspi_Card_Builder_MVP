@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
 import { useLandingTranslations } from '@/lib/useTranslations';
+import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { 
   Camera, 
@@ -22,10 +23,24 @@ import {
   Clock,
   ChevronDown,
   Check,
+  User,
+  Crown,
 } from 'lucide-react';
+
+interface SubscriptionData {
+  plan: string
+  status: string
+  subscription: {
+    plan: string
+    status: string
+  } | null
+}
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
+  const { data: session } = useSession();
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
   const { nav, hero, features, how_it_works, faq, pricing, isLoading, hasError } = useLandingTranslations();
 
   useEffect(() => {
@@ -67,6 +82,33 @@ export default function LandingPage() {
       window.removeEventListener('hashchange', handleHashNavigation);
     };
   }, []);
+
+  // Fetch subscription data when session changes
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchSubscriptionData();
+    }
+  }, [session]);
+
+  const fetchSubscriptionData = async () => {
+    setIsLoadingSubscription(true);
+    try {
+      const response = await fetch('/api/subscription');
+      if (response.ok) {
+        const data = await response.json();
+        setSubscriptionData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch subscription data:', error);
+    } finally {
+      setIsLoadingSubscription(false);
+    }
+  };
+
+  // Check if user is registered or has Pro subscription
+  const isUserRegistered = !!session?.user;
+  const hasProSubscription = subscriptionData?.plan === 'pro' && subscriptionData?.status === 'active';
+  const shouldDisableStartFree = isUserRegistered || hasProSubscription;
 
   const scrollToPricing = () => {
     const pricingSection = document.getElementById('pricing');
@@ -354,13 +396,32 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/studio">
+                {shouldDisableStartFree ? (
                   <Button 
-                    className="w-full bg-gray-900 hover:bg-gray-800"
+                    className="w-full bg-gray-300 text-gray-600 cursor-not-allowed"
+                    disabled
                   >
-                    {pricing.free.cta}
+                    {hasProSubscription ? (
+                      <>
+                        <Crown className="mr-2 w-4 h-4" />
+                        У вас уже есть Pro
+                      </>
+                    ) : (
+                      <>
+                        <User className="mr-2 w-4 h-4" />
+                        Вы уже зарегистрированы
+                      </>
+                    )}
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/studio">
+                    <Button 
+                      className="w-full bg-gray-900 hover:bg-gray-800"
+                    >
+                      {pricing.free.cta}
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -479,16 +540,37 @@ export default function LandingPage() {
                 Присоединяйтесь к тысячам успешных продавцов на Kaspi
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link href="/studio">
+                {shouldDisableStartFree ? (
                   <Button 
                     size="lg" 
                     variant="secondary"
-                    className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    disabled
+                    className="text-lg px-8 py-4 bg-gray-300 text-gray-600 cursor-not-allowed shadow-lg"
                   >
-                    Начать бесплатно
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                    {hasProSubscription ? (
+                      <>
+                        <Crown className="mr-2 w-5 h-5" />
+                        У вас уже есть Pro
+                      </>
+                    ) : (
+                      <>
+                        <User className="mr-2 w-5 h-5" />
+                        Вы уже зарегистрированы
+                      </>
+                    )}
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/studio">
+                    <Button 
+                      size="lg" 
+                      variant="secondary"
+                      className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
+                      Начать бесплатно
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                )}
                 <BuyProButton 
                   size="lg" 
                   variant="outline"

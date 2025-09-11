@@ -8,6 +8,7 @@ import { useAppStore } from '@/lib/store';
 import { useTranslations } from '@/lib/useTranslations';
 import { trackBarcodeScan } from '@/lib/analytics';
 import { validateGTIN, isPotentialGTIN } from '@/lib/gtinValidation';
+import QuotaStatus from '@/components/QuotaStatus';
 import { 
   QrCode, 
   Sparkles, 
@@ -144,6 +145,13 @@ export default function MagicFillStep() {
             {!canUseMagicFill && (
               <div className="text-center text-sm text-gray-500 mt-2">
                 Введите валидный GTIN для автоматического заполнения
+              </div>
+            )}
+
+            {/* Quota Status - Only show when GTIN is valid */}
+            {canUseMagicFill && (
+              <div className="mt-4">
+                <QuotaStatus feature="magicFill" className="max-w-md mx-auto" />
               </div>
             )}
           </div>
