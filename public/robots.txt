@@ -1,0 +1,31 @@
+User-agent: *
+Allow: /
+
+# Main pages
+Allow: /landing
+Allow: /studio
+
+# Auth pages
+Allow: /auth/signin
+Disallow: /auth/error
+
+# API endpoints - disallow crawling
+Disallow: /api/
+
+# Admin/internal pages
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /_next/
+Disallow: /debug-logs/
+
+# Allow important resources
+Allow: /logo-icon.svg
+Allow: /logo-icon.png
+Allow: /og-image.png
+Allow: /_next/static/
+
+# Sitemap location
+Sitemap: https://tradecardbuilder.com/sitemap.xml
+
+# Crawl delay for better server performance
+Crawl-delay: 1

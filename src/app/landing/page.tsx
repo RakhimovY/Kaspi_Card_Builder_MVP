@@ -10,6 +10,7 @@ import { useLandingTranslations } from '@/lib/useTranslations';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LogoIcon from '@/components/LogoIcon';
+import StructuredData from '@/components/StructuredData';
 import { 
   ArrowRight, 
   MessageCircle,
@@ -96,7 +97,7 @@ export default function LandingPage() {
   const { data: session } = useSession();
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
-  const { nav, hero, features, how_it_works, faq, pricing, cta, footer, user_status, isLoading, hasError } = useLandingTranslations();
+  const { hero, features, how_it_works, faq, pricing, cta, footer, user_status, isLoading, hasError } = useLandingTranslations();
 
   useEffect(() => {
     setMounted(true);
@@ -138,13 +139,6 @@ export default function LandingPage() {
     };
   }, []);
 
-  // Fetch subscription data when session changes
-  useEffect(() => {
-    if (session?.user?.email && !subscriptionData) {
-      fetchSubscriptionData();
-    }
-  }, [session?.user?.email, subscriptionData]);
-
   const fetchSubscriptionData = async () => {
     if (isLoadingSubscription) return; // Prevent duplicate calls
     
@@ -161,6 +155,13 @@ export default function LandingPage() {
       setIsLoadingSubscription(false);
     }
   };
+
+  // Fetch subscription data when session changes
+  useEffect(() => {
+    if (session?.user?.email && !subscriptionData) {
+      fetchSubscriptionData();
+    }
+  }, [session?.user?.email, subscriptionData, fetchSubscriptionData]);
 
   // Check if user is registered or has Pro subscription
   const isUserRegistered = !!session?.user;
@@ -209,6 +210,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white overflow-hidden">
+      <StructuredData type="landing" />
       {/* Subtle Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full filter blur-3xl opacity-60"></div>
@@ -653,6 +655,42 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* SEO Content Section - Hidden but indexable */}
+      <section className="sr-only">
+        <h2>Легкий способ создания карточек товаров для Kaspi маркетплейса</h2>
+        <p>
+          Trade Card Builder - это инновационный конструктор карточек товаров для Kaspi.kz, 
+          который позволяет создавать профессиональные карточки товаров за минуты. Наш сервис 
+          предлагает автозаполнение по штрихкоду, ИИ генерацию описаний и готовый экспорт 
+          для Kaspi маркетплейса.
+        </p>
+        
+        <h3>Автоматическое создание карточек товаров для Kaspi</h3>
+        <p>
+          Забудьте о ручном заполнении карточек товаров. Наш конструктор использует технологии 
+          искусственного интеллекта для автоматического создания описаний товаров, обработки 
+          изображений и заполнения характеристик. Просто отсканируйте штрихкод - и карточка 
+          товара готова для загрузки на Kaspi маркетплейс.
+        </p>
+
+        <h3>Быстрое создание товаров для продавцов Kaspi</h3>
+        <p>
+          Экономьте время на создании карточек товаров для Kaspi. Наш сервис поддерживает 
+          массовое создание карточек, автоматическое заполнение категорий и атрибутов товаров. 
+          Идеально подходит для интернет-магазинов и продавцов на Kaspi маркетплейсе в Казахстане.
+        </p>
+
+        <h3>Ключевые преимущества для создания карточек Kaspi</h3>
+        <ul>
+          <li>Автозаполнение по штрихкоду товара</li>
+          <li>ИИ генерация описаний и названий товаров</li>
+          <li>Готовый экспорт для Kaspi маркетплейса</li>
+          <li>Обработка и оптимизация изображений товаров</li>
+          <li>Поддержка русского и казахского языков</li>
+          <li>Быстрое создание профессиональных карточек товаров</li>
+        </ul>
+      </section>
     </div>
   );
 }

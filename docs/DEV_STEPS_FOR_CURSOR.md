@@ -166,7 +166,6 @@
 - `src/app/api/auth/[...nextauth]/route.ts` - NextAuth конфигурация
 - `src/app/auth/signin/page.tsx` - страница входа
 - `src/app/auth/error/page.tsx` - страница ошибки
-- `src/app/profile/page.tsx` - профиль пользователя
 - `src/components/AuthButtons.tsx` - кнопки входа/выхода
 - `src/components/SessionProvider.tsx` - NextAuth провайдер
 - `src/lib/server/auth.ts` - серверные утилиты аутентификации
