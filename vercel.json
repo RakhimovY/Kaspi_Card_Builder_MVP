@@ -41,6 +41,17 @@
       "source": "/home",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.tradecardbuilder.kz"
+        }
+      ],
+      "destination": "https://tradecardbuilder.kz/$1",
+      "permanent": true
     }
   ]
 }

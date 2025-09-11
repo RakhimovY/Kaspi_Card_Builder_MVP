@@ -2,10 +2,31 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Only log for debugging, don't redirect
   const host = request.headers.get('host')
+  const url = request.nextUrl
+  
+  // Log for debugging
   console.log('Middleware - Host:', host)
-  console.log('Middleware - URL:', request.nextUrl.toString())
+  console.log('Middleware - URL:', url.toString())
+  console.log('Middleware - Protocol:', request.headers.get('x-forwarded-proto'))
+  
+  // Handle www redirect to naked domain
+  if (host?.startsWith('www.')) {
+    const nakedDomain = host.replace('www.', '')
+    const redirectUrl = new URL(url)
+    redirectUrl.host = nakedDomain
+    console.log('Redirecting www to naked domain:', redirectUrl.toString())
+    return NextResponse.redirect(redirectUrl, 301)
+  }
+  
+  // Ensure HTTPS in production
+  if (process.env.NODE_ENV === 'production' && 
+      request.headers.get('x-forwarded-proto') !== 'https') {
+    const httpsUrl = new URL(url)
+    httpsUrl.protocol = 'https:'
+    console.log('Redirecting to HTTPS:', httpsUrl.toString())
+    return NextResponse.redirect(httpsUrl, 301)
+  }
   
   return NextResponse.next()
 }
