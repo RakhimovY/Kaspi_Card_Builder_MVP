@@ -20,6 +20,7 @@
     "db:cloud": "./scripts/switch-db.sh cloud"
   },
   "dependencies": {
+    "@polar-sh/nextjs": "^0.1.0",
     "@auth/prisma-adapter": "^2.10.0",
     "@imgly/background-removal-node": "^1.4.5",
     "@prisma/client": "^6.15.0",

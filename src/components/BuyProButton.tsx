@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CreditCard, Loader2, CheckCircle, Crown } from 'lucide-react'
 import { useTranslations } from '@/lib/useTranslations'
 import { useSession } from 'next-auth/react'
+import { PolarCheckout } from './PolarCheckout'
 
 interface BuyProButtonProps {
   className?: string
@@ -23,6 +24,10 @@ interface SubscriptionData {
   } | null
 }
 
+interface BillingConfig {
+  provider: 'lemon-squeezy' | 'paddle' | 'polar'
+}
+
 export function BuyProButton({ 
   className, 
   variant = "default", 
@@ -35,6 +40,7 @@ export function BuyProButton({
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'purchasing' | 'success' | 'error'>('idle')
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(false)
+  const [billingConfig, setBillingConfig] = useState<BillingConfig | null>(null)
 
   // Fetch subscription data when component mounts or session changes
   useEffect(() => {
@@ -42,6 +48,23 @@ export function BuyProButton({
       fetchSubscriptionData()
     }
   }, [session?.user?.email, subscriptionData])
+
+  // Fetch billing configuration
+  useEffect(() => {
+    fetchBillingConfig()
+  }, [])
+
+  const fetchBillingConfig = async () => {
+    try {
+      const response = await fetch('/api/billing/config')
+      if (response.ok) {
+        const config = await response.json()
+        setBillingConfig(config)
+      }
+    } catch (error) {
+      console.error('Failed to fetch billing config:', error)
+    }
+  }
 
   const fetchSubscriptionData = async () => {
     if (isLoadingSubscription) return; // Prevent duplicate calls
@@ -154,6 +177,39 @@ export function BuyProButton({
     return variant
   }
 
+  // If user has Pro subscription, show status
+  if (hasProSubscription) {
+    return (
+      <Button
+        disabled
+        variant="secondary"
+        size={size}
+        className={className}
+      >
+        {getButtonContent()}
+      </Button>
+    )
+  }
+
+  // If billing provider is Polar, use Polar checkout
+  if (billingConfig?.provider === 'polar') {
+    return (
+      <PolarCheckout
+        productId={process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID}
+        onSuccess={onSuccess}
+        onError={(error) => {
+          console.error('Polar checkout error:', error)
+          setPurchaseStatus('error')
+          setTimeout(() => setPurchaseStatus('idle'), 3000)
+        }}
+        className={className}
+      >
+        {getButtonContent()}
+      </PolarCheckout>
+    )
+  }
+
+  // Default to mock purchase for other providers
   return (
     <Button
       onClick={handlePurchase}

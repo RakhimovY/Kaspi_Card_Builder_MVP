@@ -3,6 +3,7 @@ import { prisma } from '@/lib/server/prisma'
 import { logger } from '@/lib/server/logger'
 import { getBillingConfig } from '@/lib/server/env'
 import { lemonSqueezyAPI } from '@/lib/server/lemonsqueezy'
+import { polarAPI } from '@/lib/server/polar'
 import { z } from 'zod'
 
 // Lemon Squeezy webhook payload schema
@@ -49,8 +50,40 @@ const lemonSqueezyWebhookSchema = z.object({
 
 type LemonSqueezySubscriptionData = z.infer<typeof lemonSqueezyWebhookSchema>['data']
 
+// Polar webhook payload schema
+const polarWebhookSchema = z.object({
+  type: z.string(),
+  data: z.object({
+    id: z.string(),
+    object: z.string(),
+    customer_id: z.string(),
+    product_id: z.string(),
+    price_id: z.string(),
+    status: z.enum(['active', 'canceled', 'past_due', 'unpaid']),
+    current_period_start: z.string(),
+    current_period_end: z.string(),
+    cancel_at_period_end: z.boolean(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
+})
+
+type PolarSubscriptionData = z.infer<typeof polarWebhookSchema>['data']
+
 // Lemon Squeezy signature verification
 async function verifyLemonSqueezySignature(body: string, signature: string, secret: string): Promise<boolean> {
+  const crypto = await import('crypto')
+  const hmac = crypto.createHmac('sha256', secret)
+  hmac.update(body)
+  const expectedSignature = hmac.digest('hex')
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expectedSignature, 'hex')
+  )
+}
+
+// Polar signature verification
+async function verifyPolarSignature(body: string, signature: string, secret: string): Promise<boolean> {
   const crypto = await import('crypto')
   const hmac = crypto.createHmac('sha256', secret)
   hmac.update(body)
@@ -105,20 +138,22 @@ export async function POST(request: NextRequest) {
         case 'subscription_created':
         case 'subscription_updated':
         case 'subscription_resumed':
-          await handleSubscriptionUpdate(data, 'active')
+          await handleLemonSqueezySubscriptionUpdate(data, 'active')
           break
         case 'subscription_cancelled':
         case 'subscription_expired':
         case 'subscription_paused':
-          await handleSubscriptionUpdate(data, 'canceled')
+          await handleLemonSqueezySubscriptionUpdate(data, 'canceled')
           break
         case 'subscription_payment_failed':
-          await handleSubscriptionUpdate(data, 'past_due')
+          await handleLemonSqueezySubscriptionUpdate(data, 'past_due')
           break
         default:
           log.info({ message: 'Unhandled event type', eventName: meta.event_name })
       }
     }
+
+    // For Polar webhooks use official route at /api/polar/webhooks
 
     log.info({ message: 'Webhook processed successfully' })
     return NextResponse.json({ success: true })
@@ -132,7 +167,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleSubscriptionUpdate(data: LemonSqueezySubscriptionData, status: string) {
+async function handleLemonSqueezySubscriptionUpdate(data: LemonSqueezySubscriptionData, status: string) {
   const log = logger.child({ function: 'handleSubscriptionUpdate' })
   
   try {
@@ -228,6 +263,103 @@ async function handleSubscriptionUpdate(data: LemonSqueezySubscriptionData, stat
 
     log.info({ 
       message: 'Subscription updated successfully',
+      userId: user.id,
+      subscriptionId: subscription.id,
+      status,
+      plan
+    })
+    
+  } catch (error) {
+    log.error({ error: error instanceof Error ? error.message : 'Unknown error' })
+    throw error
+  }
+}
+
+async function handlePolarSubscriptionUpdate(data: PolarSubscriptionData, status: string) {
+  const log = logger.child({ function: 'handlePolarSubscriptionUpdate' })
+  
+  try {
+    const customerId = data.customer_id
+    const subscriptionId = data.id
+    
+    log.info({ 
+      message: 'Updating Polar subscription',
+      customerId,
+      subscriptionId,
+      status,
+      productId: data.product_id
+    })
+
+    // Fetch customer details from Polar
+    const customer = await polarAPI.getCustomer(customerId)
+    if (!customer) {
+      log.warn({ message: 'Customer not found in Polar', customerId })
+      return
+    }
+
+    // Find or create user by email
+    let user = await prisma.user.findUnique({
+      where: { email: customer.email }
+    })
+
+    if (!user) {
+      // Create new user if not exists
+      user = await prisma.user.create({
+        data: {
+          email: customer.email,
+          name: customer.name || null,
+          // Note: We'll need to add polarCustomerId field to User model
+        }
+      })
+      log.info({ message: 'Created new user', userId: user.id, email: customer.email })
+    }
+
+    // Determine plan based on product
+    const plan = data.product_id.includes('pro') ? 'pro' : 'free'
+    
+    // Update or create subscription
+    const subscription = await prisma.subscription.upsert({
+      where: {
+        userId_provider: {
+          userId: user.id,
+          provider: 'polar'
+        }
+      },
+      update: {
+        status,
+        plan,
+        providerId: subscriptionId,
+        currentPeriodStart: new Date(data.current_period_start),
+        currentPeriodEnd: new Date(data.current_period_end),
+        cancelAtPeriodEnd: data.cancel_at_period_end,
+        customerId: customerId,
+        metadata: {
+          productId: data.product_id,
+          priceId: data.price_id,
+          testMode: false, // Polar doesn't have test mode in webhook
+        },
+        updatedAt: new Date(),
+      },
+      create: {
+        userId: user.id,
+        provider: 'polar',
+        providerId: subscriptionId,
+        plan,
+        status,
+        currentPeriodStart: new Date(data.current_period_start),
+        currentPeriodEnd: new Date(data.current_period_end),
+        cancelAtPeriodEnd: data.cancel_at_period_end,
+        customerId: customerId,
+        metadata: {
+          productId: data.product_id,
+          priceId: data.price_id,
+          testMode: false,
+        },
+      }
+    })
+
+    log.info({ 
+      message: 'Polar subscription updated successfully',
       userId: user.id,
       subscriptionId: subscription.id,
       status,

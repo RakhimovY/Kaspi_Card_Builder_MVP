@@ -29,9 +29,10 @@ const envSchema = z.object({
   PADDLE_WEBHOOK_SECRET: z.string().optional(),
   PADDLE_API_KEY: z.string().optional(),
   
-  // Polar (альтернативный провайдер)
-  POLAR_WEBHOOK_SECRET: z.string().optional(),
-  POLAR_API_KEY: z.string().optional(),
+  // Polar.sh
+  POLAR_WEBHOOK_SECRET: z.string().min(1, 'POLAR_WEBHOOK_SECRET обязателен'),
+  POLAR_ACCESS_TOKEN: z.string().min(1, 'POLAR_ACCESS_TOKEN обязателен'),
+  NEXT_PUBLIC_POLAR_PRODUCT_ID: z.string().optional(),
   
   // OpenAI
   OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY обязателен'),
@@ -85,8 +86,9 @@ export const env = (() => {
       NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID || 'build-variant-id',
       PADDLE_WEBHOOK_SECRET: process.env.PADDLE_WEBHOOK_SECRET || undefined,
       PADDLE_API_KEY: process.env.PADDLE_API_KEY || undefined,
-      POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET || undefined,
-      POLAR_API_KEY: process.env.POLAR_API_KEY || undefined,
+      POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET || 'build-polar-webhook-secret',
+      POLAR_ACCESS_TOKEN: process.env.POLAR_ACCESS_TOKEN || 'build-polar-access-token',
+      NEXT_PUBLIC_POLAR_PRODUCT_ID: process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID || 'build-polar-product-id',
       OPENAI_API_KEY: process.env.OPENAI_API_KEY || 'build-openai-key',
       OPENAI_MODEL: (process.env.OPENAI_MODEL as 'gpt-3.5-turbo' | 'gpt-4' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini') || 'gpt-4o-mini',
       GTIN_PROVIDER: (process.env.GTIN_PROVIDER as 'upcitemdb' | 'barcodelookup') || 'upcitemdb',
