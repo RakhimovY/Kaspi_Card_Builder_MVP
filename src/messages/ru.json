@@ -152,7 +152,8 @@
       },
       "pro": {
         "title": "Pro",
-        "price": "9,900 ₸",
+        "price": "$20",
+        "per_month": "/месяц",
         "description": "Для профессиональных продавцов",
         "limit": "До 100 Magic Fill в месяц",
         "cta": "Оформить Pro",

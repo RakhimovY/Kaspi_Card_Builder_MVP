@@ -16,8 +16,8 @@ export async function GET(request: Request) {
     let priceId: string = productOrPriceId
     try {
       const product = await polar.products.get({ id: productOrPriceId })
-      const firstAvailablePrice = product.prices.find(p => !(p as any).isArchived)
-      priceId = (firstAvailablePrice as any)?.id || product.prices[0]?.id
+      const firstAvailablePrice = product.prices.find(p => !('isArchived' in p) || !p.isArchived)
+      priceId = firstAvailablePrice?.id || product.prices[0]?.id
     } catch {
       // Not a product ID or fetch failed; assume it's already a price ID
       priceId = productOrPriceId
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
     if (!priceId && body.product_id) {
       try {
         const product = await polar.products.get({ id: body.product_id })
-        const firstAvailablePrice = product.prices.find(p => !(p as any).isArchived)
-        priceId = (firstAvailablePrice as any)?.id || product.prices[0]?.id
+        const firstAvailablePrice = product.prices.find(p => !('isArchived' in p) || !p.isArchived)
+        priceId = firstAvailablePrice?.id || product.prices[0]?.id
       } catch {
         // fall through
       }

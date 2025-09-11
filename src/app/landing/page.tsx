@@ -502,7 +502,7 @@ export default function LandingPage() {
               
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold mb-2">{pricing.pro.title}</h3>
-                <div className="text-4xl font-bold mb-2">{pricing.pro.price}<span className="text-gray-400 text-lg">/месяц</span></div>
+                <div className="text-4xl font-bold mb-2">{pricing.pro.price}<span className="text-gray-400 text-lg">{pricing.perMonth}</span></div>
                 <p className="text-gray-300 mb-4">{pricing.pro.description}</p>
                 <div className="inline-block bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-sm font-medium">
                   {pricing.pro.limit}

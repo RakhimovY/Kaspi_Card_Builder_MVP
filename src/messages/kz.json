@@ -152,7 +152,8 @@
       },
       "pro": {
         "title": "Pro",
-        "price": "9,900 ₸",
+        "price": "$20",
+        "per_month": "/ай",
         "description": "Кәсіби сатушылар үшін",
         "limit": "Айына 100 Magic Fill",
         "cta": "Pro рәсімдеу",

@@ -188,6 +188,7 @@ export function useLandingTranslations() {
       title: t("landing.pricing.title"),
       subtitle: t("landing.pricing.subtitle"),
       mostPopular: t("landing.pricing.mostPopular"),
+      perMonth: t("landing.pricing.pro.per_month"),
       free: {
         title: t("landing.pricing.free.title"),
         price: t("landing.pricing.free.price"),
