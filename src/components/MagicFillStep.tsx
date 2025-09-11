@@ -71,27 +71,19 @@ export default function MagicFillStep() {
 
   return (
     <>
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       {/* Magic Fill AI Block - Main */}
-      <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-4 right-4 w-2 h-2 bg-purple-400 rounded-full"></div>
-          <div className="absolute top-8 right-8 w-1 h-1 bg-blue-400 rounded-full"></div>
-          <div className="absolute bottom-6 left-6 w-1.5 h-1.5 bg-indigo-400 rounded-full"></div>
-          <div className="absolute bottom-4 left-4 w-1 h-1 bg-purple-400 rounded-full"></div>
-        </div>
-        
-        <CardContent className="p-6 relative z-10">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-lg mb-4 shadow-lg relative transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <Wand2 className="w-6 h-6 text-white" />
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="p-4 md:p-6">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-4 md:mb-6">
+              <Wand2 className="w-8 h-8 text-gray-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3 animate-fade-in">Magic Fill AI</h3>
-            <p className="text-sm text-gray-500 animate-fade-in-delay-2">Отсканируйте штрихкод и получите готовую карточку за 2 минуты</p>
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">Magic Fill AI</h3>
+            <p className="text-lg text-gray-600">Отсканируйте штрихкод и получите готовую карточку за 2 минуты</p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* GTIN Input */}
             <div className="flex flex-col gap-4 items-center justify-center">
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
@@ -104,18 +96,17 @@ export default function MagicFillStep() {
                       ? gtinValidation.isValid 
                         ? 'border-green-400 focus:border-green-500 focus:ring-green-400 bg-green-50/50' 
                         : 'border-red-400 focus:border-red-500 focus:ring-red-400 bg-red-50/50'
-                      : 'border-purple-200 focus:border-purple-400 focus:ring-purple-400 hover:border-purple-300'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-400 hover:border-gray-300'
                   }`}
                 />
                 <Button
                   onClick={() => setIsBarcodeScannerOpen(true)}
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto px-4 sm:px-6 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-lg relative overflow-hidden group"
+                  className="w-full sm:w-auto px-4 sm:px-6 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 transition-all duration-300"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2 relative z-10" />
-                  <span className="relative z-10 text-sm sm:text-base">Сканировать</span>
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  <span className="text-sm sm:text-base">Сканировать</span>
                 </Button>
               </div>
               
@@ -136,7 +127,7 @@ export default function MagicFillStep() {
                 disabled={!canUseMagicFill}
                 className={`w-full max-w-md text-white shadow-lg transition-all duration-300 py-4 text-lg font-semibold ${
                   canUseMagicFill
-                    ? 'bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 hover:shadow-xl hover:scale-105 cursor-pointer' 
+                    ? 'bg-gray-900 hover:bg-gray-800 hover:shadow-xl cursor-pointer' 
                     : 'bg-gray-400 cursor-not-allowed opacity-60'
                 }`}
               />
@@ -158,7 +149,7 @@ export default function MagicFillStep() {
 
 
           {/* Manual Entry Toggle */}
-          <div className="mt-8 pt-6 border-t border-purple-200">
+          <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="text-center space-y-2">
               <Button
                 onClick={() => {
@@ -180,7 +171,7 @@ export default function MagicFillStep() {
                 }}
                 variant="ghost"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700 text-sm transition-all duration-300 hover:scale-105 hover:bg-gray-100"
+                className="text-gray-500 hover:text-gray-700 text-sm transition-all duration-300 hover:bg-gray-100"
               >
                 <FileText className="w-4 h-4 mr-2" />
                 {showManualEntry ? 'Скрыть' : 'Нет штрихкода? Заполнить вручную'}
@@ -188,14 +179,14 @@ export default function MagicFillStep() {
               
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Manual Entry Block - Collapsible */}
       {showManualEntry && (
         <div ref={manualEntryRef} className="mt-6">
-          <Card className="bg-gradient-to-br from-gray-50 to-blue-50 border-gray-200 shadow-lg animate-slide-down">
-          <CardContent className="p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm animate-slide-down">
+          <div className="p-6">
             <div className="text-center mb-6">
               <h4 className="text-lg font-semibold text-gray-800 mb-2">Заполнение без GTIN</h4>
               <p className="text-sm text-gray-600 mb-3">
@@ -250,8 +241,8 @@ export default function MagicFillStep() {
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
         </div>
       )}
     </div>

@@ -19,6 +19,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Trade Card Builder",
   description: "Профессиональные карточки товаров для Kaspi Marketplace",
+  icons: {
+    icon: '/logo-icon.svg',
+  },
 };
 
 export default function RootLayout({

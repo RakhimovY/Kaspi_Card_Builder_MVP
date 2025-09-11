@@ -1,8 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { BuyProButton } from '@/components/BuyProButton';
 import Header from '@/components/Header';
 import Link from 'next/link';
@@ -10,21 +8,20 @@ import { trackPageView } from '@/lib/analytics';
 import { useEffect, useState } from 'react';
 import { useLandingTranslations } from '@/lib/useTranslations';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import LogoIcon from '@/components/LogoIcon';
 import { 
-  Camera, 
-  FileText, 
-  Download, 
-  Upload, 
-  Sparkles, 
   ArrowRight, 
-  Mail,
   MessageCircle,
-  Clock,
   ChevronDown,
   Check,
   User,
   Crown,
+  ScanLine,
+  Brain,
+  Package,
+  QrCode,
+  Wand2,
 } from 'lucide-react';
 
 interface SubscriptionData {
@@ -36,12 +33,70 @@ interface SubscriptionData {
   } | null
 }
 
+interface FAQItemProps {
+  question: string
+  answer: string
+  index: number
+}
+
+function FAQItem({ question, answer, index }: FAQItemProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      viewport={{ once: true }}
+    >
+      <div className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-300 overflow-hidden">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 pr-4">{question}</h3>
+          <motion.div
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+          </motion.div>
+        </button>
+        
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="px-6 pb-6 pt-0">
+                <motion.p
+                  initial={{ y: -10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -10, opacity: 0 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
+                  className="text-gray-600 leading-relaxed"
+                >
+                  {answer}
+                </motion.p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const { data: session } = useSession();
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
-  const { nav, hero, features, how_it_works, faq, pricing, isLoading, hasError } = useLandingTranslations();
+  const { nav, hero, features, how_it_works, faq, pricing, cta, footer, user_status, isLoading, hasError } = useLandingTranslations();
 
   useEffect(() => {
     setMounted(true);
@@ -85,12 +140,14 @@ export default function LandingPage() {
 
   // Fetch subscription data when session changes
   useEffect(() => {
-    if (session?.user?.email) {
+    if (session?.user?.email && !subscriptionData) {
       fetchSubscriptionData();
     }
-  }, [session]);
+  }, [session?.user?.email, subscriptionData]);
 
   const fetchSubscriptionData = async () => {
+    if (isLoadingSubscription) return; // Prevent duplicate calls
+    
     setIsLoadingSubscription(true);
     try {
       const response = await fetch('/api/subscription');
@@ -151,12 +208,11 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
-      {/* Animated Background Elements */}
+    <div className="min-h-screen bg-white overflow-hidden">
+      {/* Subtle Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full filter blur-3xl opacity-60"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-50 to-pink-50 rounded-full filter blur-3xl opacity-60"></div>
       </div>
 
       {/* Header */}
@@ -167,31 +223,31 @@ export default function LandingPage() {
       />
 
       {/* Hero Section */}
-      <section className="relative container mx-auto px-4 py-20 text-center z-10">
+      <section className="relative container mx-auto px-4 py-8 md:py-16 text-center z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-4xl mx-auto"
+          className="max-w-5xl mx-auto"
         >
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 backdrop-blur-sm border border-purple-200 rounded-full px-4 py-2 mb-8"
+            className="inline-flex items-center space-x-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 mb-8"
           >
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <span className="text-sm font-medium text-purple-700">Magic Fill AI - Революция в создании карточек</span>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-gray-700">{hero.badge}</span>
           </motion.div>
 
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent leading-tight">
-            Magic Fill AI
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 text-gray-900 leading-tight">
+            {hero.title}
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Отсканируйте штрихкод и получите готовую карточку товара за 2 минуты. 
-            <span className="font-semibold text-purple-600">Никаких ручных действий!</span>
+          <p className="text-xl md:text-2xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed">
+            {hero.subtitle} 
+            <span className="font-semibold text-gray-900">{hero.subtitle_highlight}</span>
           </p>
 
           {/* CTA Button */}
@@ -199,15 +255,14 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex justify-center items-center mb-12"
+            className="flex justify-center items-center mb-8 md:mb-12"
           >
             <Link href="/studio">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+                className="text-lg px-8 py-4 bg-gray-900 hover:bg-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 group"
               >
-                <Sparkles className="mr-2 w-5 h-5" />
-                Попробовать Magic Fill AI
+                {hero.cta}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
@@ -218,58 +273,55 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto"
           >
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">1 клик</div>
-              <div className="text-sm text-gray-600">Сканирование штрихкода</div>
+            <div className="text-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="text-3xl font-bold text-gray-900 mb-2">{hero.stats.scan}</div>
+              <div className="text-sm text-gray-600">{hero.stats.scan_desc}</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">2 мин</div>
-              <div className="text-sm text-gray-600">Готовая карточка</div>
+            <div className="text-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="text-3xl font-bold text-gray-900 mb-2">{hero.stats.time}</div>
+              <div className="text-sm text-gray-600">{hero.stats.time_desc}</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">0%</div>
-              <div className="text-sm text-gray-600">Ручной работы</div>
+            <div className="text-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="text-3xl font-bold text-gray-900 mb-2">{hero.stats.manual}</div>
+              <div className="text-sm text-gray-600">{hero.stats.manual_desc}</div>
             </div>
           </motion.div>
         </motion.div>
       </section>
 
       {/* Features Section */}
-      <section className="relative container mx-auto px-4 py-20 z-10">
+      <section className="relative container mx-auto px-4 py-8 md:py-16 z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8 md:mb-12"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Почему выбирают нас</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Все необходимые инструменты для создания профессиональных карточек товаров
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{features.title}</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {features.subtitle}
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {[
             {
-              icon: <Camera className="w-8 h-8" />,
+              icon: <ScanLine className="w-6 h-6" />,
               title: features.kaspi_check,
-              description: "Автоматическая обработка фотографий под требования Kaspi с удалением фона и оптимизацией",
-              color: "from-blue-500 to-blue-600"
+              description: features.kaspi_check_desc,
             },
             {
-              icon: <FileText className="w-8 h-8" />,
+              icon: <Brain className="w-6 h-6" />,
               title: features.generator,
-              description: "Умная генерация заголовков и описаний для лучшего поиска и конверсии",
-              color: "from-indigo-500 to-indigo-600"
+              description: features.generator_desc,
             },
             {
-              icon: <Download className="w-8 h-8" />,
+              icon: <Package className="w-6 h-6" />,
               title: features.export,
-              description: "Готовые пакеты для загрузки в Kaspi с правильной структурой файлов",
-              color: "from-purple-500 to-purple-600"
+              description: features.export_desc,
             }
           ].map((feature, index) => (
             <motion.div
@@ -278,83 +330,97 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
+              className="group"
             >
-              <Card className="group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm">
-                <CardHeader className="text-center pb-4">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center text-white mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 text-center leading-relaxed">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="p-8 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 h-full">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600 mb-6 group-hover:bg-gray-900 group-hover:text-white transition-all duration-300">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="relative container mx-auto px-4 py-20 z-10">
+      <section className="relative container mx-auto px-4 py-8 md:py-16 z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8 md:mb-12"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             {how_it_works.title}
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Простой процесс от загрузки до готового результата
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {how_it_works.subtitle}
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-4 gap-8">
-          {[
-            { step: "1", text: how_it_works.step1, icon: <Upload className="w-6 h-6" /> },
-            { step: "2", text: how_it_works.step2, icon: <Sparkles className="w-6 h-6" /> },
-            { step: "3", text: how_it_works.step3, icon: <FileText className="w-6 h-6" /> },
-            { step: "4", text: how_it_works.step4, icon: <Download className="w-6 h-6" /> }
-          ].map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="text-center relative"
-            >
-              <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  {item.icon}
+        {/* Steps */}
+        <div className="max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { 
+                step: "01", 
+                text: how_it_works.step1, 
+                icon: <QrCode className="w-5 h-5" />
+              },
+              { 
+                step: "02", 
+                text: how_it_works.step2, 
+                icon: <Wand2 className="w-5 h-5" />
+              },
+              { 
+                step: "03", 
+                text: how_it_works.step3, 
+                icon: <Brain className="w-5 h-5" />
+              },
+              { 
+                step: "04", 
+                text: how_it_works.step4, 
+                icon: <Package className="w-5 h-5" />
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-600 mx-auto mb-4">
+                    {item.icon}
+                  </div>
+                  <div className="text-sm font-medium text-gray-500 mb-2">{item.step}</div>
                 </div>
-                {index < 3 && (
-                  <div className="hidden md:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 transform translate-x-4"></div>
-                )}
-              </div>
-              <p className="text-gray-700 font-medium leading-relaxed">
-                {item.text}
-              </p>
-            </motion.div>
-          ))}
+                <p className="text-gray-700 leading-relaxed">
+                  {item.text}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative container mx-auto px-4 py-20 z-10">
+      <section id="pricing" className="relative container mx-auto px-4 py-8 md:py-16 z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-6 md:mb-8"
         >
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             {pricing.title}
@@ -364,7 +430,7 @@ export default function LandingPage() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Free Plan */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -372,58 +438,52 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <Card className="group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm relative">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold">{pricing.free.title}</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-gray-900">{pricing.free.price}</span>
+            <div className="p-8 bg-white rounded-2xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300 h-full">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{pricing.free.title}</h3>
+                <div className="text-4xl font-bold text-gray-900 mb-2">{pricing.free.price}</div>
+                <p className="text-gray-600 mb-4">{pricing.free.description}</p>
+                <div className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                  {pricing.free.limit}
                 </div>
-                <CardDescription className="text-gray-600 mt-2">
-                  {pricing.free.description}
-                </CardDescription>
-                <div className="mt-4">
-                  <Badge variant="secondary" className="text-sm">
-                    {pricing.free.limit}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  {Object.values(pricing.free.features).map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                {shouldDisableStartFree ? (
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                {Object.values(pricing.free.features).map((feature, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              {shouldDisableStartFree ? (
+                <Button 
+                  className="w-full bg-gray-100 text-gray-500 cursor-not-allowed"
+                  disabled
+                >
+                  {hasProSubscription ? (
+                    <>
+                      <Crown className="mr-2 w-4 h-4" />
+                      {user_status.already_pro}
+                    </>
+                  ) : (
+                    <>
+                      <User className="mr-2 w-4 h-4" />
+                      {user_status.already_registered}
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Link href="/studio">
                   <Button 
-                    className="w-full bg-gray-300 text-gray-600 cursor-not-allowed"
-                    disabled
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white"
                   >
-                    {hasProSubscription ? (
-                      <>
-                        <Crown className="mr-2 w-4 h-4" />
-                        У вас уже есть Pro
-                      </>
-                    ) : (
-                      <>
-                        <User className="mr-2 w-4 h-4" />
-                        Вы уже зарегистрированы
-                      </>
-                    )}
+                    {pricing.free.cta}
                   </Button>
-                ) : (
-                  <Link href="/studio">
-                    <Button 
-                      className="w-full bg-gray-900 hover:bg-gray-800"
-                    >
-                      {pricing.free.cta}
-                    </Button>
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
+                </Link>
+              )}
+            </div>
           </motion.div>
 
           {/* Pro Plan */}
@@ -433,99 +493,78 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <Card className="group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-2 border-blue-500 shadow-lg scale-105 bg-white/80 backdrop-blur-sm relative">
-              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white">
-                {pricing.mostPopular}
-              </Badge>
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold">{pricing.pro.title}</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-gray-900">{pricing.pro.price}</span>
-                  <span className="text-gray-500 ml-2">/месяц</span>
+            <div className="p-8 bg-gray-900 text-white rounded-2xl border-2 border-gray-900 hover:shadow-2xl transition-all duration-300 h-full relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gray-900 text-white px-4 py-1 rounded-full text-sm font-medium border border-gray-700">
+                  {pricing.mostPopular}
                 </div>
-                <CardDescription className="text-gray-600 mt-2">
-                  {pricing.pro.description}
-                </CardDescription>
-                <div className="mt-4">
-                  <Badge variant="secondary" className="text-sm">
-                    {pricing.pro.limit}
-                  </Badge>
+              </div>
+              
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold mb-2">{pricing.pro.title}</h3>
+                <div className="text-4xl font-bold mb-2">{pricing.pro.price}<span className="text-gray-400 text-lg">/месяц</span></div>
+                <p className="text-gray-300 mb-4">{pricing.pro.description}</p>
+                <div className="inline-block bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-sm font-medium">
+                  {pricing.pro.limit}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  {Object.values(pricing.pro.features).map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <BuyProButton 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  onSuccess={() => {
-                    // Redirect to studio after successful purchase
-                    setTimeout(() => {
-                      window.location.href = '/studio';
-                    }, 2500);
-                  }}
-                />
-              </CardContent>
-            </Card>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                {Object.values(pricing.pro.features).map((feature, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <BuyProButton 
+                className="w-full bg-white text-gray-900 hover:bg-gray-100"
+                onSuccess={() => {
+                  // Redirect to studio after successful purchase
+                  setTimeout(() => {
+                    window.location.href = '/studio';
+                  }, 2500);
+                }}
+              />
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="relative container mx-auto px-4 py-20 z-10">
+      <section className="relative container mx-auto px-4 py-8 md:py-16 z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-6 md:mb-8"
         >
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             {faq.title}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Ответы на самые популярные вопросы
+            {faq.subtitle}
           </p>
         </motion.div>
 
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-4">
           {[
             { q: faq.q1, a: faq.a1 },
             { q: faq.q2, a: faq.a2 },
-            { q: faq.q3, a: faq.a3 }
+            { q: faq.q3, a: faq.a3 },
+            { q: faq.q4, a: faq.a4 },
+            { q: faq.q5, a: faq.a5 },
+            { q: faq.q6, a: faq.a6 }
           ].map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg flex items-center justify-between group-hover:text-blue-600 transition-colors">
-                    {item.q}
-                    <ChevronDown className="w-5 h-5 group-hover:rotate-180 transition-transform" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 leading-relaxed">
-                    {item.a}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <FAQItem key={index} question={item.q} answer={item.a} index={index} />
           ))}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative container mx-auto px-4 py-20 z-10">
+      <section className="relative container mx-auto px-4 py-8 md:py-16 z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -533,103 +572,84 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 shadow-2xl">
-            <CardContent className="p-12">
-              <h2 className="text-4xl font-bold mb-4">Готовы начать?</h2>
-              <p className="text-xl mb-8 opacity-90">
-                Присоединяйтесь к тысячам успешных продавцов на Kaspi
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                {shouldDisableStartFree ? (
+          <div className="p-12 bg-gray-900 text-white rounded-3xl">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">{cta.title}</h2>
+            <p className="text-xl text-gray-300 mb-6 md:mb-8 max-w-2xl mx-auto">
+              {cta.subtitle}
+            </p>
+            <div className="flex justify-center items-center">
+              {shouldDisableStartFree ? (
+                <Button 
+                  size="lg" 
+                  variant="secondary"
+                  disabled
+                  className="text-lg px-8 py-4 bg-gray-700 text-gray-400 cursor-not-allowed"
+                >
+                  {hasProSubscription ? (
+                    <>
+                      <Crown className="mr-2 w-5 h-5" />
+                      {user_status.already_pro}
+                    </>
+                  ) : (
+                    <>
+                      <User className="mr-2 w-5 h-5" />
+                      {user_status.already_registered}
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Link href="/studio">
                   <Button 
                     size="lg" 
                     variant="secondary"
-                    disabled
-                    className="text-lg px-8 py-4 bg-gray-300 text-gray-600 cursor-not-allowed shadow-lg"
+                    className="text-lg px-8 py-4 bg-white text-gray-900 hover:bg-gray-100"
                   >
-                    {hasProSubscription ? (
-                      <>
-                        <Crown className="mr-2 w-5 h-5" />
-                        У вас уже есть Pro
-                      </>
-                    ) : (
-                      <>
-                        <User className="mr-2 w-5 h-5" />
-                        Вы уже зарегистрированы
-                      </>
-                    )}
+                    {cta.start_free}
+                    <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
-                ) : (
-                  <Link href="/studio">
-                    <Button 
-                      size="lg" 
-                      variant="secondary"
-                      className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                    >
-                      Начать бесплатно
-                      <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                  </Link>
-                )}
-                <BuyProButton 
-                  size="lg" 
-                  variant="outline"
-                  className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  onSuccess={() => {
-                    // Redirect to studio after successful purchase
-                    setTimeout(() => {
-                      window.location.href = '/studio';
-                    }, 2500);
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                </Link>
+              )}
+            </div>
+          </div>
         </motion.div>
       </section>
 
       {/* Footer */}
-      <footer className="relative bg-gray-900 text-white py-16 z-10">
+      <footer className="relative bg-gray-900 text-white py-12 z-10">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Camera className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-xl font-bold">Trade Card Builder</h3>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <LogoIcon className="text-gray-900" size="md" />
               </div>
-              <p className="text-gray-400 leading-relaxed">
-                Профессиональные карточки товаров для Kaspi Marketplace. Автоматизация обработки фотографий и генерация описаний.
-              </p>
+              <div>
+                <h3 className="text-lg font-bold">{footer.title}</h3>
+                <p className="text-sm text-gray-400">{footer.description}</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Продукт</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li><Link href="/studio" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Студия</Link></li>
-                <li><button onClick={scrollToPricing} className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Тарифы</button></li>
-                <li><a href="/docs" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />Документация</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Поддержка</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li><a href="mailto:support@tradecardbuilder.kz" className="hover:text-white transition-colors flex items-center"><Mail className="w-4 h-4 mr-2" />support@tradecardbuilder.kz</a></li>
-                <li><a href="https://t.me/trade_card_builder" className="hover:text-white transition-colors flex items-center"><MessageCircle className="w-4 h-4 mr-2" />Telegram</a></li>
-                <li><a href="/faq" className="hover:text-white transition-colors flex items-center"><ArrowRight className="w-4 h-4 mr-2" />FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Контакты</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li className="flex items-center"><Mail className="w-4 h-4 mr-2" />info@tradecardbuilder.kz</li>
-                <li className="flex items-center"><MessageCircle className="w-4 h-4 mr-2" />@trade_card_builder</li>
-                <li className="flex items-center"><Clock className="w-4 h-4 mr-2" />Пн-Пт 9:00-18:00</li>
-              </ul>
+            <div className="flex items-center space-x-6">
+              <a 
+                href="https://wa.me/77086934037?text=Здравствуйте!%20Меня%20интересует%20Trade%20Card%20Builder" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors group"
+              >
+                <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="font-medium">{footer.whatsapp}</span>
+              </a>
+              <a 
+                href="https://t.me/YerkebulanR" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors group"
+              >
+                <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="font-medium">{footer.telegram_contact}</span>
+              </a>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>© 2024 Trade Card Builder. Все права защищены.</p>
+          <div className="border-t border-gray-800 pt-6 text-center text-gray-400">
+            <p className="text-sm">{footer.copyright}</p>
           </div>
         </div>
       </footer>

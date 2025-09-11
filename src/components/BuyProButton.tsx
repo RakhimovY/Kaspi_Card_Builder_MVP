@@ -38,12 +38,14 @@ export function BuyProButton({
 
   // Fetch subscription data when component mounts or session changes
   useEffect(() => {
-    if (session?.user?.email) {
+    if (session?.user?.email && !subscriptionData) {
       fetchSubscriptionData()
     }
-  }, [session])
+  }, [session?.user?.email, subscriptionData])
 
   const fetchSubscriptionData = async () => {
+    if (isLoadingSubscription) return; // Prevent duplicate calls
+    
     setIsLoadingSubscription(true)
     try {
       const response = await fetch('/api/subscription')
