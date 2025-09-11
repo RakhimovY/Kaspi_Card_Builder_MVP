@@ -246,7 +246,7 @@ export default function LandingPage() {
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 text-gray-900 leading-tight">
             {hero.title}
           </h1>
-          
+          <br />
           <p className="text-xl md:text-2xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed">
             {hero.subtitle} 
             <span className="font-semibold text-gray-900">{hero.subtitle_highlight}</span>

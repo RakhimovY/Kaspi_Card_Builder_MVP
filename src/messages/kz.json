@@ -87,7 +87,7 @@
     "hero": {
       "badge": "Magic Fill AI - Карточкалар жасаудағы төңкеріс",
       "title": "Magic Fill AI",
-      "subtitle": "Штрихкодты сканерлеңіз және 2 минутта дайын тауар карточкасын алыңыз.",
+      "subtitle": "Штрихкодты сканерлеңіз және 2 минутта дайын Kaspi.kz тауар карточкасын алыңыз.",
       "subtitle_highlight": "Ешқандай қолмен жұмыс жоқ!",
       "cta": "Magic Fill AI-ды қолданып көріңіз",
       "stats": {
@@ -203,7 +203,7 @@
       "whatsapp_desc": "Жылдам қолдау және кеңес беру",
       "telegram_contact": "Telegram-да жазу",
       "telegram_desc": "Техникалық қолдау және жаңартулар",
-      "copyright": "© 2024 Trade Card Builder. Барлық құқықтар қорғалған."
+      "copyright": "© 2025 Trade Card Builder. Барлық құқықтар қорғалған."
     },
     "user_status": {
       "already_registered": "Сіз қазірдің өзінде тіркелгенсіз",
@@ -213,7 +213,7 @@
   "studio": {
     "title": "Өңдеу студиясы",
     "page_title": "Trade Card Builder",
-    "subtitle": "Өңдеу студиясы",
+    "subtitle": "Kaspi.kz үшін тауар карточкасын жасау",
     "back_to_landing": "Артқа",
     "file_drop": {
       "title": "Файлдар ({count}/{max})",

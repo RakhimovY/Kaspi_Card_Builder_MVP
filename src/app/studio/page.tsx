@@ -9,6 +9,7 @@ import ProductInfoStep from '@/components/ProductInfoStep';
 import PhotoEditorStep from '@/components/PhotoEditorStep';
 import ExportPanel from '@/components/ExportPanel';
 import StepRoadmap from '@/components/StepRoadmap';
+import KaspiBrand from '@/components/KaspiBrand';
 import { useAppStore } from '@/lib/store';
 
 export default function StudioPage() {
@@ -44,6 +45,14 @@ export default function StudioPage() {
       <main className="relative container mx-auto px-4 py-4 md:py-8 z-10">
         <SubscriptionSuccessWatcher />
         <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
+          {/* Kaspi Branding */}
+          <section className="text-center">
+            <div className="inline-flex items-center gap-2 mb-2">
+              <KaspiBrand variant="badge" />
+              <span className="text-gray-600 text-sm">Профессиональные карточки товаров</span>
+            </div>
+          </section>
+
           {/* Step Roadmap */}
           <section>
             <StepRoadmap />

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Trade Card Builder - Конструктор карточек товаров для Kaspi",
+    default: "Trade Card Builder - Конструктор карточек товаров для Kaspi.kz",
     template: "%s | Trade Card Builder"
   },
   description: "Создавайте профессиональные карточки товаров для Kaspi.kz за минуты. ИИ генерация описаний, автозаполнение по штрихкоду, экспорт для маркетплейса. Попробуйте бесплатно!",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Trade Card Builder - Конструктор карточек товаров для Kaspi",
+    title: "Trade Card Builder - Конструктор карточек товаров для Kaspi.kz",
     description: "Создавайте профессиональные карточки товаров для Kaspi.kz за минуты. ИИ генерация описаний, автозаполнение по штрихкоду, экспорт для маркетплейса.",
     url: '/',
     siteName: 'Trade Card Builder',
@@ -61,13 +61,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Trade Card Builder - Конструктор карточек товаров для Kaspi',
+        alt: 'Trade Card Builder - Конструктор карточек товаров для Kaspi.kz',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Trade Card Builder - Конструктор карточек товаров для Kaspi",
+    title: "Trade Card Builder - Конструктор карточек товаров для Kaspi.kz",
     description: "Создавайте профессиональные карточки товаров для Kaspi.kz за минуты. ИИ генерация описаний, автозаполнение по штрихкоду.",
     images: ['/og-image.png'],
   },

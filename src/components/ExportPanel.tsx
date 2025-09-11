@@ -11,6 +11,7 @@ import { exportToZip, downloadFile, generateSKU } from '@/lib/exportUtils';
 import { useTranslations } from '@/lib/useTranslations';
 import { trackExportZip, trackExportCsvReady } from '@/lib/analytics';
 import FormProgress from './FormProgress';
+import KaspiBrand from './KaspiBrand';
 
 import { toast } from 'sonner';
 
@@ -99,8 +100,9 @@ export default function ExportPanel() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-blue-600" />
+            <Package className="w-5 h-5 text-red-600" />
             {t('studio.export.title')}
+            <KaspiBrand variant="badge" className="ml-2" />
           </CardTitle>
           <Button
             variant="outline"
@@ -158,10 +160,13 @@ export default function ExportPanel() {
 
         {/* Success Display */}
         {exportSuccess && (
-          <div className="text-center py-4 bg-green-50 rounded-lg border border-green-200">
-            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-600" />
-            <p className="text-green-800 font-medium">{t('studio.export.success')}</p>
-          </div>
+          <KaspiBrand variant="accent" className="bg-green-50 rounded-lg py-4">
+            <div className="text-center">
+              <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-600" />
+              <p className="text-green-800 font-medium">{t('studio.export.success')}</p>
+              <p className="text-sm text-gray-600 mt-1">Готово для загрузки на маркетплейс</p>
+            </div>
+          </KaspiBrand>
         )}
 
         {/* Navigation */}
