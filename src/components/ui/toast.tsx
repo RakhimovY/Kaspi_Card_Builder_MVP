@@ -1,11 +1,8 @@
 "use client"
 
 import { Toaster as SonnerToaster } from "sonner"
-import { useTranslations } from "@/lib/useTranslations"
 
 export function Toaster() {
-  const { t } = useTranslations()
-
   return (
     <SonnerToaster
       theme="system"

@@ -5,28 +5,56 @@ import { logger } from '@/lib/server/logger'
 
 // Official Polar Webhooks handler. Polar validates signatures internally.
 export const POST = Webhooks({
-  accessToken: env.POLAR_ACCESS_TOKEN,
-  signingSecret: env.POLAR_WEBHOOK_SECRET,
-  // Handle subscription lifecycle
-  async onSubscriptionCreated(event) {
-    await upsertSubscription(event)
-  },
-  async onSubscriptionUpdated(event) {
-    await upsertSubscription(event)
-  },
-  async onSubscriptionCanceled(event) {
-    await upsertSubscription(event)
+  webhookSecret: env.POLAR_WEBHOOK_SECRET,
+  onPayload: async (payload) => {
+    if (isSubscriptionEvent(payload)) {
+      await upsertSubscription(payload)
+    } else {
+      logger.info({ endpoint: 'polar/webhooks', message: 'Ignoring non-subscription event', type: getEventType(payload) })
+    }
   },
 })
 
-async function upsertSubscription(event: any) {
+type PolarSubscriptionEvent = {
+  type?: string
+  data?: {
+    id?: string | number
+    status: 'active' | 'canceled' | 'past_due' | 'unpaid'
+    product?: { id?: string | number; name?: string | null }
+    price?: { id?: string | number }
+    current_period_start?: string | number | Date
+    current_period_end?: string | number | Date
+    cancel_at_period_end?: boolean
+    customer?: { id?: string | number; email?: string | null; name?: string | null }
+  }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isSubscriptionEvent(payload: unknown): payload is PolarSubscriptionEvent {
+  if (!isObject(payload)) return false
+  const maybeData = (payload as { data?: unknown }).data
+  if (!isObject(maybeData)) return false
+  const status = (maybeData as { status?: unknown }).status
+  return status === 'active' || status === 'canceled' || status === 'past_due' || status === 'unpaid'
+}
+
+function getEventType(payload: unknown): string | undefined {
+  if (!isObject(payload)) return undefined
+  const t = (payload as { type?: unknown }).type
+  return typeof t === 'string' ? t : undefined
+}
+
+async function upsertSubscription(event: PolarSubscriptionEvent) {
   const log = logger.child({ endpoint: 'polar/webhooks', type: event?.type })
 
   try {
     const data = event?.data
     if (!data) return
 
-    const customerEmail: string | undefined = data.customer?.email
+    const customerEmail: string | undefined = (data.customer?.email ?? undefined)
     if (!customerEmail) {
       log.warn({ message: 'No customer email in event' })
       return

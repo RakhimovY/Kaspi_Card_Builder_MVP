@@ -196,7 +196,6 @@ export function BuyProButton({
     return (
       <PolarCheckout
         productId={process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID}
-        onSuccess={onSuccess}
         onError={(error) => {
           console.error('Polar checkout error:', error)
           setPurchaseStatus('error')

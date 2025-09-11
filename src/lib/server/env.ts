@@ -119,7 +119,7 @@ export const getBillingConfig = () => {
       return {
         provider: 'polar' as const,
         webhookSecret: env.POLAR_WEBHOOK_SECRET,
-        apiKey: env.POLAR_API_KEY,
+        apiKey: env.POLAR_ACCESS_TOKEN,
       }
     default:
       return null

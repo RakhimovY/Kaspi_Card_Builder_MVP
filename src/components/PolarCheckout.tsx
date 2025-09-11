@@ -13,8 +13,6 @@ interface PolarCheckoutProps {
 
 export function PolarCheckout({ 
   productId, 
-  priceId, 
-  onSuccess, 
   onError, 
   children,
   className 
