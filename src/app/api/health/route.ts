@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/server/prisma'
 import { logger } from '@/lib/server/logger'
+import { validateEnvironment, getEnvironmentInfo } from '@/lib/server/env-validation'
 
 /**
  * Health check endpoint for uptime monitoring
@@ -11,6 +12,9 @@ export async function GET() {
   const log = logger.child({ requestId, endpoint: 'health' })
 
   try {
+    // Validate environment variables
+    const envValidation = validateEnvironment()
+    
     // Check database connectivity
     let dbStatus = 'unknown'
     try {
@@ -21,20 +25,30 @@ export async function GET() {
       log.error({ message: 'Database health check failed', dbError })
     }
 
+    // Get environment info
+    const envInfo = getEnvironmentInfo()
+
     const healthData = {
-      status: dbStatus === 'connected' ? 'healthy' : 'degraded',
+      status: dbStatus === 'connected' && envValidation.valid ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: envInfo.NODE_ENV,
       version: process.env.npm_package_version || '0.1.0',
       database: {
         status: dbStatus,
-        provider: 'sqlite',
+        provider: 'postgresql',
+      },
+      environment: {
+        valid: envValidation.valid,
+        errors: envValidation.errors,
+        info: envInfo,
       },
       services: {
-        auth: 'available',
-        billing: process.env.BILLING_PROVIDER ? 'configured' : 'not-configured',
-        magicFill: process.env.OPENAI_API_KEY ? 'configured' : 'not-configured',
+        auth: envInfo.HAS_GOOGLE_OAUTH ? 'configured' : 'not-configured',
+        billing: envInfo.HAS_BILLING ? 'configured' : 'not-configured',
+        magicFill: envInfo.HAS_OPENAI ? 'configured' : 'not-configured',
+        gtin: envInfo.HAS_GTIN ? 'configured' : 'not-configured',
+        analytics: envInfo.HAS_ANALYTICS ? 'configured' : 'not-configured',
       },
     }
 
