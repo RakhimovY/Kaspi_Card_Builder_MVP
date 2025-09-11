@@ -10,6 +10,7 @@ import { useAppStore } from '@/lib/store';
 import { useImageProcessing } from '@/lib/useImageProcessing';
 import { trackFileDrop } from '@/lib/analytics';
 import { useTranslations } from '@/lib/useTranslations';
+import QuotaStatus from '@/components/QuotaStatus';
 import { 
   Upload, 
   FileImage, 
@@ -285,6 +286,9 @@ export default function PhotoEditorStep() {
             </div>
           </div>
         </div>
+
+        {/* Quota Status */}
+        <QuotaStatus feature="imageProcessing" />
 
         {/* Background Removal Setting */}
         {files.length > 0 && (

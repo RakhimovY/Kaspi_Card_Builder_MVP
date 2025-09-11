@@ -24,7 +24,7 @@ interface QuotaInfo {
 }
 
 interface QuotaStatusProps {
-  feature?: 'magicFill' | 'photos' | 'export';
+  feature?: 'magicFill' | 'photos' | 'export' | 'imageProcessing';
   className?: string;
 }
 
@@ -95,6 +95,7 @@ export default function QuotaStatus({ feature = 'magicFill', className }: QuotaS
     switch (feature) {
       case 'magicFill': return 'Magic Fill';
       case 'photos': return 'Обработка фото';
+      case 'imageProcessing': return 'Обработка изображений';
       case 'export': return 'Экспорт';
       default: return 'Использование';
     }

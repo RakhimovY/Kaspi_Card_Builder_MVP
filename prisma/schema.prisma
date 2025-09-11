@@ -170,7 +170,8 @@ model BarcodeLookup {
 
 model ImageProcessingLog {
   id              String   @id @default(cuid())
-  userId          String
+  userId          String?  // nullable for anonymous users
+  ipAddress       String?  // for anonymous users
   filename        String
   originalSize    Int
   processedSize   Int
@@ -180,9 +181,10 @@ model ImageProcessingLog {
   errorMessage    String?
   createdAt       DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([ipAddress, createdAt])
   @@index([success])
 }
 

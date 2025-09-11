@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/server/auth-config";
 import { prisma } from "@/lib/server/prisma";
-import { assertQuota, incrementUsage } from "@/lib/server/quota";
+import { assertQuota, assertIpQuota, incrementUsage, incrementIpUsage } from "@/lib/server/quota";
+import { getClientIp } from "@/lib/server/api-utils";
 import {
   processImageServer,
   type ServerImageProcessingOptions,
@@ -14,18 +15,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      console.log("Unauthorized request to process-photo");
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 }
-      );
+    const userId = session?.user?.id;
+    const ipAddress = getClientIp(request);
+    
+    console.log("Process photo request", { userId, ipAddress, isAnonymous: !userId });
+
+    // Check quota based on authentication status
+    if (userId) {
+      // Authenticated user - check user quota
+      await assertQuota(userId, "imageProcessing");
+    } else {
+      // Anonymous user - check IP quota
+      await assertIpQuota(ipAddress, "imageProcessing");
     }
-
-    const userId = session.user.id;
-    console.log("Process photo request", { userId });
-
-    await assertQuota(userId, "imageProcessing");
 
     console.log("Parsing form data");
     const formData = await request.formData();
@@ -76,12 +78,18 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    await incrementUsage(userId, "imageProcessing");
+    // Increment usage based on authentication status
+    if (userId) {
+      await incrementUsage(userId, "imageProcessing");
+    } else {
+      await incrementIpUsage(ipAddress, "imageProcessing");
+    }
 
     try {
       await prisma.imageProcessingLog.create({
         data: {
-          userId,
+          userId: userId || null,
+          ipAddress: userId ? null : ipAddress,
           filename: imageFile.name,
           originalSize: result.originalSize,
           processedSize: result.size,
@@ -92,6 +100,7 @@ export async function POST(request: NextRequest) {
       });
       console.log("Processing completed", {
         userId,
+        ipAddress,
         filename: imageFile.name,
         originalSize: result.originalSize,
         processedSize: result.size,
@@ -129,10 +138,14 @@ export async function POST(request: NextRequest) {
 
     try {
       const session = await getServerSession(authOptions);
-      if (session?.user?.id) {
+      const userId = session?.user?.id;
+      const ipAddress = getClientIp(request);
+      
+      if (userId || !userId) { // Log for both authenticated and anonymous users
         await prisma.imageProcessingLog.create({
           data: {
-            userId: session.user.id,
+            userId: userId || null,
+            ipAddress: userId ? null : ipAddress,
             filename: 'unknown',
             originalSize: 0,
             processedSize: 0,
@@ -143,7 +156,8 @@ export async function POST(request: NextRequest) {
           },
         });
         console.log("Processing failed", {
-          userId: session.user.id,
+          userId,
+          ipAddress,
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
