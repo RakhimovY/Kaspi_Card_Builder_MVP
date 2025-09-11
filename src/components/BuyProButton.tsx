@@ -208,7 +208,7 @@ export function BuyProButton({
     )
   }
 
-  // Default to mock purchase for other providers
+  // For non-polar providers, disable direct mock purchase in production-like flows
   return (
     <Button
       onClick={handlePurchase}

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth models
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -24,8 +20,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -39,25 +34,21 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Billing integration
-  lemonSqueezyCustomerId String? @unique // External Lemon Squeezy customer ID
-  
-  // Business logic relations
-  subscriptions Subscription[]
-  usageStats    UsageStat[]
-  productDrafts ProductDraft[]
-  imageAssets   ImageAsset[]
-  imageProcessingLogs ImageProcessingLog[]
+  id                     String               @id @default(cuid())
+  name                   String?
+  email                  String?              @unique
+  emailVerified          DateTime?
+  image                  String?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  lemonSqueezyCustomerId String?              @unique
+  accounts               Account[]
+  imageAssets            ImageAsset[]
+  imageProcessingLogs    ImageProcessingLog[]
+  productDrafts          ProductDraft[]
+  sessions               Session[]
+  subscriptions          Subscription[]
+  usageStats             UsageStat[]
 }
 
 model VerificationToken {
@@ -68,87 +59,82 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Business models
 model Subscription {
-  id                String   @id @default(cuid())
-  userId            String
-  provider          String   // "lemon-squeezy" | "paddle" | "polar"
-  providerId        String   // external subscription ID
-  plan              String   // "free" | "pro"
-  status            String   // "active" | "canceled" | "past_due" | "unpaid"
+  id                 String   @id @default(cuid())
+  userId             String
+  provider           String
+  providerId         String
+  plan               String
+  status             String
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd Boolean  @default(false)
-  customerId        String?  // external customer ID
-  metadata          Json?    // provider-specific data
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cancelAtPeriodEnd  Boolean  @default(false)
+  customerId         String?
+  metadata           Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider], name: "userId_provider")
   @@index([status, currentPeriodEnd])
 }
 
 model UsageStat {
-  id              String @id @default(cuid())
+  id              String   @id @default(cuid())
   userId          String
-  periodYM        String // "2024-01" format
-  magicFillCount  Int    @default(0)
-  photosProcessed Int    @default(0)
-  exportCount     Int    @default(0)
+  periodYM        String
+  magicFillCount  Int      @default(0)
+  photosProcessed Int      @default(0)
+  exportCount     Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, periodYM], name: "userId_periodYM")
   @@index([periodYM])
 }
 
 model ProductDraft {
-  id          String   @id @default(cuid())
-  userId      String
-  sku         String
-  brand       String?
-  type        String?
-  model       String?
-  keySpec     String?
-  titleRU     String?
-  titleKZ     String?
-  descRU      String?
-  descKZ      String?
-  category    String?
-  attributes  Json?    // flexible attributes object
-  variantsJson Json?   // product variants (color, size, capacity, etc.)
-  status      String   @default("draft") // "draft" | "ready" | "exported"
-  gtin        String?  // barcode if available
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images ImageAsset[]
+  id           String       @id @default(cuid())
+  userId       String
+  sku          String
+  brand        String?
+  type         String?
+  model        String?
+  keySpec      String?
+  titleRU      String?
+  titleKZ      String?
+  descRU       String?
+  descKZ       String?
+  category     String?
+  attributes   Json?
+  variantsJson Json?
+  status       String       @default("draft")
+  gtin         String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  images       ImageAsset[]
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([gtin])
 }
 
 model ImageAsset {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   draftId     String?
   userId      String
-  source      String   // "upload" | "web" | "ai" | "composite"
+  source      String
   filename    String
   width       Int
   height      Int
   bytes       Int
-  hash        String?  // for deduplication
+  hash        String?
   licenseNote String?
-  metadata    Json?    // EXIF, processing info
-  createdAt   DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  draft ProductDraft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  metadata    Json?
+  createdAt   DateTime      @default(now())
+  draft       ProductDraft? @relation(fields: [draftId], references: [id])
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([hash])
@@ -157,11 +143,11 @@ model ImageAsset {
 model BarcodeLookup {
   id        String   @id @default(cuid())
   gtin      String   @unique
-  source    String   // "gs1" | "cache" | "manual"
+  source    String
   brand     String?
   name      String?
   model     String?
-  rawJson   Json     // full response from external service
+  rawJson   Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -169,19 +155,18 @@ model BarcodeLookup {
 }
 
 model ImageProcessingLog {
-  id              String   @id @default(cuid())
-  userId          String?  // nullable for anonymous users
-  ipAddress       String?  // for anonymous users
-  filename        String
-  originalSize    Int
-  processedSize   Int
-  processingTime  Int      // milliseconds
-  options         String   // JSON string with processing options
-  success         Boolean
-  errorMessage    String?
-  createdAt       DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  userId         String?
+  filename       String
+  originalSize   Int
+  processedSize  Int
+  processingTime Int
+  options        String
+  success        Boolean
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  ipAddress      String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([ipAddress, createdAt])
@@ -191,7 +176,7 @@ model ImageProcessingLog {
 model IpQuota {
   id              String   @id @default(cuid())
   ipAddress       String
-  periodYM        String   // "2024-01" format
+  periodYM        String
   magicFillCount  Int      @default(0)
   photosProcessed Int      @default(0)
   exportCount     Int      @default(0)

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/server/auth-config'
 import { prisma } from '@/lib/server/prisma'
 import { logger } from '@/lib/server/logger'
+import { env } from '@/lib/server/env'
+import { polarAPI } from '@/lib/server/polar'
 
 export async function GET(request: NextRequest) {
   const log = logger.child({ endpoint: 'subscription' })
@@ -34,8 +36,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const subscription = user.subscriptions[0]
+    let subscription = user.subscriptions[0]
     const usageStat = user.usageStats[0]
+
+    // Optionally refresh from provider when requested or stale/expired
+    const searchParams = request.nextUrl.searchParams
+    const forceRefresh = searchParams.get('refresh') === '1'
+    const now = new Date()
+
+    if (subscription && (forceRefresh || subscription.currentPeriodEnd < now || subscription.status !== 'active')) {
+      try {
+        if (subscription.provider === 'polar' && env.BILLING_PROVIDER === 'polar' && subscription.providerId) {
+          const remote = await polarAPI.getSubscription(subscription.providerId)
+          if (remote) {
+            const updated = await prisma.subscription.update({
+              where: { id: subscription.id },
+              data: {
+                status: remote.status,
+                currentPeriodStart: new Date(remote.current_period_start),
+                currentPeriodEnd: new Date(remote.current_period_end),
+                cancelAtPeriodEnd: remote.cancel_at_period_end,
+                metadata: {
+                  ...(subscription.metadata as Record<string, unknown> | null ?? {}),
+                  lastSyncedAt: new Date().toISOString(),
+                },
+              },
+            })
+            subscription = updated
+          }
+        }
+      } catch (e) {
+        log.warn({ message: 'Failed to refresh subscription from provider', error: e instanceof Error ? e.message : 'unknown' })
+      }
+    }
 
     // Determine current plan and limits
     let plan = 'free'

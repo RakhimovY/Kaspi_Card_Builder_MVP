@@ -32,6 +32,8 @@ const envSchema = z.object({
   // Polar.sh
   POLAR_WEBHOOK_SECRET: z.string().min(1, 'POLAR_WEBHOOK_SECRET обязателен'),
   POLAR_ACCESS_TOKEN: z.string().min(1, 'POLAR_ACCESS_TOKEN обязателен'),
+  // Optional base URL to support sandbox vs production
+  POLAR_API_BASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_POLAR_PRODUCT_ID: z.string().optional(),
   
   // OpenAI
@@ -88,6 +90,7 @@ export const env = (() => {
       PADDLE_API_KEY: process.env.PADDLE_API_KEY || undefined,
       POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET || 'build-polar-webhook-secret',
       POLAR_ACCESS_TOKEN: process.env.POLAR_ACCESS_TOKEN || 'build-polar-access-token',
+      POLAR_API_BASE_URL: process.env.POLAR_API_BASE_URL || 'https://api.polar.sh/v1',
       NEXT_PUBLIC_POLAR_PRODUCT_ID: process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID || 'build-polar-product-id',
       OPENAI_API_KEY: process.env.OPENAI_API_KEY || 'build-openai-key',
       OPENAI_MODEL: (process.env.OPENAI_MODEL as 'gpt-3.5-turbo' | 'gpt-4' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini') || 'gpt-4o-mini',

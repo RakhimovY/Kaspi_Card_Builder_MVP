@@ -42,10 +42,12 @@ interface PolarPrice {
 
 class PolarAPI {
   private apiKey: string
-  private baseUrl = 'https://api.polar.sh/v1'
+  private baseUrl: string
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
+    // Allow overriding base URL to support sandbox in development
+    this.baseUrl = env.POLAR_API_BASE_URL || 'https://api.polar.sh/v1'
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
