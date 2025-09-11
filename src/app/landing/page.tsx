@@ -5,7 +5,7 @@ import { BuyProButton } from '@/components/BuyProButton';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import { trackPageView } from '@/lib/analytics';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLandingTranslations } from '@/lib/useTranslations';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -139,7 +139,7 @@ export default function LandingPage() {
     };
   }, []);
 
-  const fetchSubscriptionData = async () => {
+  const fetchSubscriptionData = useCallback(async () => {
     if (isLoadingSubscription) return; // Prevent duplicate calls
     
     setIsLoadingSubscription(true);
@@ -154,7 +154,7 @@ export default function LandingPage() {
     } finally {
       setIsLoadingSubscription(false);
     }
-  };
+  }, [isLoadingSubscription]);
 
   // Fetch subscription data when session changes
   useEffect(() => {
