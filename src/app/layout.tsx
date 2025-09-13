@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import PlausibleScript from "@/components/PlausibleScript";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import PageViewTracker from "@/components/PageViewTracker";
 import { Toaster } from "@/components/ui/toast";
 import { SessionProvider } from "@/components/SessionProvider";
@@ -100,6 +101,7 @@ export default function RootLayout({
     <html lang="ru">
       <head>
         <PlausibleScript />
+        <GoogleAnalytics />
         <link rel="canonical" href={process.env.NEXT_PUBLIC_BASE_URL || 'https://tradecardbuilder.com'} />
         <script
           type="application/ld+json"
